@@ -23,6 +23,13 @@ function fa_pm_install(): bool
 {
     global $db;
 
+    @include_once __DIR__ . '/vendor-src/Ksfraser/Common/ComposerDependencyManager.php';
+    if (class_exists('Ksfraser\Common\ComposerDependencyManager')) {
+        $composerMgr = new \Ksfraser\Common\ComposerDependencyManager(__DIR__);
+        $composerMgr->ensureDependencies();
+        @include_once $composerMgr->getAutoloadPath();
+    }
+
     if (!fa_pm_create_tables()) {
         return false;
     }
@@ -39,6 +46,13 @@ function fa_pm_install(): bool
  */
 function fa_pm_activate(): bool
 {
+    @include_once __DIR__ . '/vendor-src/Ksfraser/Common/ComposerDependencyManager.php';
+    if (class_exists('Ksfraser\Common\ComposerDependencyManager')) {
+        $composerMgr = new \Ksfraser\Common\ComposerDependencyManager(__DIR__);
+        $composerMgr->ensureDependencies();
+        @include_once $composerMgr->getAutoloadPath();
+    }
+
     add_hook('project_delete', 'fa_pm_project_delete');
     add_hook('project_update', 'fa_pm_project_update');
     add_hook('task_update', 'fa_pm_task_update');

@@ -104,3 +104,24 @@ INSERT INTO `@TB_PREF@fa_pm_project_types` (`name`, `description`, `sort_order`)
 ('Research', 'Research and development projects', 4),
 ('Marketing', 'Marketing and campaign projects', 5),
 ('Event', 'Event planning and execution', 6);
+
+-- Files Table
+CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_files` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `entity_type` VARCHAR(30) NOT NULL COMMENT 'project, task, etc',
+    `entity_id` VARCHAR(20) NOT NULL,
+    `file_name` VARCHAR(255) NOT NULL,
+    `original_name` VARCHAR(255) NOT NULL,
+    `mime_type` VARCHAR(100) DEFAULT 'application/octet-stream',
+    `size` INT(11) DEFAULT 0,
+    `storage_type` VARCHAR(20) DEFAULT 'local' COMMENT 'local, s3, fa_attachment',
+    `storage_path` VARCHAR(500) DEFAULT '',
+    `uploaded_by` VARCHAR(100) DEFAULT NULL,
+    `uploaded_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `description` TEXT,
+    `inactive` TINYINT(1) DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `idx_entity` (`entity_type`, `entity_id`),
+    KEY `idx_uploaded_by` (`uploaded_by`),
+    KEY `idx_inactive` (`inactive`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

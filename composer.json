@@ -1,0 +1,16 @@
+{
+    "name": "ksfraser/ksf-fa-projectmanagement",
+    "description": "FA ProjectManagement Module for FrontAccounting",
+    "type": "fa-module",
+    "license": "GPL-3.0",
+    "require": {
+        "ksfraser/ksf-project-management": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ksfraser\\Common\\": "vendor-src/Ksfraser/Common/",
+            "Ksfraser\\ProjectManagement\\": "src/Ksfraser/ProjectManagement/"
+        }
+    },
+    "minimum-stability": "stable"
+}
