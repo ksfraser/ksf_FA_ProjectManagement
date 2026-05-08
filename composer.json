@@ -8,8 +8,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Ksfraser\\Common\\": "vendor-src/Ksfraser/Common/",
-            "Ksfraser\\ProjectManagement\\": "src/Ksfraser/ProjectManagement/"
+            "Ksfraser\\": "src/Ksfraser/"
         }
     },
     "minimum-stability": "stable"

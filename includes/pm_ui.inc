@@ -14,6 +14,7 @@ function pm_navigation_menu(): void
     echo '<li><a href="?section=dashboard">' . _("Dashboard") . '</a></li>';
     echo '<li><a href="?section=projects">' . _("Projects") . '</a></li>';
     echo '<li><a href="?section=tasks">' . _("Tasks") . '</a></li>';
+    echo '<li><a href="?section=gantt">' . _("Gantt Chart") . '</a></li>';
     echo '<li><a href="?section=team">' . _("Team") . '</a></li>';
     echo '<li><a href="?section=reports">' . _("Reports") . '</a></li>';
     echo '<li><a href="?section=settings">' . _("Settings") . '</a></li>';
