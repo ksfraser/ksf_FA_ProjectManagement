@@ -1,18 +1,4 @@
-# Composer
-/vendor/
+vendor/
 composer.lock
+.phpunit.result.cache
 
-# PHPUnit
-.phpunit.cache/
-coverage/
-
-# PHPStan
-.phpstan/
-
-# IDE
-.idea/
-.vscode/
-
-# OS
-.DS_Store
-Thumbs.db

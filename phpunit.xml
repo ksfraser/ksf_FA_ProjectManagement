@@ -2,19 +2,10 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="tests/bootstrap.php"
-         colors="true"
-         cacheDirectory=".phpunit.cache"
-         executionOrder="depends,defects"
-         failOnWarning="true">
+         colors="true">
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
         </testsuite>
     </testsuites>
-    <source>
-        <include>
-            <directory suffix=".php">vendor-src</directory>
-            <directory suffix=".php">hooks.php</directory>
-        </include>
-    </source>
 </phpunit>
