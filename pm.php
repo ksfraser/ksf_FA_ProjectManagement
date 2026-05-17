@@ -25,7 +25,7 @@ if (!$session->check_access('PM_VIEW_PROJECT')) {
     exit;
 }
 
-function fa_pm_route(string $section, string $action): void
+function fa_pm_route($section, $action)
 {
     switch ($section) {
         case 'dashboard':
@@ -51,7 +51,7 @@ function fa_pm_route(string $section, string $action): void
     }
 }
 
-function fa_pm_dashboard(string $action): void
+function fa_pm_dashboard($action)
 {
     page(_("Project Dashboard"), false, false, "", "");
 
@@ -63,12 +63,12 @@ function fa_pm_dashboard(string $action): void
 
     echo '<br>';
 
-    $dashboard_items = [
+    $dashboard_items = array(
         'total_projects' => get_pm_project_count(),
         'active_projects' => get_pm_project_count('Active'),
         'pending_tasks' => get_pm_task_count('Not Started'),
         'overdue_tasks' => get_pm_overdue_task_count(),
-    ];
+    );
 
     display_pm_dashboard_stats($dashboard_items);
     display_pm_recent_activities();
@@ -76,7 +76,7 @@ function fa_pm_dashboard(string $action): void
     page_end();
 }
 
-function fa_pm_projects(string $action): void
+function fa_pm_projects($action)
 {
     switch ($action) {
         case 'list':
@@ -99,7 +99,7 @@ function fa_pm_projects(string $action): void
     }
 }
 
-function fa_pm_list_projects(): void
+function fa_pm_list_projects()
 {
     page(_("Projects"), false, false, "", "");
 
@@ -145,12 +145,12 @@ function fa_pm_list_projects(): void
     page_end();
 }
 
-function fa_pm_add_project(): void
+function fa_pm_add_project()
 {
     fa_pm_edit_project();
 }
 
-function fa_pm_edit_project(): void
+function fa_pm_edit_project()
 {
     $projectId = isset($_GET['project_id']) ? $_GET['project_id'] : '';
     $isNew = empty($projectId);
@@ -158,20 +158,20 @@ function fa_pm_edit_project(): void
     page($isNew ? _("New Project") : _("Edit Project"), true, false, "", "");
 
     if (isset($_POST['SAVE'])) {
-        $projectData = [
+        $projectData = array(
             'name' => $_POST['name'],
-            'description' => $_POST['description'] ?? '',
+            'description' => isset($_POST['description']) ? $_POST['description'] : '',
             'startDate' => $_POST['start_date'],
-            'endDate' => $_POST['end_date'] ?: null,
-            'budget' => $_POST['budget'] ?? 0,
-            'customerId' => $_POST['customer_id'] ?? '',
+            'endDate' => isset($_POST['end_date']) && !empty($_POST['end_date']) ? $_POST['end_date'] : null,
+            'budget' => isset($_POST['budget']) ? $_POST['budget'] : 0,
+            'customerId' => isset($_POST['customer_id']) ? $_POST['customer_id'] : '',
             'projectManager' => $_POST['project_manager'],
-            'priority' => $_POST['priority'] ?? 'Medium',
-            'status' => $_POST['status'] ?? 'Planning',
-        ];
+            'priority' => isset($_POST['priority']) ? $_POST['priority'] : 'Medium',
+            'status' => isset($_POST['status']) ? $_POST['status'] : 'Planning',
+        );
 
         $container = fa_pm_get_container();
-        $service = $container->get(\Ksfraser\ProjectManagement\ProjectService::class);
+        $service = $container->get('Ksfraser\ProjectManagement\ProjectService');
 
         try {
             if ($isNew) {
@@ -181,7 +181,7 @@ function fa_pm_edit_project(): void
                 $service->updateProject($projectId, $projectData);
                 display_notification("Project updated successfully");
             }
-        } catch (\Ksfraser\ProjectManagement\Exception\ProjectException $e) {
+        } catch (Exception $e) {
             display_error($e->getMessage());
         }
     }
@@ -189,10 +189,10 @@ function fa_pm_edit_project(): void
     $project = null;
     if (!$isNew) {
         $container = fa_pm_get_container();
-        $service = $container->get(\Ksfraser\ProjectManagement\ProjectService::class);
+        $service = $container->get('Ksfraser\ProjectManagement\ProjectService');
         try {
             $project = $service->getProject($projectId);
-        } catch (\Ksfraser\ProjectManagement\Exception\ProjectNotFoundException $e) {
+        } catch (Exception $e) {
             display_error($e->getMessage());
             return;
         }
@@ -203,36 +203,45 @@ function fa_pm_edit_project(): void
 
     table_header($isNew ? _("New Project") : _("Edit Project"));
 
+    $projectName = $project ? $project->getName() : '';
+    $projectDesc = $project ? $project->getDescription() : '';
+    $projectStart = $project && $project->getStartDate() ? $project->getStartDate()->format('Y-m-d') : date('Y-m-d');
+    $projectEnd = $project && $project->getEndDate() ? $project->getEndDate()->format('Y-m-d') : '';
+    $projectBudget = $project ? $project->getBudget() : 0;
+    $projectMgr = $project ? $project->getProjectManager() : '';
+    $projectPriority = $project ? $project->getPriority() : 'Medium';
+    $projectStatus = $project ? $project->getStatus() : 'Planning';
+
     row(label_cell(_("Project Name")));
-    cell(text_input('name', $project?->getName() ?? '', 50));
+    cell(text_input('name', $projectName, 50));
     end_row();
 
     row(label_cell(_("Description")));
-    cell(textarea('description', $project?->getDescription() ?? '', 50, 4));
+    cell(textarea('description', $projectDesc, 50, 4));
     end_row();
 
     row(label_cell(_("Start Date")));
-    cell(date_input('start_date', $project?->getStartDate()?->format('Y-m-d') ?? date('Y-m-d')));
+    cell(date_input('start_date', $projectStart));
     end_row();
 
     row(label_cell(_("End Date")));
-    cell(date_input('end_date', $project?->getEndDate()?->format('Y-m-d') ?? ''));
+    cell(date_input('end_date', $projectEnd));
     end_row();
 
     row(label_cell(_("Budget")));
-    cell(amount_input($project?->getBudget() ?? 0, 'budget'));
+    cell(amount_input($projectBudget, 'budget'));
     end_row();
 
     row(label_cell(_("Project Manager")));
-    cell(text_input('project_manager', $project?->getProjectManager() ?? ''));
+    cell(text_input('project_manager', $projectMgr));
     end_row();
 
     row(label_cell(_("Priority")));
-    cell(sel_priority($project?->getPriority() ?? 'Medium'));
+    cell(sel_priority($projectPriority));
     end_row();
 
     row(label_cell(_("Status")));
-    cell(sel_project_status($project?->getStatus() ?? 'Planning'));
+    cell(sel_project_status($projectStatus));
     end_row();
 
     end_table();
@@ -243,7 +252,7 @@ function fa_pm_edit_project(): void
     page_end();
 }
 
-function fa_pm_view_project(): void
+function fa_pm_view_project()
 {
     $projectId = isset($_GET['project_id']) ? $_GET['project_id'] : '';
 
@@ -253,11 +262,11 @@ function fa_pm_view_project(): void
     }
 
     $container = fa_pm_get_container();
-    $service = $container->get(\Ksfraser\ProjectManagement\ProjectService::class);
+    $service = $container->get('Ksfraser\ProjectManagement\ProjectService');
 
     try {
         $project = $service->getProject($projectId);
-    } catch (\Ksfraser\ProjectManagement\Exception\ProjectNotFoundException $e) {
+    } catch (Exception $e) {
         display_error($e->getMessage());
         return;
     }
@@ -271,11 +280,14 @@ function fa_pm_view_project(): void
 
     start_table(TABLESTYLE);
 
+    $endDate = $project->getEndDate();
+    $endDateStr = $endDate ? $endDate->format('Y-m-d') : '-';
+
     row(label_cell(_("Manager")), cell($project->getProjectManager()));
     row(label_cell(_("Status")), cell($project->getStatus()));
     row(label_cell(_("Priority")), cell($project->getPriority()));
     row(label_cell(_("Start Date")), cell($project->getStartDate()->format('Y-m-d')));
-    row(label_cell(_("End Date")), cell($project->getEndDate()?->format('Y-m-d') ?? '-'));
+    row(label_cell(_("End Date")), cell($endDateStr));
     row(label_cell(_("Budget")), cell(number_format($project->getBudget(), 2)));
     row(label_cell(_("Description")), cell($project->getDescription()));
 
@@ -311,24 +323,24 @@ function fa_pm_view_project(): void
     page_end();
 }
 
-function fa_pm_delete_project(): void
+function fa_pm_delete_project()
 {
-    $projectId = $_POST['project_id'] ?? $_GET['project_id'] ?? '';
+    $projectId = isset($_POST['project_id']) ? $_POST['project_id'] : (isset($_GET['project_id']) ? $_GET['project_id'] : '');
 
     $container = fa_pm_get_container();
-    $service = $container->get(\Ksfraser\ProjectManagement\ProjectService::class);
+    $service = $container->get('Ksfraser\ProjectManagement\ProjectService');
 
     try {
         $service->deleteProject($projectId);
         display_notification("Project deleted successfully");
-    } catch (\Ksfraser\ProjectManagement\Exception\ProjectNotFoundException $e) {
+    } catch (Exception $e) {
         display_error($e->getMessage());
     }
 
     fa_pm_list_projects();
 }
 
-function fa_pm_tasks(string $action): void
+function fa_pm_tasks($action)
 {
     switch ($action) {
         case 'list':
@@ -345,7 +357,7 @@ function fa_pm_tasks(string $action): void
     }
 }
 
-function fa_pm_list_tasks(): void
+function fa_pm_list_tasks()
 {
     page(_("Tasks"), false, false, "", "");
 
@@ -383,12 +395,12 @@ function fa_pm_list_tasks(): void
     page_end();
 }
 
-function fa_pm_add_task(): void
+function fa_pm_add_task()
 {
     fa_pm_edit_task();
 }
 
-function fa_pm_edit_task(): void
+function fa_pm_edit_task()
 {
     $taskId = isset($_GET['task_id']) ? $_GET['task_id'] : '';
     $projectId = isset($_GET['project_id']) ? $_GET['project_id'] : '';
@@ -397,20 +409,20 @@ function fa_pm_edit_task(): void
     page($isNew ? _("New Task") : _("Edit Task"), true, false, "", "");
 
     if (isset($_POST['SAVE'])) {
-        $taskData = [
+        $taskData = array(
             'projectId' => $_POST['project_id'],
             'name' => $_POST['name'],
-            'description' => $_POST['description'] ?? '',
-            'assignedTo' => $_POST['assigned_to'] ?? '',
-            'startDate' => $_POST['start_date'] ?: null,
-            'endDate' => $_POST['end_date'] ?: null,
-            'estimatedHours' => $_POST['estimated_hours'] ?? 0,
-            'priority' => $_POST['priority'] ?? 'Medium',
-            'status' => $_POST['status'] ?? 'Not Started',
-        ];
+            'description' => isset($_POST['description']) ? $_POST['description'] : '',
+            'assignedTo' => isset($_POST['assigned_to']) ? $_POST['assigned_to'] : '',
+            'startDate' => isset($_POST['start_date']) && !empty($_POST['start_date']) ? $_POST['start_date'] : null,
+            'endDate' => isset($_POST['end_date']) && !empty($_POST['end_date']) ? $_POST['end_date'] : null,
+            'estimatedHours' => isset($_POST['estimated_hours']) ? $_POST['estimated_hours'] : 0,
+            'priority' => isset($_POST['priority']) ? $_POST['priority'] : 'Medium',
+            'status' => isset($_POST['status']) ? $_POST['status'] : 'Not Started',
+        );
 
         $container = fa_pm_get_container();
-        $service = $container->get(\Ksfraser\ProjectManagement\ProjectService::class);
+        $service = $container->get('Ksfraser\ProjectManagement\ProjectService');
 
         try {
             if ($isNew) {
@@ -420,7 +432,7 @@ function fa_pm_edit_task(): void
                 $service->updateTask($taskId, $taskData);
                 display_notification("Task updated successfully");
             }
-        } catch (\Ksfraser\ProjectManagement\Exception\ValidationException $e) {
+        } catch (Exception $e) {
             display_error($e->getMessage());
         }
     }
@@ -428,11 +440,11 @@ function fa_pm_edit_task(): void
     $task = null;
     if (!$isNew) {
         $container = fa_pm_get_container();
-        $service = $container->get(\Ksfraser\ProjectManagement\ProjectService::class);
+        $service = $container->get('Ksfraser\ProjectManagement\ProjectService');
         try {
             $task = $service->getTask($taskId);
             $projectId = $task->getProjectId();
-        } catch (\Ksfraser\ProjectManagement\Exception\TaskNotFoundException $e) {
+        } catch (Exception $e) {
             display_error($e->getMessage());
             return;
         }
@@ -445,40 +457,49 @@ function fa_pm_edit_task(): void
 
     table_header($isNew ? _("New Task") : _("Edit Task"));
 
+    $taskName = $task ? $task->getName() : '';
+    $taskDesc = $task ? $task->getDescription() : '';
+    $taskAssigned = $task ? $task->getAssignedTo() : '';
+    $taskStart = $task && $task->getStartDate() ? $task->getStartDate()->format('Y-m-d') : '';
+    $taskEnd = $task && $task->getEndDate() ? $task->getEndDate()->format('Y-m-d') : '';
+    $taskHours = $task ? $task->getEstimatedHours() : 0;
+    $taskPriority = $task ? $task->getPriority() : 'Medium';
+    $taskStatus = $task ? $task->getStatus() : 'Not Started';
+
     row(label_cell(_("Project")));
     cell(sel_project($projects, $projectId));
     end_row();
 
     row(label_cell(_("Task Name")));
-    cell(text_input('name', $task?->getName() ?? '', 50));
+    cell(text_input('name', $taskName, 50));
     end_row();
 
     row(label_cell(_("Description")));
-    cell(textarea('description', $task?->getDescription() ?? '', 50, 4));
+    cell(textarea('description', $taskDesc, 50, 4));
     end_row();
 
     row(label_cell(_("Assigned To")));
-    cell(text_input('assigned_to', $task?->getAssignedTo() ?? '', 30));
+    cell(text_input('assigned_to', $taskAssigned, 30));
     end_row();
 
     row(label_cell(_("Start Date")));
-    cell(date_input('start_date', $task?->getStartDate()?->format('Y-m-d') ?? ''));
+    cell(date_input('start_date', $taskStart));
     end_row();
 
     row(label_cell(_("End Date")));
-    cell(date_input('end_date', $task?->getEndDate()?->format('Y-m-d') ?? ''));
+    cell(date_input('end_date', $taskEnd));
     end_row();
 
     row(label_cell(_("Estimated Hours")));
-    cell(text_input('estimated_hours', $task?->getEstimatedHours() ?? 0, 10));
+    cell(text_input('estimated_hours', $taskHours, 10));
     end_row();
 
     row(label_cell(_("Priority")));
-    cell(sel_priority($task?->getPriority() ?? 'Medium'));
+    cell(sel_priority($taskPriority));
     end_row();
 
     row(label_cell(_("Status")));
-    cell(sel_task_status($task?->getStatus() ?? 'Not Started'));
+    cell(sel_task_status($taskStatus));
     end_row();
 
     end_table();
@@ -489,7 +510,7 @@ function fa_pm_edit_task(): void
     page_end();
 }
 
-function fa_pm_team(string $action): void
+function fa_pm_team($action)
 {
     page(_("Project Team"), false, false, "", "");
 
@@ -497,7 +518,7 @@ function fa_pm_team(string $action): void
 
     if ($projectId) {
         $container = fa_pm_get_container();
-        $service = $container->get(\Ksfraser\ProjectManagement\ProjectService::class);
+        $service = $container->get('Ksfraser\ProjectManagement\ProjectService');
         $team = $service->getProjectTeam($projectId);
 
         start_table(TABLESTYLE);
@@ -518,7 +539,7 @@ function fa_pm_team(string $action): void
     page_end();
 }
 
-function fa_pm_reports(string $action): void
+function fa_pm_reports($action)
 {
     page(_("Project Reports"), false, false, "", "");
 
@@ -532,7 +553,7 @@ function fa_pm_reports(string $action): void
     page_end();
 }
 
-function fa_pm_settings(string $action): void
+function fa_pm_settings($action)
 {
     page(_("Project Management Settings"), true, false, "", "");
 

@@ -32,7 +32,7 @@ define('PM_ADMIN', 'PM_ADMIN');
 /**
  * Initialize module
  */
-function fa_pm_module_init(): void
+function fa_pm_module_init()
 {
     global $fa_pm_module;
 
@@ -46,7 +46,7 @@ function fa_pm_module_init(): void
  */
 class FA_PM_Module
 {
-    private Ksfraser\ProjectManagement\ProjectService $projectService;
+    private $projectService;
 
     public function __construct()
     {
@@ -54,34 +54,34 @@ class FA_PM_Module
         $this->init_services();
     }
 
-    private function init_hooks(): void
+    private function init_hooks()
     {
-        add_action('fa_init', [$this, 'on_fa_init']);
-        add_action('customer_deleted', [$this, 'on_customer_deleted']);
+        add_action('fa_init', array($this, 'on_fa_init'));
+        add_action('customer_deleted', array($this, 'on_customer_deleted'));
     }
 
-    private function init_services(): void
+    private function init_services()
     {
         $container = fa_pm_get_container();
-        $this->projectService = $container->get(Ksfraser\ProjectManagement\ProjectService::class);
+        $this->projectService = $container->get('Ksfraser\ProjectManagement\ProjectService');
     }
 
-    public function on_fa_init(): void
+    public function on_fa_init()
     {
-        add_action('project_extra_fields', [$this, 'display_project_extra_fields']);
+        add_action('project_extra_fields', array($this, 'display_project_extra_fields'));
     }
 
-    public function on_customer_deleted(string $customerId): void
+    public function on_customer_deleted($customerId)
     {
         $this->log_activity('project', $customerId, 'customer_deleted', 'Customer deleted - projects may need reassignment');
     }
 
-    public function display_project_extra_fields(string $projectId): void
+    public function display_project_extra_fields($projectId)
     {
         return;
     }
 
-    private function log_activity(string $entityType, string $entityId, string $action, string $details = '', array $data = []): void
+    private function log_activity($entityType, $entityId, $action, $details = '', $data = array())
     {
         $userId = isset($_SESSION['wa_current_user']) ? $_SESSION['wa_current_user']->user : 'system';
 
@@ -94,7 +94,7 @@ class FA_PM_Module
         db_query($sql, "Could not log activity");
     }
 
-    public function getProjectService(): \Ksfraser\ProjectManagement\ProjectService
+    public function getProjectService()
     {
         return $this->projectService;
     }
@@ -103,120 +103,127 @@ class FA_PM_Module
 /**
  * Get module info for FA module manager
  */
-function fa_pm_get_module_info(): array
+function fa_pm_get_module_info()
 {
-    return [
+    global $module_name, $module_version, $module_description, $module_author, $module_category, $module_package;
+
+    return array(
         'name' => $module_name,
         'version' => $module_version,
         'description' => $module_description,
         'author' => $module_author,
         'category' => $module_category,
-        'depends' => [],
+        'depends' => array(),
         'package' => $module_package,
-    ];
+    );
 }
 
 /**
  * Install module hook
  */
-function fa_pm_install(): bool
+function fa_pm_install()
 {
     require_once __DIR__ . '/hooks.php';
-    return fa_pm_install();
+    return ksf_fa_pm_install();
 }
 
 /**
  * Activate module hook
  */
-function fa_pm_activate(): bool
+function fa_pm_activate()
 {
     require_once __DIR__ . '/hooks.php';
-    return fa_pm_activate();
+    return ksf_fa_pm_activate();
 }
 
 /**
  * Deactivate module hook
  */
-function fa_pm_deactivate(): bool
+function fa_pm_deactivate()
 {
     require_once __DIR__ . '/hooks.php';
-    return fa_pm_deactivate();
+    return ksf_fa_pm_deactivate();
 }
 
 /**
  * Uninstall module hook
  */
-function fa_pm_uninstall(): bool
+function fa_pm_uninstall()
 {
     require_once __DIR__ . '/hooks.php';
-    return fa_pm_uninstall();
+    return ksf_fa_pm_uninstall();
 }
 
 /**
  * Get menu items for the module
  */
-function fa_pm_get_menu_items(): array
+function fa_pm_get_menu_items()
 {
-    return [
-        [
+    return array(
+        array(
             'title' => 'Projects',
             'heading' => true,
             'order' => 40,
-        ],
-        [
+        ),
+        array(
             'title' => 'Project Dashboard',
             'url' => '/modules/FA_PM/pages/dashboard.php',
             'access' => 'PM_VIEW_PROJECT',
             'parent' => 'Projects',
             'order' => 1,
-        ],
-        [
+        ),
+        array(
             'title' => 'All Projects',
             'url' => '/modules/FA_PM/pages/projects.php',
             'access' => 'PM_VIEW_PROJECT',
             'parent' => 'Projects',
             'order' => 2,
-        ],
-        [
+        ),
+        array(
             'title' => 'Tasks',
             'url' => '/modules/FA_PM/pages/tasks.php',
             'access' => 'PM_VIEW_TASKS',
             'parent' => 'Projects',
             'order' => 3,
-        ],
-        [
+        ),
+        array(
             'title' => 'Team',
             'url' => '/modules/FA_PM/pages/team.php',
             'access' => 'PM_VIEW_TEAM',
             'parent' => 'Projects',
             'order' => 4,
-        ],
-        [
+        ),
+        array(
             'title' => 'Reports',
             'url' => '/modules/FA_PM/pages/reports.php',
             'access' => 'PM_VIEW_REPORTS',
             'parent' => 'Projects',
             'order' => 5,
-        ],
-        [
+        ),
+        array(
             'title' => 'Settings',
             'url' => '/modules/FA_PM/pages/settings.php',
             'access' => 'PM_ADMIN',
             'parent' => 'Projects',
             'order' => 6,
-        ],
-    ];
+        ),
+    );
 }
 
 /**
  * Get DI container for FA_PM module
  */
-function fa_pm_get_container(): \Psr\Container\ContainerInterface
+function fa_pm_get_container()
 {
     static $container = null;
 
     if ($container === null) {
-        $container = new \Ksfraser\ProjectManagement\FA\PMContainer();
+        $containerClass = 'Ksfraser\ProjectManagement\FA\PMContainer';
+        if (class_exists($containerClass)) {
+            $container = new $containerClass();
+        } else {
+            throw new Exception("PMContainer class not found");
+        }
     }
 
     return $container;
