@@ -27,6 +27,8 @@
  */
 
 define('SS_ksf_FA_ProjectManagement', 134 << 8);
+define('KSF_PM_MODULE_NAME', 'ksf_FA_ProjectManagement');
+define('KSF_PM_CAPABILITIES', 'project_crud,task_crud,team,sales_order_link,revenue');
 
 class hooks_ksf_FA_ProjectManagement extends hooks {
     var $module_name = 'ksf_FA_ProjectManagement';
@@ -116,5 +118,131 @@ class hooks_ksf_FA_ProjectManagement extends hooks {
         if ($return_code !== 0) {
             error_log('KSF Module: composer install failed: ' . implode("\n", $output));
         }
+    }
+
+    /**
+     * Return module constants for inter-module capability discovery.
+     * 
+     * @param array $data Result bucket (by reference)
+     * @param array|null $opts Options
+     * @return array Module constants
+     */
+    function getModuleConstants(&$data, $opts = null) {
+        $constants = array(
+            'KSF_PM_MODULE_NAME' => KSF_PM_MODULE_NAME,
+            'KSF_PM_CAPABILITIES' => KSF_PM_CAPABILITIES,
+        );
+        $data['constants'] = $constants;
+        return $constants;
+    }
+
+    /**
+     * Return module capabilities with descriptions.
+     * 
+     * @param array $data Result bucket (by reference)
+     * @param array|null $opts Options
+     * @return array Capabilities keyed by capability name
+     */
+    function getModuleCapabilities(&$data, $opts = null) {
+        $capabilities = array(
+            'project_crud' => array(
+                'description' => 'Create and manage projects',
+                'methods' => array(),
+                'events' => array(),
+            ),
+            'task_crud' => array(
+                'description' => 'Create and manage tasks with hierarchies',
+                'methods' => array(),
+                'events' => array(),
+            ),
+            'team' => array(
+                'description' => 'Assign employees to project teams',
+                'methods' => array(),
+                'events' => array(),
+            ),
+            'sales_order_link' => array(
+                'description' => 'Link imported FA orders to projects',
+                'methods' => array('linkOrderToProject', 'onOrderImported'),
+                'events' => array('ORDER_IMPORTED'),
+            ),
+            'revenue' => array(
+                'description' => 'Project revenue recognition from linked orders',
+                'methods' => array('listRevenueByProject', 'getRevenueSummary'),
+                'events' => array('ORDER_IMPORTED'),
+            ),
+        );
+        $data['capabilities'] = $capabilities;
+        return $capabilities;
+    }
+
+    /**
+     * Check whether the module provides a capability.
+     * 
+     * @param array $data Result bucket (by reference)
+     * @param array|null $opts Options (capability)
+     * @return bool Capability availability
+     */
+    function hasCapability(&$data, $opts = null) {
+        $capability = isset($opts['capability']) ? $opts['capability'] : (isset($data['capability']) ? $data['capability'] : null);
+        if ($capability === null) {
+            $data['has_capability'] = false;
+            $data['error'] = 'No capability specified';
+            return false;
+        }
+        $capabilities = explode(',', KSF_PM_CAPABILITIES);
+        $hasCapability = in_array($capability, $capabilities);
+        $data['has_capability'] = $hasCapability;
+        $data['capability_checked'] = $capability;
+        return $hasCapability;
+    }
+
+    /**
+     * Respond to a capability request.
+     * 
+     * Supports 'capabilities', 'constants', and 'has:<capability>'.
+     * 
+     * @param array $data Result bucket (by reference)
+     * @param array|null $opts Options (request)
+     * @return mixed Result of the requested operation or null
+     */
+    function respondToCapabilityRequest(&$data, $opts = null) {
+        $request = isset($opts['request']) ? $opts['request'] : (isset($data['request']) ? $data['request'] : 'capabilities');
+        $data['request'] = $request;
+        $data['module'] = $this->module_name;
+
+        if (strpos($request, 'has:') === 0) {
+            $capability = substr($request, 4);
+            return $this->hasCapability($data, array('capability' => $capability));
+        }
+
+        switch ($request) {
+            case 'capabilities':
+                return $this->getModuleCapabilities($data, $opts);
+            case 'constants':
+                return $this->getModuleConstants($data, $opts);
+            default:
+                $data['error'] = 'Unknown request type: ' . $request;
+                return null;
+        }
+    }
+
+    /**
+     * order_imported listener: link orders to projects and record revenue.
+     * 
+     * Invoked by FA's hook_invoke_all('order_imported', $data) with the
+     * payload broadcast by source modules (Square, WooCommerce). The
+     * listener is a no-op when the PM source tree is unavailable.
+     * 
+     * @param array $data Event payload (by reference)
+     * @param array|null $opts Options
+     * @return void
+     */
+    function order_imported(&$data, $opts = null) {
+        if (!class_exists('ksfraser\FrontAccounting\ProjectManagement\Service\ProjectOrderService')) {
+            return;
+        }
+        $service = new \ksfraser\FrontAccounting\ProjectManagement\Service\ProjectOrderService();
+        $links = $service->onOrderImported($data);
+        $data['project_links_created'] = count($links);
     }
 }

@@ -2,6 +2,8 @@
 -- Removes all Project Management tables and data
 
 -- Drop tables in reverse order of dependencies
+DROP TABLE IF EXISTS `@TB_PREF@fa_pm_project_revenue`;
+DROP TABLE IF EXISTS `@TB_PREF@fa_pm_project_sales_orders`;
 DROP TABLE IF EXISTS `@TB_PREF@fa_pm_activity_log`;
 DROP TABLE IF EXISTS `@TB_PREF@fa_pm_assignments`;
 DROP TABLE IF EXISTS `@TB_PREF@fa_pm_tasks`;

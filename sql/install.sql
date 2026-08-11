@@ -141,3 +141,38 @@ CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_task_progress` (
     UNIQUE KEY `idx_task` (`task_id`),
     CONSTRAINT `fk_progress_task` FOREIGN KEY (`task_id`) REFERENCES `@TB_PREF@fa_pm_tasks`(`task_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Project Sales Order Links (imported FA orders linked to projects)
+CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_project_sales_orders` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `project_id` VARCHAR(20) NOT NULL,
+    `fa_order_no` INT(11) NOT NULL,
+    `fa_trans_type` INT(11) NOT NULL DEFAULT 10 COMMENT 'ST_SALESINVOICE = 10',
+    `source` VARCHAR(32) DEFAULT 'all' COMMENT 'all | square | woocommerce | ...',
+    `source_order_id` VARCHAR(64) DEFAULT NULL,
+    `linked_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `idx_order` (`fa_order_no`, `fa_trans_type`),
+    KEY `idx_project` (`project_id`),
+    KEY `idx_source` (`source`),
+    CONSTRAINT `fk_pm_so_project` FOREIGN KEY (`project_id`) REFERENCES `@TB_PREF@fa_pm_projects`(`project_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Project Revenue (recognized revenue from linked FA orders)
+CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_project_revenue` (
+    `revenue_id` INT(11) NOT NULL AUTO_INCREMENT,
+    `project_id` VARCHAR(20) NOT NULL,
+    `fa_order_no` INT(11) NOT NULL,
+    `fa_trans_type` INT(11) NOT NULL DEFAULT 10 COMMENT 'ST_SALESINVOICE = 10',
+    `source` VARCHAR(32) DEFAULT 'all' COMMENT 'all | square | woocommerce | ...',
+    `source_order_id` VARCHAR(64) DEFAULT NULL,
+    `order_total` DECIMAL(15,2) DEFAULT 0,
+    `revenue_amount` DECIMAL(15,2) DEFAULT 0,
+    `order_date` DATE DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`revenue_id`),
+    UNIQUE KEY `idx_revenue_order` (`fa_order_no`, `fa_trans_type`),
+    KEY `idx_project` (`project_id`),
+    KEY `idx_source` (`source`),
+    CONSTRAINT `fk_pm_rev_project` FOREIGN KEY (`project_id`) REFERENCES `@TB_PREF@fa_pm_projects`(`project_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
