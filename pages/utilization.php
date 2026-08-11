@@ -5,7 +5,7 @@
  * Uses ksf_Gantt for resource tracking and utilization calculations
  */
 
-$path_to_root = "../..";
+$path_to_root = "../../..";
 include_once($path_to_root . "/includes/session.inc");
 include_once($path_to_root . "/includes/ui.inc");
 
@@ -109,7 +109,11 @@ if (empty($workload)) {
     echo '</tr>';
     
     foreach ($workload as $assignee => $data) {
-        $statusClass = match($data['efficiency'] > 1.1 ? 'overdue' : ($data['efficiency'] >= 0.9 ? 'active' : 'warning'));
+        $statusClass = match(true) {
+            $data['efficiency'] > 1.1  => 'overdue',
+            $data['efficiency'] >= 0.9 => 'active',
+            default                    => 'warning',
+        };
         
         echo '<tr>';
         echo '<td>' . htmlspecialchars($assignee) . '</td>';
