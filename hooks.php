@@ -63,7 +63,7 @@ class hooks_ksf_FA_ProjectManagement extends hooks {
      * @return array [0] => $security_areas, [1] => $security_sections
      */
     function install_access() {
-        $security_sections[SS_ksf_FA_ProjectManagement] = _("");
+        $security_sections[SS_ksf_FA_ProjectManagement] = _("Project Management");
         $security_areas['SA_ksf_FA_ProjectManagementVIEW'] = array(
             SS_ksf_FA_ProjectManagement | 1, 
             _("View ")
