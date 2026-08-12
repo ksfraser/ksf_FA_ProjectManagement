@@ -109,11 +109,9 @@ if (empty($workload)) {
     echo '</tr>';
     
     foreach ($workload as $assignee => $data) {
-        $statusClass = match(true) {
-            $data['efficiency'] > 1.1  => 'overdue',
-            $data['efficiency'] >= 0.9 => 'active',
-            default                    => 'warning',
-        };
+        $statusClass = $data['efficiency'] > 1.1
+            ? 'overdue'
+            : ($data['efficiency'] >= 0.9 ? 'active' : 'warning');
         
         echo '<tr>';
         echo '<td>' . htmlspecialchars($assignee) . '</td>';
@@ -158,11 +156,9 @@ if ($startDate && $endDate) {
     
     foreach ($utilization as $assignee => $data) {
         $utilPct = number_format($data['overall_utilization'] * 100, 0);
-        $statusClass = match($data['status']) {
-            'overloaded' => 'class="overdue"',
-            'underutilized' => 'class="warning"',
-            default => '',
-        };
+        $statusClass = $data['status'] === 'overloaded'
+            ? 'class="overdue"'
+            : ($data['status'] === 'underutilized' ? 'class="warning"' : '');
         
         echo '<tr>';
         echo '<td>' . htmlspecialchars($assignee) . '</td>';

@@ -57,19 +57,26 @@ class PMContainer implements ContainerInterface
 
     private function createService(string $id): object
     {
-        return match ($id) {
-            DatabaseAdapterInterface::class => new FADatabaseAdapter(),
-            EmployeeServiceInterface::class => new FAEmployeeService(),
-            \Psr\EventDispatcher\EventDispatcherInterface::class => new FAEventDispatcher(),
-            \Psr\Log\LoggerInterface::class => new NullLogger(),
-            ProjectServiceInterface::class, ProjectService::class => new ProjectService(
-                $this->get(DatabaseAdapterInterface::class),
-                $this->get(\Psr\EventDispatcher\EventDispatcherInterface::class),
-                $this->get(\Psr\Log\LoggerInterface::class),
-                $this->get(EmployeeServiceInterface::class)
-            ),
-            default => throw new \Psr\Container\NotFoundExceptionInterface("Service $id not found"),
-        };
+        switch ($id) {
+            case DatabaseAdapterInterface::class:
+                return new FADatabaseAdapter();
+            case EmployeeServiceInterface::class:
+                return new FAEmployeeService();
+            case \Psr\EventDispatcher\EventDispatcherInterface::class:
+                return new FAEventDispatcher();
+            case \Psr\Log\LoggerInterface::class:
+                return new NullLogger();
+            case ProjectServiceInterface::class:
+            case ProjectService::class:
+                return new ProjectService(
+                    $this->get(DatabaseAdapterInterface::class),
+                    $this->get(\Psr\EventDispatcher\EventDispatcherInterface::class),
+                    $this->get(\Psr\Log\LoggerInterface::class),
+                    $this->get(EmployeeServiceInterface::class)
+                );
+            default:
+                throw new \Psr\Container\NotFoundExceptionInterface("Service $id not found");
+        }
     }
 }
 
@@ -115,7 +122,7 @@ class FADatabaseAdapter implements DatabaseAdapterInterface
         return $result ? db_affected_rows($result) : 0;
     }
 
-    public function lastInsertId(): string|false
+    public function lastInsertId()
     {
         return db_insert_id();
     }

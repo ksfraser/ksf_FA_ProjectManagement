@@ -47,13 +47,13 @@ function display_pm_dashboard_stats(array $stats): void
  */
 function display_pm_stat_cell(string $label, int $value, string $type): void
 {
-    $icon = match ($type) {
+    $icons = array(
         'total_projects' => '📁',
         'active_projects' => '✅',
         'pending_tasks' => '⏳',
         'overdue_tasks' => '⚠️',
-        default => '📊',
-    };
+    );
+    $icon = isset($icons[$type]) ? $icons[$type] : '📊';
 
     echo '<td class="noplay" style="text-align:center; padding: 15px;">';
     echo '<div style="font-size: 24px;">' . $icon . '</div>';
@@ -221,12 +221,12 @@ function sel_project_type(string $selected = ''): string
  */
 function get_pm_priority_class(string $priority): string
 {
-    return match ($priority) {
+    $classes = array(
         'Critical' => 'class="overdue"',
         'High' => 'class="alert"',
         'Medium' => 'class="warning"',
-        default => '',
-    };
+    );
+    return isset($classes[$priority]) ? $classes[$priority] : '';
 }
 
 /**
@@ -234,11 +234,12 @@ function get_pm_priority_class(string $priority): string
  */
 function get_pm_status_class(string $status): string
 {
-    return match ($status) {
+    $classes = array(
         'Completed' => 'class="success"',
-        'Active', 'In Progress' => 'class="active"',
+        'Active' => 'class="active"',
+        'In Progress' => 'class="active"',
         'On Hold' => 'class="warning"',
         'Cancelled' => 'class="overdue"',
-        default => '',
-    };
+    );
+    return isset($classes[$status]) ? $classes[$status] : '';
 }
