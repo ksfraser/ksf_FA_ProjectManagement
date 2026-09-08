@@ -32,7 +32,7 @@ define('KSF_PM_CAPABILITIES', 'project_crud,task_crud,team,sales_order_link,reve
 
 class hooks_ksf_FA_ProjectManagement extends hooks {
     var $module_name = 'ksf_FA_ProjectManagement';
-    var $version = '1.0.0';
+    var $version     = '2.4.3-0';
 
     /**
      * Add module tab
