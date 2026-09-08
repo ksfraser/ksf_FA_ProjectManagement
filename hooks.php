@@ -44,8 +44,14 @@ class hooks_ksf_FA_ProjectManagement extends hooks {
      * @return application|null New tab application instance or nothing
      */
     function install_tabs($app) {
-        // Override in modules that add apps
-        // return new ksf_FA_ProjectManagement_app();
+        set_ext_domain('modules/ksf_FA_ProjectManagement');
+        if (class_exists('application')) {
+            $tab = new application('project_app', 'Project Management');
+            $tab->set_title('Project Management');
+            $tab->set_icon('folder');
+            return $tab;
+        }
+        return null;
     }
 
     /**
