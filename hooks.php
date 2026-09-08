@@ -120,6 +120,37 @@ class hooks_ksf_FA_ProjectManagement extends hooks {
         }
     }
 
+    // ─── Project Type Hooks ─────────────────────────────────────────
+
+    function getProjectTypes(&$data, $opts = null)
+    {
+        $autoload = __DIR__ . '/vendor/autoload.php';
+        if (!file_exists($autoload)) { return []; }
+        require_once $autoload;
+        $service = new \ksfraser\FrontAccounting\ProjectManagement\Service\ProjectTypeService();
+        return $service->hookGetProjectTypes($data, $opts);
+    }
+
+    function getProjectTypeDDL(&$data, $opts = null)
+    {
+        $autoload = __DIR__ . '/vendor/autoload.php';
+        if (!file_exists($autoload)) { return []; }
+        require_once $autoload;
+        $service = new \ksfraser\FrontAccounting\ProjectManagement\Service\ProjectTypeService();
+        return $service->hookGetProjectTypeDDL($data, $opts);
+    }
+
+    function getProjectTypeHtmlOptions(&$data, $opts = null)
+    {
+        $autoload = __DIR__ . '/vendor/autoload.php';
+        if (!file_exists($autoload)) { return []; }
+        require_once $autoload;
+        $service = new \ksfraser\FrontAccounting\ProjectManagement\Service\ProjectTypeService();
+        return $service->hookGetProjectTypeHtmlOptions($data, $opts);
+    }
+
+    // ─── Inter-Module Capabilities ─────────────────────────────────
+
     /**
      * Return module constants for inter-module capability discovery.
      * 

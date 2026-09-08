@@ -3,7 +3,8 @@
     "description": "FA module adapter",
     "type": "project",
     "require": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "ksfraser/html": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0"
@@ -13,5 +14,14 @@
             "ksfraser\\FrontAccounting\\": "src/Ksfraser/FrontAccounting/"
         }
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../ksfraser/html",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
     "minimum-stability": "stable"
 }
