@@ -35,7 +35,9 @@ $ksfPmRegisterPsr4 = static function (): void {
     }
 
     $moduleDir = __DIR__;
-    $prefixes = [];
+    $prefixes = [
+        'ksfraser\\FrontAccounting\\ProjectManagement\\' => $moduleDir . '/src/Ksfraser/FrontAccounting/ProjectManagement',
+    ];
 
     $ksfFaCommon = $moduleDir . '/vendor/ksfraser/ksf-fa-common/src';
     if (is_dir($ksfFaCommon)) {

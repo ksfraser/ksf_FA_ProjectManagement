@@ -38,7 +38,7 @@ if (file_exists(__DIR__ . '/bootstrap.php')) {
 
 class hooks_ksf_FA_ProjectManagement extends hooks {
     var $module_name = 'ksf_FA_ProjectManagement';
-    var $version     = '2.4.3-0';
+    var $version     = '2.4.3-1';
 
     /**
      * Install the Project Management application tab in FA sidebar.
