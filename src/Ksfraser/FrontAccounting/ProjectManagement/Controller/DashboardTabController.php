@@ -71,9 +71,11 @@ class DashboardTabController
         echo '<br>';
 
         start_table(TABLESTYLE2, 'width="98%"');
-        th_row(_('Recognized Revenue'), _('Overdue Tasks'));
-        td_row_html(htmlspecialchars(number_format((float) ($stats['total_revenue'] ?? 0), 2)), 6, 1);
-        td_row_html((string) ($stats['overdue_tasks'] ?? 0), 6);
+        table_header(array(_('Recognized Revenue'), _('Overdue Tasks')));
+        start_row();
+        label_cell(htmlspecialchars(number_format((float) ($stats['total_revenue'] ?? 0), 2)));
+        label_cell((string) ($stats['overdue_tasks'] ?? 0));
+        end_row();
         end_table(1);
 
         echo '<br>';
@@ -91,14 +93,14 @@ class DashboardTabController
      */
     private function renderActivity(int $limit): void
     {
-        if (!function_exists('start_table') || !function_exists('th_row')) {
+        if (!function_exists('start_table') || !function_exists('table_header')) {
             return;
         }
 
         $rows = $this->service->recentActivity($limit);
 
         start_table(TABLESTYLE2, 'width="98%"');
-        th_row(_('When'), _('User'), _('Action'), _('Entity'), _('Details'));
+        table_header(array(_('When'), _('User'), _('Action'), _('Entity'), _('Details')));
         if (empty($rows)) {
             echo '<tr><td colspan="5">' . _('No activity recorded yet.') . '</td></tr>';
         } else {

@@ -60,7 +60,7 @@ class ReportsTabController
         $rows = $this->service->budgetVsRevenue();
 
         start_table(TABLESTYLE2, 'width="98%"');
-        th_row(_('Project'), _('Budget'), _('Recognized Revenue'), _('Variance'));
+        table_header(array(_('Project'), _('Budget'), _('Recognized Revenue'), _('Variance')));
         if (empty($rows)) {
             echo '<tr><td colspan="4">' . _('No projects yet.') . '</td></tr>';
         } else {
@@ -89,7 +89,7 @@ class ReportsTabController
         $rows = $this->service->hoursByProject();
 
         start_table(TABLESTYLE2, 'width="98%"');
-        th_row(_('Project'), _('Tasks'), _('Estimated Hours'), _('Actual Hours'), _('Delta'));
+        table_header(array(_('Project'), _('Tasks'), _('Estimated Hours'), _('Actual Hours'), _('Delta')));
         if (empty($rows)) {
             echo '<tr><td colspan="5">' . _('No tasks yet.') . '</td></tr>';
         } else {
