@@ -31,6 +31,7 @@ namespace {
         function db_query($sql, $msg = '')
         {
             $GLOBALS['__fa_last_sql'] = $sql;
+            $GLOBALS['__fa_sql_log'][] = $sql;
             $prefix = strtolower(substr(ltrim((string)$sql), 0, 6));
             if ($prefix === 'select') {
                 if (isset($GLOBALS['__fa_select_queue']) && count($GLOBALS['__fa_select_queue']) > 0) {
@@ -105,6 +106,39 @@ namespace {
         }
     }
 
+    if (!function_exists('db_num_affected_rows')) {
+        /**
+         * Affected-row count for the last fake write.
+         *
+         * @return int
+         */
+        function db_num_affected_rows()
+        {
+            return $GLOBALS['__fa_affected_rows'] ?? 1;
+        }
+    }
+
+    if (!function_exists('db_begin_transaction')) {
+        function db_begin_transaction()
+        {
+            $GLOBALS['__fa_in_transaction'] = true;
+        }
+    }
+
+    if (!function_exists('db_commit_transaction')) {
+        function db_commit_transaction()
+        {
+            $GLOBALS['__fa_in_transaction'] = false;
+        }
+    }
+
+    if (!function_exists('db_rollback_transaction')) {
+        function db_rollback_transaction()
+        {
+            $GLOBALS['__fa_in_transaction'] = false;
+        }
+    }
+
     if (!class_exists('hooks', false)) {
         /**
          * Minimal FrontAccounting base hooks class for tests.
@@ -113,6 +147,47 @@ namespace {
         {
             public $module_name = '';
             public $version = '';
+        }
+    }
+
+    if (!class_exists('application', false)) {
+        /**
+         * Minimal FrontAccounting base application class for tests.
+         */
+        class application
+        {
+        }
+    }
+
+    if (!function_exists('set_ext_domain')) {
+        /**
+         * No-op extension domain setter for tests.
+         *
+         * @param string|null $domain Extension domain
+         * @return void
+         */
+        function set_ext_domain($domain = null)
+        {
+        }
+    }
+
+    if (!function_exists('hook_invoke_all')) {
+        /**
+         * Records the last hook invocation so tests can assert lifecycle
+         * hooks fired; handlers registered via $GLOBALS['__fa_hook_handlers']
+         * are invoked.
+         *
+         * @param string $method Hook name
+         * @param mixed  $data   Hook payload (by reference in FA)
+         * @param array  $opts   Hook options
+         * @return void
+         */
+        function hook_invoke_all($method, &$data = null, $opts = array())
+        {
+            $GLOBALS['__fa_hooks_fired'][] = $method;
+            if (isset($GLOBALS['__fa_hook_handlers'][$method])) {
+                call_user_func_array($GLOBALS['__fa_hook_handlers'][$method], array(&$data, $opts));
+            }
         }
     }
 

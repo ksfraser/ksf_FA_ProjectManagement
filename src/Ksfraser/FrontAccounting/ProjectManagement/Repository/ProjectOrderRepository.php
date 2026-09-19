@@ -4,22 +4,35 @@ declare(strict_types=1);
 
 namespace ksfraser\FrontAccounting\ProjectManagement\Repository;
 
+use ksfraser\CommonDb\Contract\DbConnectionInterface;
+use ksfraser\FrontAccounting\ProjectManagement\Dictionary\Schema;
 use ksfraser\FrontAccounting\ProjectManagement\Entity\ProjectSalesOrder;
 use ksfraser\FrontAccounting\ProjectManagement\Entity\ProjectRevenue;
 
 /**
- * Data access for project sales-order links and project revenue.
+ * ProjectOrderRepository — ported onto the shared DbConnectionInterface.
  *
+ * Data access for project sales-order links and project revenue, coded against
+ * the DbConnectionInterface contract (FaDbAdapter at FA runtime → native db_*).
+ * Public API unchanged.
+ *
+ * PHP 7.3 compatible.
+ *
+ * @package ksf_FA_ProjectManagement
+ * @since   1.0.0
+ *
+ * @UML Note: AGENTS.md §ksf_common_db (DAO porting demonstration module)
  * @BABOK Related: FR-PM-009/010
- * @since 1.0.0
  */
 class ProjectOrderRepository
 {
-    use FaRepositoryTrait;
+    /** @var DbConnectionInterface */
+    private $db;
 
-    private const PROJECTS_TABLE = 'fa_pm_projects';
-    private const LINKS_TABLE = 'fa_pm_project_sales_orders';
-    private const REVENUE_TABLE = 'fa_pm_project_revenue';
+    public function __construct(?DbConnectionInterface $db = null)
+    {
+        $this->db = $db ?? Schema::adapter();
+    }
 
     /**
      * Link an FA order to a project.
@@ -29,16 +42,16 @@ class ProjectOrderRepository
      */
     public function linkOrder(array $data): int
     {
-        $sql = "INSERT INTO " . TB_PREF . self::LINKS_TABLE . "
-            (project_id, fa_order_no, fa_trans_type, source, source_order_id)
-            VALUES (" .
-            $this->escape($data['project_id']) . ", " .
-            $this->intVal($data['fa_order_no'] ?? 0) . ", " .
-            $this->intVal($data['fa_trans_type'] ?? 10) . ", " .
-            $this->escape($data['source'] ?? 'all') . ", " .
-            (isset($data['source_order_id']) && $data['source_order_id'] !== null && $data['source_order_id'] !== '' ? $this->escape($data['source_order_id']) : 'NULL') . ")";
-        $this->dbQuery($sql);
-        return $this->dbInsertId();
+        $row = [
+            'project_id'      => $data['project_id'],
+            'fa_order_no'     => (int) ($data['fa_order_no'] ?? 0),
+            'fa_trans_type'   => (int) ($data['fa_trans_type'] ?? 10),
+            'source'          => $data['source'] ?? 'all',
+            'source_order_id' => (isset($data['source_order_id']) && $data['source_order_id'] !== '' && $data['source_order_id'] !== null)
+                ? $data['source_order_id'] : null,
+        ];
+        $this->db->executeUpdate(Schema::projectSalesOrders()->insertSql(), $row);
+        return $this->db->lastInsertId();
     }
 
     /**
@@ -49,20 +62,19 @@ class ProjectOrderRepository
      */
     public function recordRevenue(array $data): int
     {
-        $sql = "INSERT INTO " . TB_PREF . self::REVENUE_TABLE . "
-            (project_id, fa_order_no, fa_trans_type, source, source_order_id,
-             order_total, revenue_amount, order_date)
-            VALUES (" .
-            $this->escape($data['project_id']) . ", " .
-            $this->intVal($data['fa_order_no'] ?? 0) . ", " .
-            $this->intVal($data['fa_trans_type'] ?? 10) . ", " .
-            $this->escape($data['source'] ?? 'all') . ", " .
-            (isset($data['source_order_id']) && $data['source_order_id'] !== null && $data['source_order_id'] !== '' ? $this->escape($data['source_order_id']) : 'NULL') . ", " .
-            $this->floatVal($data['order_total'] ?? 0) . ", " .
-            $this->floatVal($data['revenue_amount'] ?? 0) . ", " .
-            (isset($data['order_date']) && $data['order_date'] !== '' ? $this->escape($data['order_date']) : 'NULL') . ")";
-        $this->dbQuery($sql);
-        return $this->dbInsertId();
+        $row = [
+            'project_id'      => $data['project_id'],
+            'fa_order_no'     => (int) ($data['fa_order_no'] ?? 0),
+            'fa_trans_type'   => (int) ($data['fa_trans_type'] ?? 10),
+            'source'          => $data['source'] ?? 'all',
+            'source_order_id' => (isset($data['source_order_id']) && $data['source_order_id'] !== '' && $data['source_order_id'] !== null)
+                ? $data['source_order_id'] : null,
+            'order_total'     => (float) ($data['order_total'] ?? 0),
+            'revenue_amount'  => (float) ($data['revenue_amount'] ?? 0),
+            'order_date'      => (isset($data['order_date']) && $data['order_date'] !== '') ? $data['order_date'] : null,
+        ];
+        $this->db->executeUpdate(Schema::projectRevenue()->insertSql(), $row);
+        return $this->db->lastInsertId();
     }
 
     /**
@@ -74,10 +86,12 @@ class ProjectOrderRepository
      */
     public function findLinksByOrder(int $orderNo, int $transType = 10): array
     {
-        $sql = "SELECT * FROM " . TB_PREF . self::LINKS_TABLE . "
-            WHERE fa_order_no = " . $this->intVal($orderNo) . "
-              AND fa_trans_type = " . $this->intVal($transType);
-        return array_map(fn($r) => new ProjectSalesOrder($r), $this->dbFetchAll($this->dbQuery($sql)));
+        $sql = "SELECT * FROM " . Schema::T_SALES_ORDERS
+            . " WHERE fa_order_no = :order_no AND fa_trans_type = :trans_type";
+        return array_map(
+            fn($r) => new ProjectSalesOrder($r),
+            $this->db->fetchAll($sql, ['order_no' => $orderNo, 'trans_type' => $transType])
+        );
     }
 
     /**
@@ -89,10 +103,12 @@ class ProjectOrderRepository
      */
     public function findRevenueByOrder(int $orderNo, int $transType = 10): array
     {
-        $sql = "SELECT * FROM " . TB_PREF . self::REVENUE_TABLE . "
-            WHERE fa_order_no = " . $this->intVal($orderNo) . "
-              AND fa_trans_type = " . $this->intVal($transType);
-        return array_map(fn($r) => new ProjectRevenue($r), $this->dbFetchAll($this->dbQuery($sql)));
+        $sql = "SELECT * FROM " . Schema::T_REVENUE
+            . " WHERE fa_order_no = :order_no AND fa_trans_type = :trans_type";
+        return array_map(
+            fn($r) => new ProjectRevenue($r),
+            $this->db->fetchAll($sql, ['order_no' => $orderNo, 'trans_type' => $transType])
+        );
     }
 
     /**
@@ -103,9 +119,12 @@ class ProjectOrderRepository
      */
     public function findLinksByProject(string $projectId): array
     {
-        $sql = "SELECT * FROM " . TB_PREF . self::LINKS_TABLE .
-            " WHERE project_id = " . $this->escape($projectId) . " ORDER BY linked_at DESC";
-        return array_map(fn($r) => new ProjectSalesOrder($r), $this->dbFetchAll($this->dbQuery($sql)));
+        $sql = "SELECT * FROM " . Schema::T_SALES_ORDERS
+            . " WHERE project_id = :project_id ORDER BY linked_at DESC";
+        return array_map(
+            fn($r) => new ProjectSalesOrder($r),
+            $this->db->fetchAll($sql, ['project_id' => $projectId])
+        );
     }
 
     /**
@@ -116,9 +135,12 @@ class ProjectOrderRepository
      */
     public function findRevenueByProject(string $projectId): array
     {
-        $sql = "SELECT * FROM " . TB_PREF . self::REVENUE_TABLE .
-            " WHERE project_id = " . $this->escape($projectId) . " ORDER BY created_at DESC";
-        return array_map(fn($r) => new ProjectRevenue($r), $this->dbFetchAll($this->dbQuery($sql)));
+        $sql = "SELECT * FROM " . Schema::T_REVENUE
+            . " WHERE project_id = :project_id ORDER BY created_at DESC";
+        return array_map(
+            fn($r) => new ProjectRevenue($r),
+            $this->db->fetchAll($sql, ['project_id' => $projectId])
+        );
     }
 
     /**
@@ -129,11 +151,10 @@ class ProjectOrderRepository
      */
     public function findProjectsForCustomer(int $customerId): array
     {
-        $sql = "SELECT project_id, name, status FROM " . TB_PREF . self::PROJECTS_TABLE . "
-            WHERE customer_id = " . $this->intVal($customerId) . "
-              AND status <> 'Cancelled'
-            ORDER BY start_date DESC";
-        return $this->dbFetchAll($this->dbQuery($sql));
+        $sql = "SELECT project_id, name, status FROM " . Schema::T_PROJECTS
+            . " WHERE customer_id = :customer_id AND status <> 'Cancelled'"
+            . " ORDER BY start_date DESC";
+        return $this->db->fetchAll($sql, ['customer_id' => $customerId]);
     }
 
     /**
@@ -144,10 +165,10 @@ class ProjectOrderRepository
      */
     public function getRevenueSummaryByProject(string $projectId): array
     {
-        $sql = "SELECT COALESCE(SUM(revenue_amount), 0) AS revenue_total,
-                       COUNT(*) AS order_count
-                FROM " . TB_PREF . self::REVENUE_TABLE .
-            " WHERE project_id = " . $this->escape($projectId);
-        return $this->dbFetchAssoc($this->dbQuery($sql)) ?? ['revenue_total' => 0, 'order_count' => 0];
+        $sql = "SELECT COALESCE(SUM(revenue_amount), 0) AS revenue_total,"
+            . " COUNT(*) AS order_count FROM " . Schema::T_REVENUE
+            . " WHERE project_id = :project_id";
+        $row = $this->db->fetchAssoc($sql, ['project_id' => $projectId]);
+        return $row ?? ['revenue_total' => 0, 'order_count' => 0];
     }
 }

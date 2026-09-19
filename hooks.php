@@ -30,27 +30,25 @@ define('SS_ksf_FA_ProjectManagement', 134 << 8);
 define('KSF_PM_MODULE_NAME', 'ksf_FA_ProjectManagement');
 define('KSF_PM_CAPABILITIES', 'project_crud,task_crud,team,sales_order_link,revenue');
 
+// Composer autoloader + vendored ksfraser/ksf-fa-common / ksf-common-db
+// prefixes (needed by the app shell + FAModuleMenu integration).
+if (file_exists(__DIR__ . '/bootstrap.php')) {
+    require_once __DIR__ . '/bootstrap.php';
+}
+
 class hooks_ksf_FA_ProjectManagement extends hooks {
     var $module_name = 'ksf_FA_ProjectManagement';
     var $version     = '2.4.3-0';
 
     /**
-     * Add module tab
-     * 
-     * Return new application class instance to add a tab.
-     * Omit or return nothing to skip tab addition.
-     * 
-     * @param application|null $app Ignored
-     * @return application|null New tab application instance or nothing
+     * Install the Project Management application tab in FA sidebar.
+     *
+     * @param application $app FA application instance
      */
     function install_tabs($app) {
         set_ext_domain('modules/ksf_FA_ProjectManagement');
-        if (class_exists('application')) {
-            $tab = new application('project_app', 'Project Management');
-            $tab->set_title('Project Management');
-            $tab->set_icon('folder');
-            return $tab;
-        }
+        $app->add_application(new project_app());
+        set_ext_domain();
         return null;
     }
 
@@ -281,5 +279,30 @@ class hooks_ksf_FA_ProjectManagement extends hooks {
         $service = new \ksfraser\FrontAccounting\ProjectManagement\Service\ProjectOrderService();
         $links = $service->onOrderImported($data);
         $data['project_links_created'] = count($links);
+    }
+}
+
+class project_app extends application {
+    function __construct() {
+        parent::__construct("Project Management", _($this->help_context = _("&Project Management")));
+
+        $this->add_module(_("Project Management"));
+
+        $menu = new \ksfraser\FrontAccounting\Common\Menu\FAModuleMenu(
+            'modules/ksf_FA_ProjectManagement/index.php',
+            'view',
+            ''
+        );
+
+        $menu->addItem('dashboard',      _("&Dashboard"),       MENU_MAIN)
+             ->addItem('projects',       _("Projects"),         MENU_ENTRY)
+             ->addItem('tasks',          _("Tasks"),            MENU_ENTRY)
+             ->addItem('team',           _("Team"),             MENU_ENTRY)
+             ->addItem('reports',        _("Reports"),          MENU_REPORT)
+             ->addItem('project_types',  _("Project Types"),    MENU_SETTINGS);
+
+        $menu->registerWithApp($this, 'SA_ksf_FA_ProjectManagementVIEW');
+
+        $this->add_extensions();
     }
 }

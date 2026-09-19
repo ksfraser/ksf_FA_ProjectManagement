@@ -3,14 +3,14 @@
 -- Prefix: fa_pm_
 
 -- Projects Table
-CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_projects` (
+CREATE TABLE IF NOT EXISTS `0_fa_pm_projects` (
     `project_id` VARCHAR(20) NOT NULL,
     `name` VARCHAR(100) NOT NULL,
     `description` TEXT,
     `start_date` DATE NOT NULL,
     `end_date` DATE DEFAULT NULL,
     `budget` DECIMAL(15,2) DEFAULT 0.00,
-    `customer_id` VARCHAR(20) DEFAULT NULL,
+    `customer_id` INT(11) DEFAULT NULL,
     `project_manager` VARCHAR(100) NOT NULL,
     `priority` VARCHAR(20) DEFAULT 'Medium',
     `status` VARCHAR(30) DEFAULT 'Planning',
@@ -23,11 +23,11 @@ CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_projects` (
     KEY `idx_customer` (`customer_id`),
     KEY `idx_priority` (`priority`),
     KEY `idx_start_date` (`start_date`),
-    CONSTRAINT `fk_pm_customer` FOREIGN KEY (`customer_id`) REFERENCES `@TB_PREF@debtors_master` (`debtor_no`) ON DELETE SET NULL
+    CONSTRAINT `fk_pm_customer` FOREIGN KEY (`customer_id`) REFERENCES `0_debtors_master` (`debtor_no`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tasks Table
-CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_tasks` (
+CREATE TABLE IF NOT EXISTS `0_fa_pm_tasks` (
     `task_id` VARCHAR(20) NOT NULL,
     `project_id` VARCHAR(20) NOT NULL,
     `parent_task_id` VARCHAR(20) DEFAULT '',
@@ -49,11 +49,11 @@ CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_tasks` (
     KEY `idx_assignee` (`assigned_to`),
     KEY `idx_status` (`status`),
     KEY `idx_priority` (`priority`),
-    CONSTRAINT `fk_task_project` FOREIGN KEY (`project_id`) REFERENCES `@TB_PREF@fa_pm_projects` (`project_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_task_project` FOREIGN KEY (`project_id`) REFERENCES `0_fa_pm_projects` (`project_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Project Assignments Table
-CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_assignments` (
+CREATE TABLE IF NOT EXISTS `0_fa_pm_assignments` (
     `project_id` VARCHAR(20) NOT NULL,
     `employee_id` VARCHAR(100) NOT NULL,
     `role` VARCHAR(50) DEFAULT 'Team Member',
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_assignments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Project Types Table
-CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_project_types` (
+CREATE TABLE IF NOT EXISTS `0_fa_pm_project_types` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(50) NOT NULL,
     `description` VARCHAR(255) DEFAULT NULL,
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_project_types` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Activity Log Table
-CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_activity_log` (
+CREATE TABLE IF NOT EXISTS `0_fa_pm_activity_log` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `activity_type` VARCHAR(30) NOT NULL,
     `entity_type` VARCHAR(30) NOT NULL,
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_activity_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Initial Project Types
-INSERT INTO `@TB_PREF@fa_pm_project_types` (`name`, `description`, `sort_order`) VALUES
+INSERT INTO `0_fa_pm_project_types` (`name`, `description`, `sort_order`) VALUES
 ('Software Development', 'Software development projects', 1),
 ('Infrastructure', 'Infrastructure and DevOps projects', 2),
 ('Consulting', 'Consulting and professional services', 3),
@@ -106,7 +106,7 @@ INSERT INTO `@TB_PREF@fa_pm_project_types` (`name`, `description`, `sort_order`)
 ('Event', 'Event planning and execution', 6);
 
 -- Files Table
-CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_files` (
+CREATE TABLE IF NOT EXISTS `0_fa_pm_files` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `entity_type` VARCHAR(30) NOT NULL COMMENT 'project, task, etc',
     `entity_id` VARCHAR(20) NOT NULL,
@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_files` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Task Progress Table (OpenProject-style progress tracking)
-CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_task_progress` (
+CREATE TABLE IF NOT EXISTS `0_fa_pm_task_progress` (
     `progress_id` INT(11) NOT NULL AUTO_INCREMENT,
     `task_id` VARCHAR(20) NOT NULL,
     `progress_mode` VARCHAR(20) DEFAULT 'work_based' COMMENT 'work_based, status_based',
@@ -139,11 +139,11 @@ CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_task_progress` (
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`progress_id`),
     UNIQUE KEY `idx_task` (`task_id`),
-    CONSTRAINT `fk_progress_task` FOREIGN KEY (`task_id`) REFERENCES `@TB_PREF@fa_pm_tasks`(`task_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_progress_task` FOREIGN KEY (`task_id`) REFERENCES `0_fa_pm_tasks`(`task_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Project Sales Order Links (imported FA orders linked to projects)
-CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_project_sales_orders` (
+CREATE TABLE IF NOT EXISTS `0_fa_pm_project_sales_orders` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `project_id` VARCHAR(20) NOT NULL,
     `fa_order_no` INT(11) NOT NULL,
@@ -155,11 +155,11 @@ CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_project_sales_orders` (
     UNIQUE KEY `idx_order` (`fa_order_no`, `fa_trans_type`),
     KEY `idx_project` (`project_id`),
     KEY `idx_source` (`source`),
-    CONSTRAINT `fk_pm_so_project` FOREIGN KEY (`project_id`) REFERENCES `@TB_PREF@fa_pm_projects`(`project_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_pm_so_project` FOREIGN KEY (`project_id`) REFERENCES `0_fa_pm_projects`(`project_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Project Revenue (recognized revenue from linked FA orders)
-CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_project_revenue` (
+CREATE TABLE IF NOT EXISTS `0_fa_pm_project_revenue` (
     `revenue_id` INT(11) NOT NULL AUTO_INCREMENT,
     `project_id` VARCHAR(20) NOT NULL,
     `fa_order_no` INT(11) NOT NULL,
@@ -174,5 +174,5 @@ CREATE TABLE IF NOT EXISTS `@TB_PREF@fa_pm_project_revenue` (
     UNIQUE KEY `idx_revenue_order` (`fa_order_no`, `fa_trans_type`),
     KEY `idx_project` (`project_id`),
     KEY `idx_source` (`source`),
-    CONSTRAINT `fk_pm_rev_project` FOREIGN KEY (`project_id`) REFERENCES `@TB_PREF@fa_pm_projects`(`project_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_pm_rev_project` FOREIGN KEY (`project_id`) REFERENCES `0_fa_pm_projects`(`project_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

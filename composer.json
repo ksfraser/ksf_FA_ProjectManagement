@@ -4,6 +4,8 @@
     "type": "project",
     "require": {
         "php": ">=7.4",
+        "ksfraser/ksf-fa-common": "^1.0",
+        "ksfraser/ksf-common-db": "^1.0",
         "ksfraser/html": "*"
     },
     "require-dev": {
@@ -15,6 +17,16 @@
         }
     },
     "repositories": [
+        {
+            "type": "path",
+            "url": "../ksf_FA_Common",
+            "canonical": false
+        },
+        {
+            "type": "path",
+            "url": "../ksf_common_db",
+            "canonical": false
+        },
         {
             "type": "path",
             "url": "../ksfraser/html",
