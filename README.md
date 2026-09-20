@@ -380,7 +380,7 @@ ksf_FA_ProjectManagement/
 ## Dependencies
 
 - FrontAccounting 2.4.0+
-- PHP 8.0+
+- PHP 7.3+ (floor; FA module engine is 7.3-clean, platform 7.3.33)
 - ksfraser/ksf-project-management (core library)
 - ksfraser/ksf-common (common utilities)
 
