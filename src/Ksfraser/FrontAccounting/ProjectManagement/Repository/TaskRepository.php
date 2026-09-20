@@ -64,6 +64,48 @@ class TaskRepository
     }
 
     /**
+     * Every task row for a project (unbounded — CPM / gantt / csv feeds).
+     *
+     * @param string $projectId
+     * @return array<int,array<string,mixed>>
+     */
+    public function findAllByProject(string $projectId): array
+    {
+        $qb = new QueryBuilder();
+        $qb->select('*')
+            ->from(Schema::T_TASKS)
+            ->where('project_id = :project_id', ['project_id' => $projectId])
+            ->orderBy('start_date')->orderBy('task_id');
+        return $this->db->fetchAll($qb->toSql(), $qb->getParams());
+    }
+
+    /**
+     * Persist a single task's computed scheduling field set.
+     *
+     * Columns persisted: es/ef/ls/lf/slack/is_critical. This is invoked by
+     * SchedulingService->schedule() after the CpmEngine forward/backward
+     * pass so the dictionary + the schedule tab read identical values.
+     *
+     * @param string $taskId
+     * @param array{es?:?string,ef?:?string,ls?:?string,lf?:?string,slack?:float,is_critical?:int} $sched
+     * @return void
+     */
+    public function updateSchedule(string $taskId, array $sched): void
+    {
+        $allow = ['es', 'ef', 'ls', 'lf', 'slack', 'is_critical'];
+        $data  = ['task_id' => $taskId];
+        foreach ($allow as $k) {
+            if (array_key_exists($k, $sched)) {
+                $data[$k] = $sched[$k];
+            }
+        }
+        if (count($data) === 1) {
+            returninf; // nothing to write
+        }
+        $this->db->executeUpdate(Schema::tasks()->updateSql(), $data);
+    }
+
+    /**
      * @return array<string, mixed>|null
      */
     public function findById(string $taskId): ?array

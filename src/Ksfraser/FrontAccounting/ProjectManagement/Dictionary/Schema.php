@@ -37,6 +37,7 @@ class Schema
 
     const T_PROJECTS    = 'fa_pm_projects';
     const T_TASKS       = 'fa_pm_tasks';
+    const T_TASK_DEPENDENCIES = 'fa_pm_task_dependencies';
     const T_ASSIGNMENTS = 'fa_pm_assignments';
     const T_PROJECT_TYPES = 'fa_pm_project_types';
     const T_ACTIVITY    = 'fa_pm_activity_log';
@@ -104,12 +105,47 @@ class Schema
             ->column('progress', 'decimal(5,2)', '', false, 0.00)
             ->column('priority', 'varchar(20)', '', false, "'Medium'")
             ->column('status', 'varchar(30)', '', false, "'Not Started'")
+            ->column('is_milestone', 'tinyint(1)', '', false, 0)
+            ->column('constraint_type', 'varchar(30)')
+            ->column('constraint_date', 'date')
+            ->column('es', 'date')
+            ->column('ef', 'date')
+            ->column('ls', 'date')
+            ->column('lf', 'date')
+            ->column('slack', 'decimal(10,2)', '', false, 0.00)
+            ->column('is_critical', 'tinyint(1)', '', false, 0)
             ->column('created_at', 'timestamp', '', false, 'CURRENT_TIMESTAMP')
             ->column('updated_at', 'timestamp', '', false, 'CURRENT_TIMESTAMP')
             ->index('idx_project', 'index', 'project_id')
             ->index('idx_parent', 'index', 'parent_task_id')
             ->index('idx_assignee', 'index', 'assigned_to')
-            ->index('idx_status', 'index', 'status');
+            ->index('idx_status', 'index', 'status')
+            ->index('idx_critical', 'index', 'is_critical')
+            ->index('idx_milestone', 'index', 'is_milestone');
+    }
+
+    /**
+     * Data dictionary definition for the task-dependency table (CPM edges).
+     *
+     * Each row is a predecessor→task precedence edge carrying a dependency
+     * type (FS/SS/FF/SF) and an optional lag. The CpmEngine consumes these as
+     * weighted adjacency and scheduling services persist the computed
+     * ES/EF/LS/LF/slack/critical back onto the tasks() dictionary.
+     *
+     * @return TableDefinition
+     */
+    public static function taskDependencies(): TableDefinition
+    {
+        return (new TableDefinition(self::T_TASK_DEPENDENCIES, 'dependency_id'))
+            ->column('dependency_id', 'int(11)', 'NOT NULL', true)
+            ->column('task_id', 'varchar(20)', 'NOT NULL')
+            ->column('predecessor_id', 'varchar(20)', 'NOT NULL')
+            ->column('dependency_type', 'varchar(10)', 'NOT NULL', false, "'FS'")
+            ->column('lag', 'decimal(10,2)', '', false, 0.00)
+            ->column('created_at', 'timestamp', '', false, 'CURRENT_TIMESTAMP')
+            ->index('idx_task', 'index', 'task_id')
+            ->index('idx_pred', 'index', 'predecessor_id')
+            ->index('idx_unique', 'unique', 'task_id, predecessor_id');
     }
 
     /**
