@@ -280,6 +280,95 @@ class hooks_ksf_FA_ProjectManagement extends hooks {
         $links = $service->onOrderImported($data);
         $data['project_links_created'] = count($links);
     }
+
+    // ─── BR-007 Event-close subscribers (FR-PM-007-001 / FR-PM-007-002) ──
+
+    /**
+     * ksf_event_classify_attendees responder: tag PROJECT TEAM MEMBER emails.
+     *
+     * Appends to $data['classification']['member'] (by reference) every
+     * attendee email the module resolves to a team member for the event's
+     * project/task (FR-PM-007-001). READ-ONLY; appends only, never re-tags
+     * another responder's contribution. A DB failure is contained so this
+     * responder never aborts the caller's classification.
+     *
+     * @param array      $data Broadcast payload with 'dto' + 'classification'
+     * @param array|null $opts Hook options ('event_id')
+     * @return void
+     */
+    function ksf_event_classify_attendees(&$data, $opts = null) {
+        if (!is_array($data)
+            || !isset($data['dto'])
+            || !isset($data['classification'])
+            || !is_array($data['classification'])) {
+            return;
+        }
+        $autoload = __DIR__ . '/vendor/autoload.php';
+        if (file_exists($autoload)) {
+            require_once $autoload;
+        }
+        if (!function_exists('db_query') || !defined('TB_PREF')) {
+            return; // no FA runtime — nothing to classify
+        }
+
+        try {
+            $responder = new \ksfraser\FrontAccounting\ProjectManagement\Service\EventMembershipResponder();
+            $members = $responder->respondMembership($data['dto']);
+        } catch (\Throwable $e) {
+            error_log('[ksf_FA_ProjectManagement] ksf_event_classify_attendees responder failed: ' . $e->getMessage());
+            return;
+        }
+
+        $list = isset($data['classification']['member']) && is_array($data['classification']['member'])
+            ? $data['classification']['member'] : array();
+        foreach ($members as $email) {
+            $list[] = $email;
+        }
+
+        // Case-insensitive de-dupe that preserves other responders' entries.
+        $seen = array();
+        foreach ($list as $email) {
+            if (!is_scalar($email)) {
+                continue;
+            }
+            $email = strtolower(trim((string) $email));
+            if ($email !== '') {
+                $seen[$email] = true;
+            }
+        }
+        $data['classification']['member'] = array_keys($seen);
+    }
+
+    /**
+     * ksf_event_closed subscriber: close the linked task's time window.
+     *
+     * Seals the task's logged-time window and snapshots the recorded worked
+     * window into the task's progress row (FR-PM-007-002). Idempotent and
+     * fault-tolerant; never touches other modules' tables.
+     *
+     * @param object|array $data Closed-event DTO
+     * @param array|null   $opts Hook options ('acting_user_id')
+     * @return void
+     */
+    function ksf_event_closed(&$data, $opts = null) {
+        if (!is_object($data) && !is_array($data)) {
+            return;
+        }
+        $autoload = __DIR__ . '/vendor/autoload.php';
+        if (file_exists($autoload)) {
+            require_once $autoload;
+        }
+        if (!function_exists('db_query') || !defined('TB_PREF')) {
+            return; // no FA runtime — nothing to write
+        }
+
+        try {
+            $service = new \ksfraser\FrontAccounting\ProjectManagement\Service\EventCloseTaskService();
+            $service->onEventClosed($data);
+        } catch (\Throwable $e) {
+            error_log('[ksf_FA_ProjectManagement] ksf_event_closed subscriber failed: ' . $e->getMessage());
+        }
+    }
 }
 
 class project_app extends application {
