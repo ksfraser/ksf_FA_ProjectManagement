@@ -9,7 +9,7 @@
         "ksfraser/html": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "^10.0"
+        "phpunit/phpunit": "^9.6"
     },
     "autoload": {
         "psr-4": {
@@ -19,21 +19,17 @@
     "repositories": [
         {
             "type": "path",
-            "url": "../ksf_FA_Common",
-            "canonical": false
-        },
-        {
-            "type": "path",
-            "url": "../ksf_common_db",
-            "canonical": false
-        },
-        {
-            "type": "path",
             "url": "../ksfraser/html",
             "options": {
                 "symlink": true
             }
         }
     ],
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "config": {
+        "platform": {
+            "php": "7.4.33"
+        },
+        "sort-packages": true
+    }
 }
