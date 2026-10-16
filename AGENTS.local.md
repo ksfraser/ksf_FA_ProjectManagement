@@ -1,43 +1,106 @@
-# ksf_FA_ProjectManagement — AGENTS.local.md
+<!-- Repo-specific appendix to the shared AGENTS.md. Generic conventions live in AGENTS_ARCH.md (hardlinked). -->
 
-> Scoped 2026: this file holds ONLY what this repo decides. Cross-module
-> conventions live in the shared `/home/kevin/Documents/AGENTS.md` +
-> `AGENTS_ARCH.md`. PM stands the _source copy_ of every repo it touches; it
-> never invents a parallel abstraction.
-
-## Identity (PROVEN, do not re-derive)
-- FA module dir: `ksf_FA_ProjectManagement`; SQL tables: `0_ksf_pm_*`
-  (literal `0_` prefix — FA's db_import only rewrites `0_` -> TB_PREF; never
-  `{TB_PREF}` in FA-install sql/ files).
-- _init/config: gzip-compressed, `Key: Value`, numeric version `2.4.19-0`.
-- hooks class: `hooks_ksf_FA_ProjectManagement`. Security sections:
-  `SS_ksf_FA_ProjectManagement_*`.
-- Required DW dep (Packagist, NOT git-submodule, NOT a fork): package
-  `ksfraser/ksf-fa-projectmanagement`.  Every CSM publication out)
-- **GL posting bridge — ONE trait, two consumers** (payroll + expense): both
-  `ksf_FA_EmployeePay` and `ksf_FA_TravelExpense` stop at capture. Both need
-  the same "approved source -> balanced FA GL entry (date/dim/memo)" path.
-  Implement ONCE as `PostingBridgeTrait` in `ksf_FA_Common`, consumed by both;
-  testable on the PDO side with double-entry-must-balance. Never a per-module
-  bridge. GL map (cost to GL account) is data, not code: `0_ksf_pm_gl_map`
-  per expense/payroll category.
-- FRs: `FR-PM-032` (posting bridge contract), `FR-PM-033` (double-entry
-  balance invariant).
-
-## PM vs dotProject (the original: 3 carry-over links; PM is otherwise ahead)
-dotProject (unmaintained 2.1.x): CS/FS-only deps, task tree, Gantt,
-per-task notes, per-task time logs.
-- ksf PM already BEATS it: full CPM (FS/SS/SF/FF + lag + constraints + cycle
-  detect), real Gantt, project tree, slack, milestones.
-- ksf lacks (all cheap links on EXISTING modules — no new scope):
-  (a) `ksf_FA_Notes` wired to `task_id` (per-task notes),
-  (b) `ksf_FA_Timesheets` linked to PM task (task time-logs),
-  (c) aggregate resource-load grid (pure SELECT rollup; NO leveling engine).
-- FRs: `FR-PM-034` (note-task link), `FR-PM-035` (timesheet-task link),
-  `FR-PM-036` (resource-load grid).
-
-## VS webERP — one costing gap
-webERP has component scrap-yield on BoM explosion; ksf_FA_MRP doesn't cost
-scrap on sub-assembly lines. FR-PM-037: add scrap_qty margin into the BoM
-explosion costing pass. (Pricing matrix + kits already covered by
-DynamicPricing/PriceBook.)
+```markdown
+# AGENTS.local.md — ksf_FA_ProjectManagement
+## Overview
+**FA Module** for Project Management with OpenProject-style features: progress tracking, versions (quarters), task hierarchies, and integration with Performance module for OKR goals.
+## Repository Structure
+```
+ksf_FA_ProjectManagement/
+├── sql/
+│   ├── fa_pm_projects.sql          # Projects table
+│   ├── fa_pm_tasks.sql             # Tasks table (with parent-child)
+│   ├── fa_pm_assignments.sql       # Project-team assignments
+│   ├── fa_pm_project_types.sql     # Project type definitions
+│   ├── fa_pm_activity_log.sql      # Activity tracking
+│   ├── fa_pm_files.sql             # File attachments
+│   ├── fa_pm_versions.sql          # Versions/quarters (Q1-2026)
+│   └── fa_pm_task_progress.sql     # OpenProject-style progress
+├── includes/
+│   ├── pm_db.inc
+│   ├── tasks_db.inc
+│   ├── assignments_db.inc
+│   └── ...
+├── pages/
+│   ├── projects.php
+│   ├── tasks.php
+│   ├── gantt.php
+│   └── ...
+├── hooks.php
+├── composer.json
+└── ProjectDocs/
+    ├── Requirements.md
+    ├── RTM.md
+    ├── BABOK.md
+    └── UML.md
+```
+## Progress Tracking Modes (OpenProject-style)
+1. **Work-based**: Progress = Work / (Work + Remaining)
+2. **Status-based**: Progress fixed per status (Draft=0%, In Progress=50%, etc.)
+## Documentation (UML/BABOK)
+```php
+/**
+ * Create project with tasks
+ *
+ * @param array $project_data Project details
+ * @param array $tasks Task list with hierarchies
+ * @return string Project ID
+ *
+ * @UML Note: See ProjectDocs/UML.md - Project creation sequence diagram
+ * @BABOK Related: BR-012 Project Management
+ */
+function create_project_with_tasks($project_data, $tasks) { ... }
+```
+## Design Patterns Used
+### Composite Pattern (Task Hierarchy)
+- Tasks can have parent-child relationships
+- `parent_task_id` links to `task_id` (self-referencing)
+### Observer Pattern
+- Activity logging for all project/task changes
+- `fa_pm_activity_log` tracks all actions
+### Progress Strategy (OpenProject)
+- `fa_pm_task_progress` supports multiple calculation modes
+- Integrates with Performance module for OKR tracking
+## Composer/Packagist
+```json
+{
+    "name": "ksfraser/ksf_fa_projectmanagement",
+    "description": "Project Management for FrontAccounting (OpenProject-style)",
+    "type": "frontaccounting-module",
+    "require": {
+        "php": ">=7.3",
+        "ksfraser/ksf_fa_crm": "*",
+        "ksfraser/ksf_fa_projectmanagement_core": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ksf\\FA\\PM\\": "src/"
+        }
+    }
+}
+```
+## RTM (Requirements Traceability Matrix)
+See `ProjectDocs/RTM.md` for full traceability:
+| Req ID | Description | Test Case | Code File | Version |
+|--------|-------------|-----------|----------|---------|
+| REQ-001 | Project Creation | testProjectCreate | sql/fa_pm_projects.sql | v1.0.0 |
+| REQ-002 | Task Hierarchy | testTaskParentChild | sql/fa_pm_tasks.sql | v1.0.0 |
+| REQ-003 | Progress Tracking | testProgressCalc | sql/fa_pm_task_progress.sql | v1.1.0 |
+| REQ-004 | Gantt Chart | testGanttDisplay | pages/gantt.php | v1.2.0 |
+## BABOK Alignment
+See `ProjectDocs/BABOK.md` for business analysis alignment:
+- **BR-012**: Project Management - Full project lifecycle
+- **BR-013**: Resource Allocation - Team assignments with roles
+- **BR-014**: Progress Monitoring - OpenProject-style tracking
+- **BR-015**: Integration - Link PM tasks to OKR goals
+## UML Documentation
+See `ProjectDocs/UML.md` for:
+- Project-task hierarchy diagram
+- Gantt chart component diagram
+- Progress calculation state diagram
+## Dependencies
+- **ksf_FA_ProjectManagement_Core** (business logic)
+- **ksf_FA_CRM** (customer contacts for projects)
+- **ksf_FA_Performance** (OKR goal linkage - optional)
+- **FrontAccounting 2.4+** (FA core)
+```
