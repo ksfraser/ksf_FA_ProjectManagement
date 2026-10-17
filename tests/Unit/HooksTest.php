@@ -21,11 +21,16 @@ class HooksTest extends TestCase
     {
         require_once dirname(__DIR__, 2) . '/hooks.php';
         $this->hooks = new \hooks_ksf_FA_ProjectManagement();
+        $GLOBALS['__fa_select_queue'] = [];
+        $GLOBALS['__fa_select_result'] = [];
+        $GLOBALS['__fa_last_sql'] = '';
+        $GLOBALS['__fa_sql_log'] = [];
+        $GLOBALS['__fa_next_id'] = 1;
     }
 
     protected function tearDown(): void
     {
-        unset($GLOBALS['__fa_select_queue'], $GLOBALS['__fa_select_result'], $GLOBALS['__fa_last_sql']);
+        unset($GLOBALS['__fa_select_queue'], $GLOBALS['__fa_select_result'], $GLOBALS['__fa_last_sql'], $GLOBALS['__fa_sql_log']);
     }
 
     public function testGetModuleConstants(): void
@@ -157,5 +162,126 @@ class HooksTest extends TestCase
 
         $this->assertArrayHasKey('project_links_created', $data);
         $this->assertSame(0, $data['project_links_created']);
+    }
+
+    /**
+     * ksf_event_classify_attendees appends project team members (by
+     * reference) to $data['classification']['member'].
+     *
+     * @BABOK Related: FR-PM-007-001
+     */
+    public function testKsfEventClassifyAppendsProjectsMembersToPayload(): void
+    {
+        $this->seedSelectQueue([
+            [['employee_id' => 'kevin'], ['employee_id' => 'alice']],
+            [['user_id' => 'kevin']],
+            [],
+        ]);
+
+        $data = [
+            'dto' => [
+                'project_id' => 'PRJ-0001',
+                'attendee_emails' => ['u1@x.test', 'u2@x.test'],
+            ],
+            'classification' => ['member' => [], 'external' => []],
+        ];
+
+        $this->hooks->ksf_event_classify_attendees($data);
+
+        $this->assertSame(['u1@x.test'], $data['classification']['member']);
+    }
+
+    /**
+     * The responder appends only; other responders' member tags survive.
+     *
+     * @BABOK Related: FR-PM-007-001
+     */
+    public function testKsfEventClassifyPreservesExistingMemberTags(): void
+    {
+        $this->seedSelectQueue([
+            [['employee_id' => 'kevin']],
+            [['user_id' => 'kevin']],
+        ]);
+
+        $data = [
+            'dto' => [
+                'project_id' => 'PRJ-0001',
+                'attendee_emails' => ['u1@x.test'],
+            ],
+            'classification' => ['member' => ['existing@x.test'], 'external' => []],
+        ];
+
+        $this->hooks->ksf_event_classify_attendees($data);
+
+        $this->assertSame(['existing@x.test', 'u1@x.test'], $data['classification']['member']);
+    }
+
+    /**
+     * DTO with neither project nor task -> classification untouched.
+     *
+     * @BABOK Related: FR-PM-007-001 (AZZ)
+     */
+    public function testKsfEventClassifyNoProjectNoTaskAppendsNothing(): void
+    {
+        $data = [
+            'dto' => ['event_id' => 7, 'attendee_emails' => ['u1@x.test']],
+            'classification' => ['member' => ['existing@x.test'], 'external' => []],
+        ];
+
+        $this->hooks->ksf_event_classify_attendees($data);
+
+        $this->assertSame(['existing@x.test'], $data['classification']['member']);
+        $this->assertSame([], (array) $GLOBALS['__fa_sql_log']);
+    }
+
+    /**
+     * ksf_event_closed seals the linked task's time window (INSERT snapshot).
+     *
+     * @BABOK Related: FR-PM-007-002
+     */
+    public function testKsfEventClosedSealsTaskWindow(): void
+    {
+        $this->seedSelectQueue([
+            [['task_id' => 'TSK-0001', 'project_id' => 'PRJ-0001']],
+            [],
+        ]);
+
+        $dto = [
+            'task_id' => 'TSK-0001',
+            'started_at' => '2026-09-14 09:00:00',
+            'closed_at' => '2026-09-14 13:00:00',
+        ];
+
+        $this->hooks->ksf_event_closed($dto);
+
+        $sql = (string) $GLOBALS['__fa_last_sql'];
+        $this->assertStringContainsString('INSERT INTO 0_fa_pm_task_progress', $sql);
+        $this->assertStringContainsString("'Closed'", $sql);
+    }
+
+    /**
+     * Unknown task -> event_closed subscriber is a silent no-op.
+     *
+     * @BABOK Related: FR-PM-007-002 (AZZ)
+     */
+    public function testKsfEventClosedUnknownTaskNoOp(): void
+    {
+        $this->seedSelectQueue([[]]);
+
+        $dto = ['task_id' => 'TSK-9999'];
+        $this->hooks->ksf_event_closed($dto);
+
+        foreach ((array) $GLOBALS['__fa_sql_log'] as $sql) {
+            $prefix = strtolower(substr(ltrim((string) $sql), 0, 6));
+            $this->assertNotContains($prefix, ['insert', 'update', 'delete', 'replac']);
+        }
+    }
+
+    private function seedSelectQueue(array $queue): void
+    {
+        $GLOBALS['__fa_select_queue'] = $queue;
+        $GLOBALS['__fa_select_result'] = [];
+        $GLOBALS['__fa_last_sql'] = '';
+        $GLOBALS['__fa_sql_log'] = [];
     }
 }

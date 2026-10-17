@@ -10,7 +10,12 @@
  */
 
 $path_to_root = "../..";
+
+// Security area is declared by hooks_ksf_FA_ProjectManagement::install_access();
+// FA page() enforces it via check_page_security() at render time.
+$page_security = 'SA_ksf_FA_ProjectManagementVIEW';
 include_once($path_to_root . "/includes/session.inc");
+add_access_extensions();
 include_once($path_to_root . "/includes/ui.inc");
 include_once($path_to_root . "/includes/db.inc");
 
@@ -19,11 +24,6 @@ include_once(__DIR__ . "/includes/pm_ui.inc");
 
 $section = isset($_GET['section']) ? $_GET['section'] : 'dashboard';
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
-
-if (!$session->check_access('PM_VIEW_PROJECT')) {
-    display_error("Access denied");
-    exit;
-}
 
 function fa_pm_route($section, $action)
 {

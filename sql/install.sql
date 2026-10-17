@@ -41,6 +41,16 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_tasks` (
     `progress` DECIMAL(5,2) DEFAULT 0.00,
     `priority` VARCHAR(20) DEFAULT 'Medium',
     `status` VARCHAR(30) DEFAULT 'Not Started',
+`is_milestone` TINYINT(1) DEFAULT 0,
+`is_constrained` TINYINT(1) DEFAULT 0,
+`constraint_type` VARCHAR(30) DEFAULT NULL,
+`constraint_date` DATE DEFAULT NULL,
+`es` DATE DEFAULT NULL,
+`ef` DATE DEFAULT NULL,
+`ls` DATE DEFAULT NULL,
+`lf` DATE DEFAULT NULL,
+`slack` DECIMAL(10,2) DEFAULT 0.00,
+`is_critical` TINYINT(1) DEFAULT 0,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`task_id`),
@@ -49,7 +59,25 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_tasks` (
     KEY `idx_assignee` (`assigned_to`),
     KEY `idx_status` (`status`),
     KEY `idx_priority` (`priority`),
+    KEY `idx_milestone` (`is_milestone`),
+    KEY `idx_critical` (`is_critical`),
     CONSTRAINT `fk_task_project` FOREIGN KEY (`project_id`) REFERENCES `0_fa_pm_projects` (`project_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Task Dependencies Table (CPM precedence edges: FS/SS/FF/SF + lag)
+CREATE TABLE IF NOT EXISTS `0_fa_pm_task_dependencies` (
+    `dependency_id` INT(11) NOT NULL AUTO_INCREMENT,
+    `task_id` VARCHAR(20) NOT NULL,
+    `predecessor_id` VARCHAR(20) NOT NULL,
+    `dependency_type` VARCHAR(10) NOT NULL DEFAULT 'FS',
+    `lag` DECIMAL(10,2) DEFAULT 0.00,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`dependency_id`),
+    KEY `idx_task` (`task_id`),
+    KEY `idx_pred` (`predecessor_id`),
+    UNIQUE KEY `idx_unique` (`task_id`, `predecessor_id`),
+    CONSTRAINT `fk_dep_task` FOREIGN KEY (`task_id`) REFERENCES `0_fa_pm_tasks` (`task_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_dep_pred` FOREIGN KEY (`predecessor_id`) REFERENCES `0_fa_pm_tasks` (`task_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Project Assignments Table

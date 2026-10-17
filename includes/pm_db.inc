@@ -7,8 +7,13 @@
 
 /**
  * Get all projects
+ *
+ * PHP 7.4 has no union return types, so the object|false contract that
+ * db_query() actually has is declared here rather than in the signature.
+ *
+ * @return object|false mysqli result set, or false on query failure
  */
-function get_pm_projects(string $search = '', string $status = ''): object|false
+function get_pm_projects(string $search = '', string $status = '')
 {
     $sql = "SELECT p.*,
             e.first_name as manager_first_name, e.last_name as manager_last_name
@@ -66,8 +71,13 @@ function get_pm_project_count(string $status = ''): int
 
 /**
  * Get all tasks
+ *
+ * PHP 7.4 has no union return types, so the object|false contract that
+ * db_query() actually has is declared here rather than in the signature.
+ *
+ * @return object|false mysqli result set, or false on query failure
  */
-function get_pm_tasks(string $projectId = ''): object|false
+function get_pm_tasks(string $projectId = '')
 {
     $sql = "SELECT t.*, p.name as project_name
             FROM " . TB_PREF . "fa_pm_tasks t

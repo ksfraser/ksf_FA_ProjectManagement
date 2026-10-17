@@ -4,13 +4,13 @@
  */
 
 $path_to_root = "../../..";
-include_once($path_to_root . "/includes/session.inc");
-include_once($path_to_root . "/includes/ui.inc");
 
-if (!$session->check_access('PM_ADMIN')) {
-    display_error("Access denied");
-    exit;
-}
+// Security area is declared by hooks_ksf_FA_ProjectManagement::install_access();
+// FA page() enforces it via check_page_security() at render time.
+$page_security = 'SA_ksf_FA_ProjectManagementMANAGE';
+include_once($path_to_root . "/includes/session.inc");
+add_access_extensions();
+include_once($path_to_root . "/includes/ui.inc");
 
 page(_("Project Management Settings"), true, false, "", "");
 

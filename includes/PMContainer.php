@@ -21,7 +21,15 @@ class PMContainer implements ContainerInterface
     private array $services = [];
     private array $instances = [];
 
-    public function get(string $id): mixed
+    /**
+     * PSR-11 declares get() with no return type; psr/container 2.0 adds
+     * `: mixed`, which PHP 7.4 cannot express — 7.4 parses `mixed` as a *class*
+     * name, so the declaration silently becomes "instance of class mixed" and
+     * every call raises a TypeError. Declare it in PHPDoc instead.
+     *
+     * @return object
+     */
+    public function get(string $id)
     {
         if (isset($this->instances[$id])) {
             return $this->instances[$id];
