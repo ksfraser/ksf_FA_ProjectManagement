@@ -150,8 +150,14 @@ class ProjectRepositoryTest extends TestCase
     {
         $sqls = Schema::createSqls();
 
-        $this->assertCount(9, $sqls);
+        // 10 tables: projects, tasks, task_dependencies, assignments,
+        // project_types, activity_log, task_progress, project_sales_orders,
+        // project_revenue, files. task_dependencies was previously missing
+        // from both createSqls() and definitionFor()'s map — see
+        // ksf_ProjectManagement ProjectDcs/003-Scheduling/CONSOLIDATION.md.
+        $this->assertCount(10, $sqls);
         $this->assertStringContainsString('fa_pm_projects', $sqls[Schema::T_PROJECTS]);
+        $this->assertStringContainsString('fa_pm_task_dependencies', $sqls[Schema::T_TASK_DEPENDENCIES]);
         $this->assertStringContainsString('CREATE TABLE', $sqls[Schema::T_REVENUE]);
     }
 }

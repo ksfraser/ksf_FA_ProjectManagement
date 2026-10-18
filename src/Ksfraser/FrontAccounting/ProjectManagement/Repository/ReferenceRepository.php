@@ -5,13 +5,22 @@ declare(strict_types=1);
 namespace ksfraser\FrontAccounting\ProjectManagement\Repository;
 
 use ksfraser\CommonDb\Contract\DbConnectionInterface;
+use ksfraser\CommonDb\Query\QueryBuilder;
 use ksfraser\FrontAccounting\ProjectManagement\Dictionary\Schema;
 
 /**
  * Reference data lookups shared by the PM tabs (FA-wide DDL sources).
  *
- * Ported-for-PM DAO: queries run through DbConnectionInterface (FaDbAdapter at
- * runtime → native db_*), so the SQL is written once, transport-agnostic.
+ * Coded against DbConnectionInterface + the shared QueryBuilder, like every
+ * other DAO in the module: FaDbAdapter at runtime → native db_*, anything
+ * implementing the contract standalone. The three DDL sources below were
+ * hand-written SQL strings that went straight to `fetchAll()`, bypassing the
+ * query builder even though they were already on the contract — they are now
+ * QueryBuilder reads like ProjectTypeRepository's.
+ *
+ * `debtors_master` and `users` are FrontAccounting core tables, so they are
+ * named literally rather than through Schema: the data dictionary owns the
+ * `fa_pm_*` tables this module defines, not FA's own schema.
  *
  * PHP 7.3 compatible.
  *
@@ -37,9 +46,12 @@ class ReferenceRepository
      */
     public function customerOptions(): array
     {
-        $sql = "SELECT debtor_no, name FROM debtors_master"
-            . " WHERE !inactive ORDER BY name";
-        $rows = $this->db->fetchAll($sql);
+        $qb = new QueryBuilder();
+        $qb->select(['debtor_no', 'name'])
+            ->from('debtors_master')
+            ->where('inactive = 0')
+            ->orderBy('name');
+        $rows = $this->db->fetchAll($qb->toSql(), $qb->getParams());
         $out = [];
         foreach ($rows as $row) {
             $out[$row['debtor_no']] = $row['name'];
@@ -54,9 +66,12 @@ class ReferenceRepository
      */
     public function userOptions(): array
     {
-        $sql = "SELECT user_id, real_name FROM users"
-            . " WHERE !inactive ORDER BY real_name";
-        $rows = $this->db->fetchAll($sql);
+        $qb = new QueryBuilder();
+        $qb->select(['user_id', 'real_name'])
+            ->from('users')
+            ->where('inactive = 0')
+            ->orderBy('real_name');
+        $rows = $this->db->fetchAll($qb->toSql(), $qb->getParams());
         $out = [];
         foreach ($rows as $row) {
             $out[$row['user_id']] = $row['real_name'] !== '' ? $row['real_name'] : $row['user_id'];
@@ -71,9 +86,13 @@ class ReferenceRepository
      */
     public function projectOptions(): array
     {
-        $sql = "SELECT project_id, name FROM " . Schema::T_PROJECTS
-            . " WHERE status <> 'Completed' ORDER BY start_date DESC, project_id";
-        $rows = $this->db->fetchAll($sql);
+        $qb = new QueryBuilder();
+        $qb->select(['project_id', 'name'])
+            ->from(Schema::T_PROJECTS)
+            ->where("status <> 'Completed'")
+            ->orderBy('start_date DESC')
+            ->orderBy('project_id');
+        $rows = $this->db->fetchAll($qb->toSql(), $qb->getParams());
         $out = [];
         foreach ($rows as $row) {
             $out[$row['project_id']] = $row['project_id'] . ' - ' . $row['name'];

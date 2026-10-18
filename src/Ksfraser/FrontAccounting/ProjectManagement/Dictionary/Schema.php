@@ -305,6 +305,7 @@ class Schema
         $defs = [
             self::T_PROJECTS,
             self::T_TASKS,
+            self::T_TASK_DEPENDENCIES,
             self::T_ASSIGNMENTS,
             self::T_PROJECT_TYPES,
             self::T_ACTIVITY,
@@ -333,6 +334,7 @@ class Schema
         $map = [
             self::T_PROJECTS       => 'projects',
             self::T_TASKS          => 'tasks',
+            self::T_TASK_DEPENDENCIES => 'taskDependencies',
             self::T_ASSIGNMENTS    => 'assignments',
             self::T_PROJECT_TYPES  => 'projectTypes',
             self::T_ACTIVITY       => 'activityLog',
