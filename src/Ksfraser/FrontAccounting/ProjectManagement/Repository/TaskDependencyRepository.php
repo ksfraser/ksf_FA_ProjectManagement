@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Ksfraser\FrontAccounting\ProjectManagement\Repository;
+namespace ksfraser\FrontAccounting\ProjectManagement\Repository;
 
 use ksfraser\FrontAccounting\ProjectManagement\Dictionary\Schema;
 use ksfraser\CommonDb\Query\QueryBuilder;
@@ -17,6 +17,8 @@ use ksfraser\CommonDb\Contract\DbConnectionInterface;
  *
  * @package ksf_FA_ProjectManagement
  * @since   1.0.0
+ *
+ * @BABOK Related: FR-PM-006-003, FR-PM-006-001, BR-PM-006
  */
 class TaskDependencyRepository
 {
@@ -63,8 +65,15 @@ class TaskDependencyRepository
      * All dependency edges belonging to a project, resolved through the task
      * dictionary (successor row's project_id). Feeds CpmEngine + gantt.
      *
+     * QueryBuilder::join() takes the WHOLE clause as one argument (the form
+     * ReportService::budgetVsRevenue() uses); the previous three-argument call
+     * emitted "... AS d INNER WHERE t.project_id = ..." because only the
+     * first argument was ever used.
+     *
      * @param string $projectId
      * @return array<int,array<string,mixed>>
+     *
+     * @BABOK Related: FR-PM-006-001, FR-PM-006-003
      */
     public function findAllByProject(string $projectId): array
     {
@@ -72,7 +81,7 @@ class TaskDependencyRepository
         $qb->select(['d.dependency_id', 'd.task_id', 'd.predecessor_id',
                      'd.dependency_type', 'd.lag'])
             ->from(Schema::T_TASK_DEPENDENCIES . ' AS d')
-            ->join('INNER', Schema::T_TASKS . ' AS t', 't.task_id = d.task_id')
+            ->join('INNER JOIN ' . Schema::T_TASKS . ' AS t ON t.task_id = d.task_id')
             ->where('t.project_id = :project_id', ['project_id' => $projectId])
             ->orderBy('d.predecessor_id');
         return $this->db->fetchAll($qb->toSql(), $qb->getParams());

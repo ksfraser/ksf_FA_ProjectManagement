@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Ksfraser\FrontAccounting\ProjectManagement\Service;
+namespace ksfraser\FrontAccounting\ProjectManagement\Service;
 
 use ksfraser\FrontAccounting\ProjectManagement\Dictionary\Schema;
 use ksfraser\FrontAccounting\ProjectManagement\Repository\TaskRepository;
 use ksfraser\FrontAccounting\ProjectManagement\Repository\TaskDependencyRepository;
 use ksfraser\FrontAccounting\ProjectManagement\Engine\CpmEngine;
 use ksfraser\FrontAccounting\ProjectManagement\Engine\TaskDependencyGraph;
-use Ksfraser\Common\Traits\WorkflowHooksTrait;
+use ksfraser\FrontAccounting\Common\Traits\WorkflowHooksTrait;
 
 /**
  * Task dependency workflow — validation, cycle guard and persistence for the
@@ -29,7 +29,8 @@ use Ksfraser\Common\Traits\WorkflowHooksTrait;
  * @package ksf_FA_ProjectManagement
  * @since   1.0.0
  *
- * @BABOK Related: BR-003-002 (task dependencies), BR-003-003 (milestones)
+ * @BABOK Related: FR-PM-006-003, BR-PM-006, BR-003-002 (task dependencies),
+ *                  BR-003-003 (milestones)
  */
 class TaskDependencyService
 {
@@ -63,6 +64,8 @@ class TaskDependencyService
      *
      * @param array<string,mixed> $dependency
      * @return string
+     *
+     * @BABOK Related: FR-PM-006-003
      */
     public function createDependency(array $dependency): string
     {

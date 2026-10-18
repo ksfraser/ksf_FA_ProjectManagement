@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Ksfraser\FrontAccounting\ProjectManagement\Service;
+namespace ksfraser\FrontAccounting\ProjectManagement\Service;
 
-use Ksfraser\FrontAccounting\ProjectManagement\Dictionary\Schema;
-use Ksfraser\FrontAccounting\ProjectManagement\Engine\CpmEngine;
-use Ksfraser\FrontAccounting\ProjectManagement\Repository\TaskRepository;
-use Ksfraser\FrontAccounting\ProjectManagement\Repository\TaskDependencyRepository;
-use Ksfraser\FrontAccounting\Common\Traits\WorkflowHooksTrait;
+use ksfraser\FrontAccounting\ProjectManagement\Dictionary\Schema;
+use ksfraser\FrontAccounting\ProjectManagement\Engine\CpmEngine;
+use ksfraser\FrontAccounting\ProjectManagement\Repository\TaskRepository;
+use ksfraser\FrontAccounting\ProjectManagement\Repository\TaskDependencyRepository;
+use ksfraser\FrontAccounting\Common\Traits\WorkflowHooksTrait;
 
 /**
  * SchedulingService — CPM forward/backward pass orchestration + persistence.
@@ -23,7 +23,7 @@ use Ksfraser\FrontAccounting\Common\Traits\WorkflowHooksTrait;
  * @package ksf_FA_ProjectManagement
  * @since   1.0.0
  *
- * @BABOK Related: BR-003 (Scheduling / CPM)
+ * @BABOK Related: FR-PM-006-002, BR-PM-006, BR-003 (Scheduling / CPM)
  * @UML Note: orchestration service — CpmEngine (pure) + TaskRepository DAO
  */
 class SchedulingService
@@ -61,6 +61,8 @@ class SchedulingService
      *     project_duration?: int,
      *     critical?: string[]
      * }
+     *
+     * @BABOK Related: FR-PM-006-002
      */
     public function schedule(string $projectId): array
     {

@@ -96,14 +96,25 @@ final class ChildPhpRunner
     /**
      * The same bootstrap tests/bootstrap.php builds, minus the PHPUnit runner.
      *
+     * It loads the MODULE bootstrap (bootstrap.php) rather than raw
+     * vendor/autoload.php, because that is what hooks.php:35 does in
+     * production: bootstrap.php also registers the PSR-4 prefixes for the
+     * vendored ksfraser/ksf-fa-common and ksf-common-db packages, whose
+     * generated autoload map predates the dependency. Loading only
+     * vendor/autoload.php here made every class that imports a ksf-fa-common
+     * trait "not found" in the child while it resolved fine in-process — the
+     * child was not reproducing production.
+     *
      * @return string
+     *
+     * @BABOK Related: BR-PM-010 (test harness)
      */
     private static function preamble(): string
     {
         $tests = dirname(__DIR__) . '/tests';
         $root  = dirname(__DIR__);
 
-        return "require " . var_export($root . '/vendor/autoload.php', true) . ";\n"
+        return "require " . var_export($root . '/bootstrap.php', true) . ";\n"
             . "require " . var_export($tests . '/stubs.php', true) . ";\n";
     }
 }
