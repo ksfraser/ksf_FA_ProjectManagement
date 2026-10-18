@@ -137,20 +137,21 @@ Groups after renumbering:
 | FR-PM-006-003 | `deleteAllFor` removes all deps | UT-PM-006-005-004 |
 | FR-PM-006-003 | guard collaborators exist and are reachable | UT-PM-006-005-005..007 |
 
-## 5. What applying this decision requires (not done here)
+## 5. Applying this decision (done 2026-10-17)
 
-1. Edit the three `FR-PM-006-00x` acceptance lists to cite the ids in §4.
-   Text-only; no requirement changes meaning.
-2. Add `UT-PM-006-004/005/006` blocks to `UT-PM-006-cpm-unit.md` for the
-   service-level cases, which the UT document does not currently describe at
-   all — the 20 approved cases are engine-only.
-3. Correct the `@BABOK Related:` docblocks in `SchedulingServiceTest.php` and
-   `TaskDependencyServiceTest.php`, which currently cite UT ids belonging to
-   unrelated cases. Deliberately **not** done in this pass: those files are the
-   evidence base for `RTM-PM-006-cpm.md`, and the renumbering is an
-   owner-approved change to Approved documents.
-4. Two FR name mismatches stay open and are *not* ids, so no scheme resolves
-   them: `FR-PM-006-003` names `TaskDependencyService::add` where the code has
-   `createDependency` (`TaskDependencyService.php:70`), and `FR-PM-006-002`
-   documents a 5-parameter `schedule()` where the code has 1. Both are recorded
-   in `RTM-PM-006-cpm.md` as Blocked.
+1. **Done.** The three `FR-PM-006-00x` acceptance lists now cite the ids in §4.
+   Text-only; no requirement changes meaning. `FR-PM-006-002` additionally
+   documents the shipped one-argument signature, the two `pm_schedule` hooks
+   and the extended payload — see `CPM-SPEC-REVIEW.md` §0.1 rulings 1–3.
+2. **Done.** `UT-PM-006-cpm-unit.md` now describes groups `004`, `005` and
+   `006`, which it previously did not cover at all.
+3. **Done.** The `@BABOK Related:` docblocks in `SchedulingServiceTest.php`
+   and `TaskDependencyServiceTest.php` now cite the `004`/`005` ids instead of
+   `UT-PM-006-002-001`…`-003-003`, which cited unrelated cases. New cases
+   added while implementing the guard carry `UT-PM-006-005-008`,
+   `UT-PM-006-006-003` and `UT-PM-006-006-004`.
+4. **Done — both name mismatches resolved in favour of the FRs.**
+   `TaskDependencyService::createDependency()` was renamed to `add()`
+   (`CPM-SPEC-REVIEW.md` §0.1 ruling 4), and `FR-PM-006-002`'s 5-parameter
+   `schedule()` was rewritten to the shipped `schedule(string $projectId)`
+   (ruling 1). Neither is a Blocked row in `RTM-PM-006-cpm.md` any more.

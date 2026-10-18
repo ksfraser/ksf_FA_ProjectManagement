@@ -122,10 +122,10 @@ PHP;
     }
 
     /**
-     * UT-PM-006-002-001 / FR-PM-006-002 — persists results via injected
+     * UT-PM-006-004-001 / FR-PM-006-002 — persists results via injected
      * repository (no FA calls).
      *
-     * @BABOK Related: FR-PM-006-002, UT-PM-006-002-001
+     * @BABOK Related: FR-PM-006-002, UT-PM-006-004-001
      */
     public function testSchedulePersistsComputedFieldsViaInjectedRepository(): void
     {
@@ -152,9 +152,9 @@ PHP;
 
     /**
      * Estimated hours are the repository's unit; the engine wants days.
-     *
-     * @BABOK Related: FR-PM-006-002
-     */
+ *
+ * @BABOK Related: FR-PM-006-002, UT-PM-006-004-005
+ */
     public function testScheduleConvertsEstimatedHoursToDurationDays(): void
     {
         $probe = $this->schedule([$this->taskRow('TSK-0001', 20)], []);
@@ -165,30 +165,45 @@ PHP;
     }
 
     /**
-     * UT-PM-006-002-002 / FR-PM-006-002 — fires `schedule_saved` exactly once
-     * on success.
+     * UT-PM-006-004-002 / FR-PM-006-002 — fires `pm_schedule_schedule_after`
+     * (computed) and then `pm_schedule_schedule_saved` (persisted), each
+     * exactly once.
      *
-     * @BABOK Related: FR-PM-006-002, UT-PM-006-002-002
+     * The original draft of FR-PM-006-002 required a SINGLE `schedule_saved`
+     * under prefix `pm_sched`. That was ruled wrong: separating "computed" from
+     * "persisted" is what lets a caller render a schedule preview without
+     * writing to the database. One hook would force a read-only listener to
+     * pay for writes it did not ask for, so the requirement text was corrected
+     * to match the code rather than the code bent to the draft.
+     *
+     * @BABOK Related: FR-PM-006-002, UT-PM-006-004-002
      */
-    public function testScheduleFiresScheduleSavedExactlyOnce(): void
+    public function testScheduleFiresEachScheduleHookExactlyOnce(): void
     {
         $probe = $this->schedule([$this->taskRow('TSK-0001', 8)], []);
         $this->assertLoaded($probe);
 
-        $this->assertCount(
-            1,
-            $probe['data']['hooks_fired'],
-            'FR-PM-006-002 requires a single schedule_saved hook; got: '
-            . implode(', ', $probe['data']['hooks_fired'])
+        $fired = $probe['data']['hooks_fired'];
+        $this->assertSame(
+            ['pm_schedule_schedule_after', 'pm_schedule_schedule_saved'],
+            $fired,
+            'FR-PM-006-002 requires pm_schedule_schedule_after then pm_schedule_schedule_saved'
         );
-        $this->assertSame('schedule_saved', $probe['data']['hooks_fired'][0]);
+
+        foreach ($fired as $hook) {
+            $this->assertSame(
+                1,
+                count(array_keys($fired, $hook, true)),
+                "$hook must fire exactly once; got: " . implode(', ', $fired)
+            );
+        }
     }
 
     /**
-     * UT-PM-006-002-003 / FR-PM-006-002 — ok=false path returns early, no hook
+     * UT-PM-006-004-003 / FR-PM-006-002 — ok=false path returns early, no hook
      * fired.
      *
-     * @BABOK Related: FR-PM-006-002, UT-PM-006-002-003
+     * @BABOK Related: FR-PM-006-002, UT-PM-006-004-003
      */
     public function testScheduleOnCycleReturnsEarlyWithoutFiringHooksOrWriting(): void
     {
@@ -214,13 +229,19 @@ PHP;
     }
 
     /**
-     * FR-PM-006-002 states the contract as
-     * `schedule(projectsId, startDate, tasks, dependencies)`.
+     * FR-PM-006-002 states the contract as `schedule(string $projectId)`.
+     *
+     * The service loads its own task rows and dependency edges from the
+     * injected repositories. That is the point: a caller that could pass a
+     * `$tasks` array could pass one that had already drifted from the database,
+     * and the persisted schedule would then disagree with the task list the
+     * next page load reads. The FR's 4/5-argument draft was ruled wrong and
+     * corrected to the shipped one-argument form.
      *
      * Read from the source rather than via ReflectionMethod: reflection would
      * have to autoload the class, which fatals in-process.
      *
-     * @BABOK Related: FR-PM-006-002, UT-PM-006-002-004
+     * @BABOK Related: FR-PM-006-002, UT-PM-006-004-004
      */
     public function testScheduleSignatureMatchesTheFunctionalRequirement(): void
     {
@@ -236,17 +257,26 @@ PHP;
 
         $params = array_values(array_filter(array_map('trim', explode(',', $m[1]))));
         $this->assertSame(
-            ['$projectId', '$startDate', '$tasks', '$dependencies', '$endDate'],
+            ['string $projectId'],
             $params,
-            'FR-PM-006-002 specifies schedule(projectsId, startDate, tasks, dependencies, [endDate])'
+            'FR-PM-006-002 specifies schedule(string $projectId) — the service loads '
+            . 'its own tasks and edges so a caller cannot inject a stale graph'
         );
     }
 
     /**
-     * FR-PM-006-002 requires the hook payload to carry the project id, the
-     * duration, the critical set and ok.
+     * UT-PM-006-004-006 / FR-PM-006-002 — the hook payload carries the project
+     * id, the duration, the critical set and ok, on top of the retained
+     * {project_id, result, persisted}.
      *
-     * @BABOK Related: FR-PM-006-002
+     * `duration` and `critical[]` were ADDED rather than substituted for
+     * `result`: a caller has to be able to explain why a date moved, and that
+     * explanation is the project duration plus the critical-path task set —
+     * exactly what dotProject and OpenProject surface from their scheduling
+     * output. Buried inside `result`, a listener would have to walk the whole
+     * per-task table to find them.
+     *
+     * @BABOK Related: FR-PM-006-002, UT-PM-006-004-006
      */
     public function testScheduleHookPayloadCarriesDurationCriticalSetAndOk(): void
     {
@@ -259,23 +289,45 @@ PHP;
         $fired = $probe['data']['hooks_fired'];
         $this->assertNotEmpty($fired, 'a hook must fire');
 
-        $payload = ChildPhpRunner::runJson(<<<'PHP'
-$GLOBALS['__fa_select_queue'] = [['task_id' => 'TSK-0001', 'estimated_hours' => 64, 'is_milestone' => 0]];
+        $captured = ChildPhpRunner::runJson(<<<'PHP'
+$GLOBALS['__fa_select_queue'] = [
+    [
+        ['task_id' => 'TSK-0001', 'estimated_hours' => 64, 'is_milestone' => 0],
+        ['task_id' => 'TSK-0002', 'estimated_hours' => 40, 'is_milestone' => 0],
+    ],
+    [['task_id' => 'TSK-0002', 'predecessor_id' => 'TSK-0001', 'dependency_type' => 'FS', 'lag' => 0]],
+];
 $GLOBALS['__fa_select_result'] = [];
 $GLOBALS['__fa_sql_log'] = [];
 $GLOBALS['__fa_next_id'] = 1;
+$GLOBALS['__fa_hook_handlers']['pm_schedule_schedule_after'] = function (&$data, $opts = null) {
+    $GLOBALS['__captured_after'] = $data;
+};
 $GLOBALS['__fa_hook_handlers']['pm_schedule_schedule_saved'] = function (&$data, $opts = null) {
-    $GLOBALS['__captured'] = $data;
+    $GLOBALS['__captured_saved'] = $data;
 };
 $service = new \ksfraser\FrontAccounting\ProjectManagement\Service\SchedulingService();
 $service->schedule('PRJ-0001');
-$RESULT = $GLOBALS['__captured'] ?? null;
+$RESULT = [
+    'after' => $GLOBALS['__captured_after'] ?? null,
+    'saved' => $GLOBALS['__captured_saved'] ?? null,
+];
 PHP);
-        $this->assertLoaded($payload);
+        $this->assertLoaded($captured);
 
-        $this->assertSame('PRJ-0001', $payload['data']['project_id'] ?? null);
-        $this->assertSame(8, $payload['data']['duration'] ?? null);
-        $this->assertIsArray($payload['data']['critical'] ?? null);
-        $this->assertTrue($payload['data']['ok'] ?? null);
+        $saved = $captured['data']['saved'];
+        $this->assertSame('PRJ-0001', $saved['project_id'] ?? null);
+        $this->assertSame(13, $saved['duration'] ?? null);
+        $this->assertEqualsCanonicalizing(['TSK-0001', 'TSK-0002'], $saved['critical'] ?? []);
+        $this->assertTrue($saved['ok'] ?? null);
+        $this->assertTrue($saved['persisted'] ?? null, 'the saved hook fires after the write');
+        $this->assertArrayHasKey('result', $saved, 'the original result payload is retained');
+
+        // The computed-only hook must NOT claim persistence, or a preview
+        // listener could not tell the two apart.
+        $after = $captured['data']['after'];
+        $this->assertSame(13, $after['duration'] ?? null);
+        $this->assertTrue($after['ok'] ?? null);
+        $this->assertArrayNotHasKey('persisted', $after ?? []);
     }
 }

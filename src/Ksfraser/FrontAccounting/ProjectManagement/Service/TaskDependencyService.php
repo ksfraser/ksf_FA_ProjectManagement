@@ -62,12 +62,18 @@ class TaskDependencyService
      * Persist a precedence edge. Runs the workflow hooks and refuses writes
      * that would close a cycle (the engine's required pre-condition).
      *
-     * @param array<string,mixed> $dependency
-     * @return string
+     * The row scan that backs the duplicate check and the cycle guard is
+     * performed once and shared: both answers come from the same persisted
+     * graph, and two full-table reads per insert is one too many.
      *
-     * @BABOK Related: FR-PM-006-003
+     * @param array<string,mixed> $dependency
+     * @return string The new dependency id.
+     * @throws \InvalidArgumentException When the edge is malformed, a
+     *         duplicate, or would close a precedence cycle.
+     *
+     * @BABOK Related: FR-PM-006-003, UT-PM-006-005-003
      */
-    public function createDependency(array $dependency): string
+    public function add(array $dependency): string
     {
         $data = [
             'task_id'         => $dependency['task_id'],
@@ -76,7 +82,7 @@ class TaskDependencyService
             'lag'             => $dependency['lag'] ?? 0.00,
         ];
         $this->validate($data);
-        $this->fireWorkflowHook('createDependency', 'before_save', $data);
+        $this->fireWorkflowHook('task_dependency', 'before_save', $data);
 
         $rows = $this->deps->all();
         foreach ($rows as $row) {
@@ -88,10 +94,10 @@ class TaskDependencyService
                 );
             }
         }
-        $this->guardCycle($data);
+        $this->guardCycle($data, $rows);
 
         $id = $this->deps->insert($data);
-        $this->fireWorkflowHook('createDependency', 'after_save', $data);
+        $this->fireWorkflowHook('task_dependency', 'after_save', $data);
         return $id;
     }
 
@@ -100,6 +106,8 @@ class TaskDependencyService
      *
      * @param string $dependencyId
      * @return void
+     *
+     * @BABOK Related: FR-PM-006-003
      */
     public function deleteDependency(string $dependencyId): void
     {
@@ -114,6 +122,8 @@ class TaskDependencyService
      * @param array<string,mixed> $data
      * @return void
      * @throws \InvalidArgumentException
+     *
+     * @BABOK Related: FR-PM-006-003, UT-PM-006-005-001
      */
     private function validate(array $data): void
     {
@@ -132,35 +142,53 @@ class TaskDependencyService
 
     /**
      * Prevent a dependency write from introducing a cycle. Builds the DAG
-     * from the current rows + the new edge and asks CpmEngine to detect it.
+     * from the current rows plus the new edge and asks CpmEngine to detect it
+     * — the same tri-colour search run() uses, so there is one definition of
+     * "cycle" in the module.
      *
-     * @param array<string,mixed> $newEdge
+     * The thrown message carries the closed cycle path, which is the only way
+     * a caller can tell the user where the loop actually closes.
+     *
+     * @param array<string,mixed>                $newEdge
+     * @param array<int,array<string,mixed>>     $rows Persisted rows already read.
+     *
      * @return void
      * @throws \InvalidArgumentException When the new edge would close a loop.
+     *
+     * @BABOK Related: FR-PM-006-003, UT-PM-006-005-002
      */
-    private function guardCycle(array $newEdge): void
+    private function guardCycle(array $newEdge, array $rows = []): void
     {
-        $graph = $this->currentGraph();
+        $graph = $this->currentGraph($rows);
         $graph->addEdge($newEdge['predecessor_id'], $newEdge['task_id']);
-        if ($this->engine->detectCycle($graph)) {
+
+        $cycle = $this->engine->detectCycle($graph);
+        if ($cycle !== []) {
             throw new \InvalidArgumentException(
-                'Dependency would create a cycle: '
-                . $newEdge['task_id'] . ' -> ' . $newEdge['predecessor_id']
+                'Dependency would create a cycle: ' . implode(' -> ', $cycle)
             );
         }
     }
 
     /**
-     * The current precedence DAG (existing rows only).
+     * The current precedence DAG, from the persisted rows.
+     *
+     * @param array<int,array<string,mixed>> $rows Rows already read by add().
      *
      * @return TaskDependencyGraph
+     *
+     * @BABOK Related: FR-PM-006-003, UT-PM-006-005-005
      */
-    private function currentGraph(): TaskDependencyGraph
+    private function currentGraph(array $rows = []): TaskDependencyGraph
     {
+        if ($rows === []) {
+            $rows = $this->deps->all();
+        }
         $graph = new TaskDependencyGraph();
-        foreach ($this->deps->all() as $row) {
+        foreach ($rows as $row) {
             $graph->addEdge($row['predecessor_id'], $row['task_id']);
         }
+
         return $graph;
     }
 }

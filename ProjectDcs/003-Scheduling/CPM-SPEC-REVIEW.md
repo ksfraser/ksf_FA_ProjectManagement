@@ -6,7 +6,7 @@
 | Date | 2026-10-17 |
 | Scope | The five red cases of `tests/Unit/CpmEngineTest.php` (the 20 approved cases of `UT-PM-006-cpm-unit.md`), plus three adjacent findings the corpus does not reach |
 | Inputs | `CpmEngine.php` at `23f9b4a`, the PHPUnit run of 2026-10-17, standard CPM semantics, and dotProject / OpenProject / LibreProject behaviour |
-| Ruling owner | Pending — §2 and §6 need the requirement owner's sign-off before the spec text is edited |
+| Ruling owner | Signed off 2026-10-17 — see §0.1 for the rulings that supersede the "owner sign-off required" caveats in §2 and §6 |
 
 ## 0. How to read the rulings
 
@@ -33,6 +33,30 @@ case and passes. This is instance #4 of the id collision adjudicated in
 | 3 | `UT-PM-006-002-005` critical set `['A','B']` | **Code wrong** (fixed, same root cause as #1) |
 | 4 | `UT-PM-006-003-001` self-dependency is not a cycle | **Spec right, code wrong** (fixed) |
 | 5 | `UT-PM-006-003-002` cycle path `[A,B,C,(A)]` | **Spec right, code wrong** (fixed) |
+
+## 0.1 Owner rulings, 2026-10-17 (supersede the "Pending" status above)
+
+Every item this review flagged as needing the requirement owner's sign-off has
+now been ruled on. The rulings are recorded where they were applied; this table
+is the index.
+
+| # | Question | Ruling | Where it landed |
+|---|---|---|---|
+| 1 | `FR-PM-006-002` `schedule()` signature: 4/5-arg draft vs shipped 1-arg | **Code right, FR wrong.** `schedule(string $projectId)` loads its own inputs from the persisted graph; a caller-passed task set can be stale. | `FR-PM-006-002` §Signature; `UT-PM-006-004-004` |
+| 2 | `FR-PM-006-002` hooks: single `schedule_saved` on `pm_sched` vs two on `pm_schedule` | **Code right, FR wrong.** Both hooks stay: separating "computed" from "persisted" lets a caller render a preview without writing. | `FR-PM-006-002` §Hooks; `UT-PM-006-004-002` |
+| 3 | `FR-PM-006-002` hook payload | **Extend, do not replace.** Keep `{project_id, result, persisted}`, ADD `duration` and `critical[]`. A caller needs duration + the critical set to explain WHY a date moved — that is the point of CPM in a PM product (dotProject and OpenProject both surface critical-path data in scheduling output). | `FR-PM-006-002` §Hook payload; `SchedulingService::schedule`; `UT-PM-006-004-006` |
+| 4 | `FR-PM-006-003` method name: `add` vs `createDependency` | **FR right, code wrong.** Renamed `createDependency()` → `add()`. | `FR-PM-006-003`; `TaskDependencyService::add`; `UT-PM-006-005-003` |
+| 5 | `FR-PM-006-003` cycle guard, listed as *Blocked*/*Not implemented* | **Implement.** `Engine\TaskDependencyGraph`, `CpmEngine::detectCycle()` and `TaskDependencyRepository::all()` are built. | `FR-PM-006-003` §How the guard works; `UT-PM-006-005-002/005/006/008`, `UT-PM-006-006-003/004` |
+| 6 | §6 below, FF | **Spec wrong AND code wrong.** FF gates the successor's FINISH. | §6, rewritten below; `FR-PM-006-001` §Relation types; `UT-PM-006-001-004` |
+
+Ruling 5 required `detectCycle()` to reuse the tri-colour DFS already done here
+rather than grow a second cycle algorithm, and it does: `detectCycle()` adapts
+a `TaskDependencyGraph` to the same `[$id => ['succ' => …]]` shape
+`extractCyclePath()` already walks.
+
+Ruling 1 also withdrew the old `FR-PM-006-002` "default null `endDate` uses
+project end" acceptance item: there is no `$endDate` parameter, so there is
+nothing to default and nothing to verify.
 
 ---
 
@@ -225,9 +249,15 @@ corpus could not have caught it. It is now covered by
 
 ---
 
-## 6. Not in the failing five, but the corpus is wrong here too
+## 6. `UT-PM-006-001-004` — FF: **this case was previously GREEN-BUT-WRONG**
 
-`UT-PM-006-001-004` — "FF: predecessor EF+lag: B es = A.ef+2 = 10" (A(8), B(5)).
+**This is the most dangerous class of defect this review covers, and it is
+called out separately for that reason.** The case was in the approved corpus,
+it was passing, and it was passing because the approved expectation and the
+engine were wrong *together*. Nothing about the suite's output could have
+flagged it; only reading the case against the CPM definition could.
+
+**Spec said.** "FF: predecessor EF+lag: B es = A.ef+2 = 10" (A(8), B(5)).
 
 **Standard CPM says.** FF constrains the successor's **finish**:
 `EF_B >= EF_A + lag`. Since `EF_B = ES_B + dur_B`, the earliest start that
@@ -237,27 +267,42 @@ field, so the successor starts 5 days later than FF requires and its float is
 computed from a start that FF never gated. dotProject and OpenProject both
 implement FF as "predecessor finish + lag ⇒ successor **finish**"; LibreProject
 likewise. The SF sibling case (`UT-PM-006-001-005`) is correct, because SF's
-candidate is written as `EF_p + lag - dur_succ` — the very expression FF is
+candidate is written as `EF_p + lag - dur_succ` — the very expression FF was
 missing.
 
-**Ruling: the spec is wrong; the code follows the spec, so no code change was
-made.** Correcting the engine here would turn a currently-green approved case
-red, which is an owner decision, not a silent fix. Proposed corrected
-expectation: `B es = 5, ef = 10` with `B` critical in that network.
+**Ruling (owner, 2026-10-17): the spec is wrong AND the code is wrong.** Both
+were corrected together, deliberately in one change, so that no intermediate
+state existed in which the spec and the code could disagree about FF.
 
-Two smaller inconsistencies, documented but not acted on:
+- Code: `CpmEngine::run()`'s FF branch now writes
+  `$cand = $byId[$p]['ef'] + $lag - $byId[$n]['duration'];` — the same
+  expression SF uses, because both are "the predecessor's finish, expressed
+  against a successor field that is not its start".
+- Spec: `UT-PM-006-001-004` now reads `EF_B = 10`, `ES_B = 10 − 5 = 5`,
+  `project_duration = 10`, B critical.
+- The backward pass already had it right (`FF(i→j): LF_i ≤ LF_j − lag`) and was
+  left alone.
 
-- `UT-PM-006-001-002` says lag is "≥0 only" while `UT-PM-006-003-003` requires
-  negative lag to be "recorded as-is". The engine accepts negative lag raw,
-  which is the right call (MS Project supports leads). Recommend deleting the
-  "(≥0 only)" parenthetical from `UT-PM-006-001-002`.
+**Corrected expectation:** `B es = 5, ef = 10`, `project_duration = 10`, and
+B is on the critical path (its total float is 0). The test method was renamed
+`testUt006001004FinishToFinishEdgeGatesTheSuccessorFinish` so the name no
+longer advertises the wrong field, and its docblock records that the case was
+green-but-wrong.
+
+The two smaller inconsistencies are still recorded but remain unacted:
+
+- `UT-PM-006-001-002`'s "(≥0 only)" parenthetical contradicted
+  `UT-PM-006-001-003`'s requirement that negative lag be used raw. The engine
+  accepts negative lag raw, which is the right call (MS Project supports
+  leads). **Resolved by text**: the parenthetical has been dropped from
+  `001-002` and `001-003` is marked as the governing statement for lag sign.
 - The forward pass floors ES at the data date (`$cand = 0` seed,
   `CpmEngine.php:184`), so an SS or FF edge with a lead that resolves before
   day 0 is clamped to 0 rather than going negative. Standard CPM lets a
-  predecessor's start drive a successor before the data date. No approved case
-  reaches it (the one negative-lag case is FS, resolving to day 6). Recommended
-  fix, not applied: initialise `es` to `null` and seed the `max()` from the
-  first candidate rather than from 0.
+  predecessor's start drive a successor before the data date. No case reaches
+  it. Recommended fix, **not applied** (outside the owner's rulings):
+  initialise `es` to `null` and seed the `max()` from the first candidate
+  rather than from 0.
 
 ---
 
@@ -286,13 +331,26 @@ Reproduce with `CpmEngineTest.php` plus the ad-hoc snippet recorded in
 
 ## 8. Consequences for the requirement documents
 
-These rulings change approved text. Nothing was renumbered or rewritten in this
-pass; the edits below are what the owner needs to apply (or delegate):
+All of the edits below were **applied** on 2026-10-17 following the owner's
+rulings in §0.1. Nothing was renumbered in this pass; the pointers moved.
 
-| Document | Text now | Required edit |
+| Document | Text before | Applied edit |
 |---|---|---|
-| `UT-PM-006-cpm-unit.md:25` | `slack=abs(ls−es); critical=slack<=0.5` | `slack=ls−es` (total float, signed); `critical = 0<=slack<=0.5` |
-| `UT-PM-006-cpm-unit.md:14` (case 004) | `B es = A.ef+2 = 10` | `B es = A.ef+lag−dur_B = 5`, `ef=10` (owner ruling required — makes a green case red) |
-| `FR-PM-006-001:23` | `slack=LS−ES`, `abs(slack)<=0.5` | keep `LS−ES`; change criticality to the one-sided band |
-| `FR-PM-006-001:18` (case 004) | FF via predecessor EF+lag | see §6 |
-| `UT-PM-006-cpm-unit.md:12` | lag "(≥0 only)" | drop, per §6 |
+| `UT-PM-006-cpm-unit.md` case `001-004` | `B es = A.ef+2 = 10` | `EF_B = 10`, `ES_B = 10 − 5 = 5`, duration 10, B critical (§6) |
+| `UT-PM-006-cpm-unit.md` case `002-003` | `slack=abs(ls−es); critical=slack<=0.5` | `slack = ls−es` (total float, signed); `critical = 0<=slack<=0.5` (§2) |
+| `UT-PM-006-cpm-unit.md` case `001-002` | lag "(≥0 only)" | dropped (§6) |
+| `UT-PM-006-cpm-unit.md` groups | `004`/`005`/`006` undefined | added, with the service and regression cases |
+| `FR-PM-006-001:23` | `slack=LS−ES`, `abs(slack)<=0.5` | kept `LS−ES`; criticality is the one-sided band `0<=slack<=0.5` |
+| `FR-PM-006-001` case `004` | "FF edge via predecessor EF+lag" | "FF gates the successor's **finish**: `ES_succ = EF_pred + lag − dur_succ`" |
+| `FR-PM-006-002` | `schedule(projectsId, startDate, tasks, dependencies)`; single `schedule_saved` on `pm_sched`; payload `{project_id, duration, critical[], ok}` | 1-arg signature; two hooks on `pm_schedule`; payload `{project_id, result, ok, duration, critical[], persisted}` |
+| `FR-PM-006-003` | `TaskDependencyService::add` named while the code shipped `createDependency`; cycle guard *Blocked* | code renamed to `add()`; guard implemented |
+
+Two items in §0.1 were resolved by **correcting the requirement**, not the
+code (rulings 1 and 2), and one by **correcting both** (ruling 6). In every
+case the executable suite now passes *because* the code and the documents say
+the same thing — not because an assertion was relaxed. The three failing
+FR-002 tests were rewritten to assert the now-documented contract (one hook per
+phase, the one-argument signature, the extended payload), and two new
+`detectCycle` cases plus a closed-path refusal case were added, because
+implementing the guard without them would have left the feature — the thing
+that stops cycles being written to real data — untested.

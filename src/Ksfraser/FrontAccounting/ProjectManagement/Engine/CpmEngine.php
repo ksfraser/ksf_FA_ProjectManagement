@@ -34,6 +34,13 @@ namespace ksfraser\FrontAccounting\ProjectManagement\Engine;
  *   FF(i->j): LF_i <= LF_j - lag
  *   SF(i->j): LF_i <= LF_j - lag + dur_i
  *
+ * The FORWARD pass is the same four relations read through the successor's
+ * ES/EF instead of its LS/LF, which is where the FF case is subtle: FF gates
+ * the successor's FINISH, not its start, so the candidate written into the
+ * successor's `es` is `EF_pred + lag - dur_succ`. Writing `EF_pred + lag`
+ * straight into `es` would constrain a field FF never gates. See
+ * CPM-SPEC-REVIEW.md §6.
+ *
  * @package ksf_FA_ProjectManagement
  * @since   1.0.0
  *
@@ -187,7 +194,13 @@ class CpmEngine
                         $cand = $byId[$p]['es'] + $lag;
                         break;
                     case 'ff':
-                        $cand = $byId[$p]['ef'] + $lag;
+                        // FF gates the SUCCESSOR'S FINISH: EF_succ >= EF_pred + lag.
+                        // Since EF_succ = ES_succ + dur_succ, the earliest start
+                        // that satisfies it is EF_pred + lag - dur_succ — the
+                        // same expression SF uses, because both are "the
+                        // predecessor's finish, expressed against a successor
+                        // field that is not its start".
+                        $cand = $byId[$p]['ef'] + $lag - $byId[$n]['duration'];
                         break;
                     case 'sf':
                         $cand = $byId[$p]['ef'] + $lag - $byId[$n]['duration'];
@@ -314,6 +327,41 @@ class CpmEngine
             'project_duration' => $projectDuration,
             'critical'         => $critical,
         ];
+    }
+
+    /**
+     * The first real dependency cycle in an arbitrary precedence graph.
+     *
+     * This is the write-time guard's entry point (FR-PM-006-003): the
+     * persistence service builds a TaskDependencyGraph from the rows it is
+     * about to extend and asks here whether the result is still acyclic. It
+     * is the SAME tri-colour depth-first search run() uses to build its
+     * topological order — one algorithm, two callers — so the invariant "a
+     * persisted PM dependency graph is always a DAG" and the schedule's own
+     * notion of a cycle can never drift apart.
+     *
+     * The return value is the cycle itself as a CLOSED traversal: the first
+     * node is repeated last, so `A -> B -> A` comes back as `['A','B','A']`.
+     * That is what lets a caller render "where does this loop close?" without
+     * re-deriving it. An acyclic graph returns [], which is also falsey, so the
+     * common `if ($cycle = $engine->detectCycle($g))` shape works — but the
+     * explicit `!== []` comparison is preferred at call sites that must not
+     * rely on array truthiness.
+     *
+     * @param TaskDependencyGraph $graph Precedence edges of the candidate graph.
+     *
+     * @return string[] Closed cycle path, or [] when the graph is acyclic.
+     *
+     * @BABOK Related: FR-PM-006-003, UT-PM-006-005-005
+     */
+    public function detectCycle(TaskDependencyGraph $graph): array
+    {
+        $byId = [];
+        foreach ($graph->nodes() as $id) {
+            $byId[$id] = ['succ' => $graph->successorsOf($id)];
+        }
+
+        return $this->extractCyclePath($byId);
     }
 
     /**

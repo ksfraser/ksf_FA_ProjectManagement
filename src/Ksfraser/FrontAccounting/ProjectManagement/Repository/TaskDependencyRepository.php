@@ -99,6 +99,32 @@ class TaskDependencyRepository
     }
 
     /**
+     * Every dependency row, unfiltered.
+     *
+     * This is the row scan the write-time cycle guard depends on
+     * (FR-PM-006-003): to decide whether a candidate edge closes a loop it has
+     * to see the whole persisted precedence graph, not one project or one
+     * task's slice of it, because a cycle can run through any of them. It is
+     * therefore not paged — `findPage()` and `findAllByProject()` remain the
+     * right choice for display, and only the guard wants this.
+     *
+     * @return array<int,array<string,mixed>>
+     *
+     * @BABOK Related: FR-PM-006-003, UT-PM-006-005-006
+     */
+    public function all(): array
+    {
+        $qb = new QueryBuilder();
+        $qb->select([
+                'dependency_id', 'task_id', 'predecessor_id',
+                'dependency_type', 'lag',
+            ])
+            ->from(Schema::T_TASK_DEPENDENCIES)
+            ->orderBy('task_id')->orderBy('predecessor_id');
+        return $this->db->fetchAll($qb->toSql(), $qb->getParams());
+    }
+
+    /**
      * @return string
      */
     public function nextId(): string

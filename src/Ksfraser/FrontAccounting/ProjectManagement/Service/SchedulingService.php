@@ -53,7 +53,31 @@ class SchedulingService
     /**
      * Run the CPM pass for a project and persist computed scheduling fields.
      *
+     * The signature is deliberately one argument. The service reads the task
+     * rows and the precedence edges for `$projectId` from its injected
+     * repositories, so it always schedules the graph that is actually
+     * persisted. The original draft of FR-PM-006-002 had
+     * `schedule($projectId, $startDate, $tasks, $dependencies[, $endDate])`,
+     * which let a caller hand in a task set that had already drifted from the
+     * database — the schedule would then be computed over a graph nothing else
+     * in the system believes in, and the persisted ES/EF/LS/LF would silently
+     * disagree with the task list on the next page load.
+     *
+     * Two hooks fire, both under the `pm_schedule` prefix:
+     *
+     * - `pm_schedule_schedule_after` — the schedule is COMPUTED, nothing
+     *   written. A caller that only wants to preview or explain a schedule
+     *   listens here and pays no writes.
+     * - `pm_schedule_schedule_saved` — the same payload plus
+     *   `persisted: true`. This is the one to listen to in order to react to a
+     *   committed schedule.
+     *
+     * The split is the reason there are two. A single post-write hook would
+     * force a caller that only wants to render a preview to write to the
+     * database to get its numbers.
+     *
      * @param string $projectId
+     *
      * @return array{
      *     ok: bool,
      *     cycle?: string[],
@@ -62,7 +86,7 @@ class SchedulingService
      *     critical?: string[]
      * }
      *
-     * @BABOK Related: FR-PM-006-002
+     * @BABOK Related: FR-PM-006-002, UT-PM-006-004-004
      */
     public function schedule(string $projectId): array
     {
@@ -77,7 +101,18 @@ class SchedulingService
             return ['ok' => false, 'cycle' => $result['cycle'] ?? []];
         }
 
-        $payload = ['project_id' => $projectId, 'result' => $result];
+        // duration/critical/ok are hoisted to the top level of BOTH payloads,
+        // not just the post-write one: a listener has to be able to explain
+        // the schedule without first digging the full task table out of
+        // `result`. `result` itself is retained so a caller that needs per-task
+        // ES/EF/LS/LF still has one place to read it from.
+        $payload = [
+            'project_id' => $projectId,
+            'result'     => $result,
+            'ok'         => true,
+            'duration'   => $result['project_duration'] ?? 0,
+            'critical'   => $result['critical'] ?? [],
+        ];
         $this->fireWorkflowHook('schedule', 'schedule_after', $payload);
 
         $this->persist($projectId, $result);

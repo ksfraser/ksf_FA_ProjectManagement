@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ksfraser\Tests\Unit\FAProjectManagement;
 
 use ksfraser\FrontAccounting\ProjectManagement\Engine\CpmEngine;
+use ksfraser\FrontAccounting\ProjectManagement\Engine\TaskDependencyGraph;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -146,18 +147,32 @@ class CpmEngineTest extends TestCase
     }
 
     /**
-     * UT-PM-006-001-004 — FF: predecessor EF+lag: B es = A.ef+2 = 10.
+     * UT-PM-006-001-004 — FF gates the successor's FINISH: EF_succ >= EF_pred
+     * + lag. With A(8), B(5), lag 2: EF_B = 10, so ES_B = 10 - 5 = 5.
+     *
+     * This case was GREEN-BUT-WRONG until the FF ruling (CPM-SPEC-REVIEW.md
+     * §6): the approved text and the engine both wrote the predecessor's
+     * *finish* candidate straight into the successor's *start*, which is five
+     * days later than FF requires and derives B's float from a field FF never
+     * gates.
      *
      * @BABOK Related: UT-PM-006-001-004
      */
-    public function testUt006001004FinishToFinishEdgeUsesPredecessorEf(): void
+    public function testUt006001004FinishToFinishEdgeGatesTheSuccessorFinish(): void
     {
         $r = $this->assertOk($this->engine->run(
             [$this->task('A', 8), $this->task('B', 5)],
             [$this->edge('A', 'B', 2, ['type' => 'ff'])]
         ));
 
-        $this->assertSame(10, $r['tasks']['B']['es']);
+        // EF_B = A.ef(8) + lag(2) = 10; ES_B = EF_B - B.duration(5) = 5.
+        $this->assertSame(10, $r['tasks']['B']['ef'], 'FF gates the successor finish');
+        $this->assertSame(5, $r['tasks']['B']['es']);
+        $this->assertSame(10, $r['project_duration']);
+        $this->assertTrue(
+            $r['tasks']['B']['critical'],
+            'FF is the driving relation here, so B is on the critical path'
+        );
     }
 
     /**
@@ -309,11 +324,22 @@ class CpmEngineTest extends TestCase
     }
 
     /**
-     * UT-PM-006-002-003 — slack=abs(ls-es); critical=slack<=0.5 (tolerance).
+     * UT-PM-006-002-003 — slack is TOTAL FLOAT (signed `ls−es`); critical iff
+     * `0 <= slack <= 0.5`.
+     *
+     * The approved text originally read `slack=abs(ls−es)` and
+     * `critical=slack<=0.5`. Both were ruled wrong (CPM-SPEC-REVIEW.md §2):
+     * read literally, `abs()` contradicts `002-001` and `002-005` (with the
+     * old negative floats it made a critical task look non-critical), and
+     * `abs()` would turn a −3d constraint violation into a healthy-looking
+     * +3d of float AND hide it from criticality. The test now asserts the
+     * documented rule. On this network float is non-negative, so the value
+     * assertion holds either way; what changed is that the test states the
+     * contract instead of a vacuous equality.
      *
      * @BABOK Related: UT-PM-006-002-003
      */
-    public function testUt006002003SlackIsAbsoluteAndCriticalityUsesTheTolerance(): void
+    public function testUt006002003SlackIsSignedTotalFloatAndCriticalityIsAOneSidedBand(): void
     {
         $r = $this->assertOk($this->engine->run(
             [$this->task('A', 8), $this->task('B', 5)],
@@ -322,14 +348,19 @@ class CpmEngineTest extends TestCase
 
         foreach ($r['tasks'] as $id => $row) {
             $this->assertSame(
-                abs($row['ls'] - $row['es']),
+                $row['ls'] - $row['es'],
                 $row['slack'],
-                "slack for $id must be abs(ls - es)"
+                "slack for $id must be the signed total float ls - es"
+            );
+            $this->assertGreaterThanOrEqual(
+                0,
+                $row['slack'],
+                "total float for $id cannot be negative in an unconstrained acyclic network"
             );
             $this->assertSame(
-                $row['slack'] <= 0.5,
+                ($row['slack'] >= 0 && $row['slack'] <= CpmEngine::CRITICAL_TOLERANCE),
                 $row['critical'],
-                "criticality for $id must be slack <= 0.5"
+                "criticality for $id must be 0 <= slack <= tolerance"
             );
         }
     }
@@ -347,8 +378,8 @@ class CpmEngineTest extends TestCase
         ));
 
         $m = $r['tasks']['M'];
-        $this->assertSame(abs($m['ls'] - $m['es']), $m['slack']);
-        $this->assertSame($m['slack'] <= 0.5, $m['critical']);
+        $this->assertSame($m['ls'] - $m['es'], $m['slack']);
+        $this->assertSame($m['slack'] >= 0 && $m['slack'] <= CpmEngine::CRITICAL_TOLERANCE, $m['critical']);
         $this->assertTrue($m['critical'], 'a milestone closing the critical chain is critical');
     }
 
@@ -521,6 +552,8 @@ class CpmEngineTest extends TestCase
      *
      * The engine derives it from "every node missing from the topological
      * order", so an acyclic sibling is reported as part of the cycle too.
+     *
+     * @BABOK Related: UT-PM-006-006-001, FR-PM-006-001
      */
     public function testCycleReportExcludesAcyclicTasks(): void
     {
@@ -536,6 +569,8 @@ class CpmEngineTest extends TestCase
 
     /**
      * A calendar-date anchor from a real `fa_pm_tasks.constraint_date` column.
+     *
+     * @BABOK Related: UT-PM-006-006-002, FR-PM-006-001
      */
     public function testCalendarDateAnchorDoesNotExplodeIntoDaysSinceEpoch(): void
     {
@@ -549,5 +584,65 @@ class CpmEngineTest extends TestCase
             $r['tasks']['A']['ef'],
             'a Y-m-d anchor must be read as a schedule offset, not floor(ts/86400)'
         );
+    }
+
+    // ------------------------- UT-006-006-003/004: the write-time cycle guard
+    // FR-PM-006-003: CpmEngine::detectCycle() is the guard's entry point, so
+    // it has to answer the same question run() answers, on a graph the
+    // persistence service builds from rows rather than from a task table.
+
+    /**
+     * UT-PM-006-006-003 — detectCycle() returns a genuine, CLOSED cycle path.
+     *
+     * Not the set difference "everything the topological sort could not
+     * place": the returned traversal must name only the nodes on a loop and
+     * must close back on its first node so a caller can render where the loop
+     * closes.
+     *
+     * @BABOK Related: UT-PM-006-006-003, FR-PM-006-003
+     */
+    public function testDetectCycleReturnsAClosedPathOnTheRealCycleOnly(): void
+    {
+        $g = new TaskDependencyGraph();
+        // A->B and B->A is the loop; E only hangs off it.
+        $g->addEdge('A', 'B');
+        $g->addEdge('B', 'A');
+        $g->addEdge('A', 'E');
+
+        $cycle = (new CpmEngine())->detectCycle($g);
+
+        $this->assertNotSame([], $cycle, 'A<->B is a cycle');
+        $this->assertNotContains('E', $cycle, 'E is not on a loop');
+        $this->assertSame(
+            $cycle[0],
+            $cycle[count($cycle) - 1],
+            'the cycle path must close back on its first node'
+        );
+        $this->assertEqualsCanonicalizing(
+            ['A', 'B'],
+            array_values(array_unique($cycle)),
+            'the reported traversal must name only the nodes actually on the loop'
+        );
+    }
+
+    /**
+     * UT-PM-006-006-004 — detectCycle() accepts a real acyclic graph.
+     *
+     * The guard's other half: if this returned a non-empty path for a diamond
+     * network, no dependency could ever be written.
+     *
+     * @BABOK Related: UT-PM-006-006-004, FR-PM-006-003
+     */
+    public function testDetectCycleAcceptsAnAcyclicDiamond(): void
+    {
+        $g = new TaskDependencyGraph();
+        $g->addEdge('A', 'B');
+        $g->addEdge('A', 'C');
+        $g->addEdge('B', 'D');
+        $g->addEdge('C', 'D');
+        $g->addEdge('D', 'E');
+
+        $this->assertSame([], (new CpmEngine())->detectCycle($g));
+        $this->assertSame([], (new CpmEngine())->detectCycle(new TaskDependencyGraph()));
     }
 }
