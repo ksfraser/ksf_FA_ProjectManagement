@@ -38,4 +38,5 @@ function registerVendoredPsr4(string $moduleDir): void
 }
 
 require_once __DIR__ . "/stubs.php";
+require_once __DIR__ . "/ChildPhpRunner.php";
 
