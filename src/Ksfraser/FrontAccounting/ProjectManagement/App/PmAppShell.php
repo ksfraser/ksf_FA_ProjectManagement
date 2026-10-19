@@ -32,7 +32,8 @@ use ksfraser\FrontAccounting\ProjectManagement\Controller\ReportsTabController;
  * @since   1.0.0
  *
  * @UML Note: APP_TAB_ARCHITECTURE.md §7/§11 (app host)
- * @BABOK Related: BR-012 (Project Management)
+ * @BABOK Related: BR-PM-010, FR-PM-010-001 — the PM app-shell / tab surface. Replaces
+ *   the previous `@BABOK BR-012`, which matches no ProjectDcs document in either repo.
  */
 class PmAppShell extends AbstractAppShell
 {
@@ -40,7 +41,9 @@ class PmAppShell extends AbstractAppShell
      * @param string $defaultView Fallback view key
      *
      * @since 1.0.0
-     */
+      *
+ * @BABOK Related: FR-PM-010-001, BR-PM-010 — the PM app-shell / front-controller tab surface
+ */
     public function __construct(string $defaultView = 'dashboard')
     {
         parent::__construct('pm', 'index.php', 'view', $defaultView);
@@ -53,7 +56,9 @@ class PmAppShell extends AbstractAppShell
      * @return void
      *
      * @since 1.0.0
-     */
+      *
+ * @BABOK Related: FR-PM-010-001, BR-PM-010 — the PM app-shell / front-controller tab surface
+ */
     protected function registerCoreTabs(): void
     {
         $tabs = [

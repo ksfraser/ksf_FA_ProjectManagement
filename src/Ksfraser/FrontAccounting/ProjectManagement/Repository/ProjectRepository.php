@@ -21,13 +21,18 @@ use ksfraser\FrontAccounting\ProjectManagement\Dictionary\Schema;
  * @since   1.0.0
  *
  * @UML Note: AGENTS.md §ksf_common_db (DAO porting demonstration module)
- * @BABOK Related: BR-012 (Project Management)
+ * @BABOK Related: N/A — no requirement defined in this repo for project CRUD; that
+ *   requirement set (FR-PM-001) lives in ksf_ProjectManagement/ProjectDcs. Replaces
+ *   the previous `@BABOK BR-012`, which matches no ProjectDcs document.
  */
 class ProjectRepository
 {
     /** @var DbConnectionInterface */
     private $db;
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock)
+     */
     public function __construct(?DbConnectionInterface $db = null)
     {
         $this->db = $db ?? Schema::adapter();
@@ -35,7 +40,9 @@ class ProjectRepository
 
     /**
      * @return array<int, array<string, mixed>>
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock)
+ */
     public function findPage(int $page, int $perPage, array $filters = []): array
     {
         $qb = new QueryBuilder();
@@ -55,7 +62,9 @@ class ProjectRepository
 
     /**
      * @return int
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock)
+ */
     public function countAll(array $filters = []): int
     {
         $qb = new QueryBuilder();
@@ -66,7 +75,9 @@ class ProjectRepository
 
     /**
      * @return array<string, mixed>|null
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock)
+ */
     public function findById(string $projectId): ?array
     {
         $qb = new QueryBuilder();
@@ -81,7 +92,9 @@ class ProjectRepository
      *
      * @param string $prefix Id prefix
      * @return string
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock)
+ */
     public function nextId(string $prefix = 'PRJ'): string
     {
         $sql = "SELECT project_id FROM " . Schema::T_PROJECTS
@@ -98,7 +111,9 @@ class ProjectRepository
      * Insert a project (dictionary-driven INSERT). Returns the new id.
      *
      * @return string
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock)
+ */
     public function save(array $data): string
     {
         $def = Schema::projects();
@@ -125,7 +140,9 @@ class ProjectRepository
 
     /**
      * @return void
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock)
+ */
     public function update(string $projectId, array $data): void
     {
         $def = Schema::projects();
@@ -146,7 +163,9 @@ class ProjectRepository
 
     /**
      * @return void
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock)
+ */
     public function delete(string $projectId): void
     {
         $this->db->executeUpdate(
@@ -160,12 +179,17 @@ class ProjectRepository
      *
      * @param mixed $value
      * @return mixed
-     */
+      *
+ * @BABOK Related: N/A — no requirement defined in this repo for project CRUD. The requirement set that owns it (FR-PM-001) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document in either repo. — normalises a blank customer/type to NULL
+ */
     private function emptyToNull($value)
     {
         return $value === '' ? null : $value;
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD. The requirement set that owns it (FR-PM-001) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document in either repo. — list filtering
+     */
     private function applyFilters(QueryBuilder $qb, array $filters): void
     {
         if (!empty($filters['status'])) {

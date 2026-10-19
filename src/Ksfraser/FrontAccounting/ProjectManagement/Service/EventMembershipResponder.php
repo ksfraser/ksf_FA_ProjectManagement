@@ -42,6 +42,9 @@ class EventMembershipResponder
     /** @var DbConnectionInterface */
     private $db;
 
+    /**
+     * @BABOK Related: BR-007, FR-PM-007-001, FR-CAL-007-003 — the membership responder for project-task meetings
+     */
     public function __construct(?DbConnectionInterface $db = null)
     {
         $this->db = $db ?? Schema::adapter();
@@ -56,7 +59,9 @@ class EventMembershipResponder
      *
      * @param object|array $dto EventClosedDto, or its array form
      * @return string[] lower-cased, de-duplicated member emails
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — decides whether the PM module is a member of a meeting
+ */
     public function respondMembership($dto): array
     {
         $payload   = $this->normalizeDto($dto);
@@ -108,7 +113,9 @@ class EventMembershipResponder
      *
      * @param string $taskId
      * @return array<string, mixed>|null
-     */
+      *
+ * @BABOK Related: N/A — row lookup for the responder; no requirement of its own
+ */
     private function findTask(string $taskId): ?array
     {
         $sql = "SELECT task_id, project_id FROM " . Schema::T_TASKS
@@ -121,7 +128,9 @@ class EventMembershipResponder
      *
      * @param string $projectId
      * @return array<string, true>
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — project assignees implied by the meeting
+ */
     private function assigneeUserIds(string $projectId): array
     {
         $sql = "SELECT employee_id FROM " . Schema::T_ASSIGNMENTS
@@ -143,7 +152,9 @@ class EventMembershipResponder
      *
      * @param string $email
      * @return string user id, or '' when the email is unknown to users
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — maps a PM user id to the calendar user id
+ */
     private function resolveUserId(string $email): string
     {
         $sql = "SELECT user_id FROM users WHERE LOWER(email) = LOWER(:email) LIMIT 1";
@@ -157,7 +168,9 @@ class EventMembershipResponder
     /**
      * @param array<string, mixed> $payload normalized DTO
      * @return string[] lower-cased, de-duplicated attendee emails
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — lowercased, deduped attendee emails
+ */
     private function attendeeEmails(array $payload): array
     {
         $list = isset($payload['attendee_emails']) && is_array($payload['attendee_emails'])
@@ -179,7 +192,9 @@ class EventMembershipResponder
     /**
      * @param object|array $dto
      * @return array<string, mixed>
-     */
+      *
+ * @BABOK Related: N/A — accepts several DTO shapes defensively; no requirement of its own
+ */
     private function normalizeDto($dto): array
     {
         if (is_array($dto)) {
@@ -196,7 +211,9 @@ class EventMembershipResponder
      * @param array<string, mixed> $payload
      * @param string               $key
      * @return mixed
-     */
+      *
+ * @BABOK Related: N/A — array-shape accessor helper; no requirement of its own
+ */
     private function value(array $payload, string $key)
     {
         if (array_key_exists($key, $payload)) {

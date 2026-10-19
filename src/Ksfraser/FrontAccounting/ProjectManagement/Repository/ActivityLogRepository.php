@@ -17,13 +17,17 @@ use ksfraser\FrontAccounting\ProjectManagement\Dictionary\Schema;
  * @since   1.0.0
  *
  * @UML Note: AGENTS.md §ksf_common_db (DAO porting demonstration module)
- * @BABOK Related: BR-012 (Project Management)
+ * @BABOK Related: N/A — no requirement defined in this repo for the activity log.
+ *   Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
  */
 class ActivityLogRepository
 {
     /** @var DbConnectionInterface */
     private $db;
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo for the activity log (see the class docblock)
+     */
     public function __construct(?DbConnectionInterface $db = null)
     {
         $this->db = $db ?? Schema::adapter();
@@ -38,7 +42,9 @@ class ActivityLogRepository
      * @param string      $details
      * @param string|null $actor     Current user id (null → resolve at call)
      * @return int New log id
-     */
+      *
+ * @BABOK Related: N/A — no requirement defined in this repo for the activity log. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document. — writes one activity row
+ */
     public function log(string $entityType, string $entityId, string $action, string $details = '', ?string $actor = null): int
     {
         if ($actor === null) {
@@ -74,7 +80,9 @@ class ActivityLogRepository
      *
      * @param int $limit
      * @return array<int, array<string, mixed>>
-     */
+      *
+ * @BABOK Related: N/A — no requirement defined in this repo for the activity log. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document. — reads recent rows for the dashboard
+ */
     public function recent(int $limit = 10): array
     {
         $qb = new QueryBuilder();

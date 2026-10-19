@@ -39,6 +39,9 @@ class SchedulingService
     /** @var CpmEngine */
     private $engine;
 
+    /**
+     * @BABOK Related: FR-PM-006-002 — the scheduler orchestration: compute, persist, fire the hooks
+     */
     public function __construct(
         ?TaskRepository $tasks = null,
         ?TaskDependencyRepository $deps = null,
@@ -128,7 +131,9 @@ class SchedulingService
      *
      * @param array<int,array<string,mixed>> $rows
      * @return array<int,array<string,mixed>>
-     */
+      *
+ * @BABOK Related: FR-PM-006-002 / UT-PM-006-004-005 — converts estimated hours to duration days
+ */
     private function normalizeTasks(array $rows): array
     {
         $out = [];
@@ -150,7 +155,9 @@ class SchedulingService
      *
      * @param array<int,array<string,mixed>> $rows
      * @return array<int,array<string,mixed>>
-     */
+      *
+ * @BABOK Related: FR-PM-006-002 — converts dependency rows to engine edges
+ */
     private function normalizeEdges(array $rows): array
     {
         $out = [];
@@ -168,7 +175,9 @@ class SchedulingService
     /**
      * @param array<string,mixed> $row
      * @return array{type:string,date?:string}|null
-     */
+      *
+ * @BABOK Related: FR-PM-006-002 / UT-PM-006-004-006 — carries constraint anchors into the hook payload
+ */
     private function constraintFromRow(array $row): ?array
     {
         $constraint = $row['constraint_type'] ?? null;
@@ -200,7 +209,9 @@ class SchedulingService
      * @param string $projectId
      * @param array<string,mixed> $result
      * @return void
-     */
+      *
+ * @BABOK Related: FR-PM-006-002 / UT-PM-006-004-001 — writes the computed ES/EF/LS/LF/slack/critical back through the injected repository; no FA db_* call of its own
+ */
     private function persist(string $projectId, array $result): void
     {
         foreach ($result['tasks'] ?? [] as $taskId => $sched) {

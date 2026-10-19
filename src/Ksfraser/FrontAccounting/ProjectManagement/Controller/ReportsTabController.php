@@ -18,13 +18,17 @@ use ksfraser\FrontAccounting\ProjectManagement\Service\ReportService;
  * @since   1.0.0
  *
  * @UML Note: APP_TAB_ARCHITECTURE.md §2 (controller SRP)
- * @BABOK Related: BR-012 (reports), FR-PM-009/010 (revenue)
+ * @BABOK Related: FR-PM-010-001 — the reports tab surface. Replaces the previous
+ *   `@BABOK BR-012, FR-PM-009/010`, none of which match a ProjectDcs document here.
  */
 class ReportsTabController
 {
     /** @var ReportService */
     private $service;
 
+    /**
+     * @BABOK Related: FR-PM-010-001, BR-PM-010 — the PM app-shell / front-controller tab surface
+     */
     public function __construct(?ReportService $service = null)
     {
         $this->service = $service ?? new ReportService();
@@ -36,7 +40,9 @@ class ReportsTabController
      * @return void
      *
      * @since 1.0.0
-     */
+      *
+ * @BABOK Related: FR-PM-010-001, BR-PM-010 — the PM app-shell / front-controller tab surface
+ */
     public function run(): void
     {
         if (!function_exists('start_table')) {
@@ -54,7 +60,9 @@ class ReportsTabController
      * @return void
      *
      * @since 1.0.0
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     private function renderBudgetVsRevenue(): void
     {
         $rows = $this->service->budgetVsRevenue();
@@ -83,7 +91,9 @@ class ReportsTabController
      * @return void
      *
      * @since 1.0.0
-     */
+      *
+ * @BABOK Related: N/A — no requirement defined in this repo for the hours-by-project report
+ */
     private function renderHoursByProject(): void
     {
         $rows = $this->service->hoursByProject();

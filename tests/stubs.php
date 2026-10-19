@@ -27,7 +27,9 @@ namespace {
          * @param string $sql SQL statement
          * @param string $msg Optional error message
          * @return mixed Seeded result array or true
-         */
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
         function db_query($sql, $msg = '')
         {
             $GLOBALS['__fa_last_sql'] = $sql;
@@ -55,7 +57,9 @@ namespace {
          *
          * @param mixed $result Seeded result
          * @return array|false Next row or false when exhausted
-         */
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
         function db_fetch_assoc($result)
         {
             if (isset($GLOBALS['__fa_current_result']) && count($GLOBALS['__fa_current_result']) > 0) {
@@ -71,7 +75,9 @@ namespace {
          *
          * @param mixed $result Seeded result
          * @return int Row count
-         */
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
         function db_num_rows($result)
         {
             if (is_array($result)) {
@@ -86,7 +92,9 @@ namespace {
          * Returns the last inserted id assigned by the fake DB.
          *
          * @return int Last insert id
-         */
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
         function db_insert_id()
         {
             return $GLOBALS['__fa_last_insert_id'] ?? 1;
@@ -99,7 +107,9 @@ namespace {
          *
          * @param mixed $value Value to escape
          * @return string Escaped value
-         */
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
         function db_escape($value)
         {
             return addslashes((string)$value);
@@ -111,7 +121,9 @@ namespace {
          * Affected-row count for the last fake write.
          *
          * @return int
-         */
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
         function db_num_affected_rows()
         {
             return $GLOBALS['__fa_affected_rows'] ?? 1;
@@ -119,6 +131,9 @@ namespace {
     }
 
     if (!function_exists('db_begin_transaction')) {
+        /**
+         * @BABOK Related: N/A — test stub; not a requirement
+         */
         function db_begin_transaction()
         {
             $GLOBALS['__fa_in_transaction'] = true;
@@ -126,6 +141,9 @@ namespace {
     }
 
     if (!function_exists('db_commit_transaction')) {
+        /**
+         * @BABOK Related: N/A — test stub; not a requirement
+         */
         function db_commit_transaction()
         {
             $GLOBALS['__fa_in_transaction'] = false;
@@ -133,6 +151,9 @@ namespace {
     }
 
     if (!function_exists('db_rollback_transaction')) {
+        /**
+         * @BABOK Related: N/A — test stub; not a requirement
+         */
         function db_rollback_transaction()
         {
             $GLOBALS['__fa_in_transaction'] = false;
@@ -142,6 +163,9 @@ namespace {
     if (!class_exists('hooks', false)) {
         /**
          * Minimal FrontAccounting base hooks class for tests.
+         */
+        /**
+         * @BABOK Related: N/A — FA hooks stub so unit tests can run without a FA bootstrap; not a requirement.
          */
         class hooks
         {
@@ -154,6 +178,9 @@ namespace {
         /**
          * Minimal FrontAccounting base application class for tests.
          */
+        /**
+         * @BABOK Related: N/A — FA application stub for the same reason; not a requirement.
+         */
         class application
         {
         }
@@ -165,7 +192,9 @@ namespace {
          *
          * @param string|null $domain Extension domain
          * @return void
-         */
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
         function set_ext_domain($domain = null)
         {
         }
@@ -181,7 +210,9 @@ namespace {
          * @param mixed  $data   Hook payload (by reference in FA)
          * @param array  $opts   Hook options
          * @return void
-         */
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
         function hook_invoke_all($method, &$data = null, $opts = array())
         {
             $GLOBALS['__fa_hooks_fired'][] = $method;
@@ -197,7 +228,9 @@ namespace {
          *
          * @param string $text Text to translate
          * @return string Untranslated text
-         */
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
         function _($text)
         {
             return $text;

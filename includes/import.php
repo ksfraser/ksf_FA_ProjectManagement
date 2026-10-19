@@ -1,10 +1,16 @@
 <?php
 
+/**
+ * @BABOK Related: N/A — FA page/menu wiring; not a requirement
+ */
 function ksf_fa_pm_import_menu()
 {
     add_menu_entry('project_import', 'Import Projects', '', 'project_import');
 }
 
+/**
+ * @BABOK Related: N/A — FA page/menu wiring; not a requirement
+ */
 function ksf_render_pm_import()
 {
     $target_fields = [
@@ -21,6 +27,9 @@ function ksf_render_pm_import()
         'budget',
     ];
 
+    /**
+     * @BABOK Related: N/A — FA page/menu wiring; not a requirement
+     */
     $processor = function($row) {
         global $db;
         include_once INCLUDES . '/db.inc';

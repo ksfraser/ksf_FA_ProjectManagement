@@ -54,7 +54,8 @@ use ksfraser\FrontAccounting\Common\App\TabRegistration;
  * @since   1.1.0
  *
  * @UML Note: APP_TAB_ARCHITECTURE.md §11 (host page = thin router)
- * @BABOK Related: BR-012 (Project Management app shell)
+ * @BABOK Related: BR-PM-010, FR-PM-010-001 — the PM front controller / tab surface.
+ *   Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
  */
 class PmFrontController extends AbstractFrontController
 {
@@ -64,7 +65,9 @@ class PmFrontController extends AbstractFrontController
      * @return array<string, mixed>
      *
      * @since 1.1.0
-     */
+      *
+ * @BABOK Related: FR-PM-010-001, BR-PM-010 — the PM app-shell / front-controller tab surface
+ */
     public static function defaultOptions(): array
     {
         return [
@@ -86,7 +89,9 @@ class PmFrontController extends AbstractFrontController
      *         When $fallbackSecurity is empty
      *
      * @since 1.1.0
-     */
+      *
+ * @BABOK Related: FR-PM-010-001, BR-PM-010 — the PM app-shell / front-controller tab surface
+ */
     public function __construct(
         AbstractAppShell $appShell,
         string $fallbackSecurity,
@@ -107,7 +112,9 @@ class PmFrontController extends AbstractFrontController
      * @return string
      *
      * @since 1.1.0
-     */
+      *
+ * @BABOK Related: FR-PM-010-001, BR-PM-010 — the PM app-shell / front-controller tab surface
+ */
     protected function getPageTitle(): string
     {
         return _("Project Management");
@@ -125,7 +132,9 @@ class PmFrontController extends AbstractFrontController
      * @return string
      *
      * @since 1.1.0
-     */
+      *
+ * @BABOK Related: FR-PM-010-001, BR-PM-010 — the PM app-shell / front-controller tab surface
+ */
     protected function getPageJs(TabRegistration $tab): string
     {
         if (!function_exists('user_use_date_picker') || !user_use_date_picker()) {
@@ -162,7 +171,9 @@ class PmFrontController extends AbstractFrontController
      * @return void
      *
      * @since 1.1.0
-     */
+      *
+ * @BABOK Related: FR-PM-010-001, BR-PM-010 — the PM app-shell / front-controller tab surface
+ */
     protected function dispatchAction(TabRegistration $tab, string $action): void
     {
         $this->getAppShell()->dispatch($tab->getKey());

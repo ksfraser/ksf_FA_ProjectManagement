@@ -17,6 +17,9 @@ class EventCloseTaskServiceTest extends TestCase
     /** @var EventCloseTaskService */
     private $service;
 
+    /**
+     * @BABOK Related: BR-007, FR-PM-007-002 — the event-close subscriber
+     */
     protected function setUp(): void
     {
         $GLOBALS['__fa_select_queue'] = [];
@@ -30,7 +33,9 @@ class EventCloseTaskServiceTest extends TestCase
     /**
      * BON: window correctly equals closed_at - started_at recorded hours
      * (09:00 -> 13:00 = 4.0h), snapshotted onto the progress row (INSERT).
-     */
+      *
+ * @BABOK Related: BR-007, FR-PM-007-002 — the event-close subscriber
+ */
     public function testTaskCloseSnapshotsWorkedWindow(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -57,7 +62,9 @@ class EventCloseTaskServiceTest extends TestCase
     /**
      * ARI: a repeat broadcast for the same, already-closed task is a NO-OP —
      * nothing re-written, window stays closed.
-     */
+      *
+ * @BABOK Related: FR-PM-007-002 req 2 — idempotent: a repeat broadcast must not re-open the window
+ */
     public function testAlreadyClosedTaskIsNoOp(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -79,7 +86,9 @@ class EventCloseTaskServiceTest extends TestCase
 
     /**
      * An existing non-closed progress row is marked closed with the window.
-     */
+      *
+ * @BABOK Related: BR-007, FR-PM-007-002 — the event-close subscriber
+ */
     public function testExistingTaskWindowIsSealed(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -105,7 +114,9 @@ class EventCloseTaskServiceTest extends TestCase
 
     /**
      * AZZ: DTO task_id unknown to this module -> no-op, no error.
-     */
+      *
+ * @BABOK Related: FR-PM-007-002 — unknown task is a silent no-op
+ */
     public function testUnknownTaskNoOp(): void
     {
         $GLOBALS['__fa_select_queue'] = [[]];
@@ -119,7 +130,9 @@ class EventCloseTaskServiceTest extends TestCase
 
     /**
      * No task_id -> no-op (subscriber must not guess the task).
-     */
+      *
+ * @BABOK Related: FR-PM-007-002 — missing task_id is a silent no-op
+ */
     public function testNoTaskIdNoOp(): void
     {
         $result = $this->service->onEventClosed(['event_id' => 7]);
@@ -129,6 +142,9 @@ class EventCloseTaskServiceTest extends TestCase
         $this->assertSame([], (array) $GLOBALS['__fa_sql_log']);
     }
 
+    /**
+     * @BABOK Related: BR-007, FR-PM-007-002 — the event-close subscriber
+     */
     private function assertNoWriteStatements(array $log): void
     {
         foreach ($log as $sql) {
@@ -139,7 +155,9 @@ class EventCloseTaskServiceTest extends TestCase
 
     /**
      * Object-form DTO (toArray) is accepted without a Calendar class dependency.
-     */
+      *
+ * @BABOK Related: BR-007, FR-PM-007-002 — the event-close subscriber
+ */
     public function testObjectDtoIsAccepted(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -149,10 +167,16 @@ class EventCloseTaskServiceTest extends TestCase
 
         $dto = new class([]) {
             public $payload;
+            /**
+             * @BABOK Related: BR-007, FR-PM-007-002 — the event-close subscriber
+             */
             public function __construct(array $payload)
             {
                 $this->payload = $payload;
             }
+            /**
+             * @BABOK Related: BR-007, FR-PM-007-002 — the event-close subscriber
+             */
             public function toArray(): array
             {
                 return $this->payload;

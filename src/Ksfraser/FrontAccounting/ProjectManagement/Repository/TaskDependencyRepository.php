@@ -25,6 +25,9 @@ class TaskDependencyRepository
     /** @var DbConnectionInterface */
     private $db;
 
+    /**
+     * @BABOK Related: FR-PM-006-003 — dependency row persistence; no requirement of its own
+     */
     public function __construct(?DbConnectionInterface $db = null)
     {
         $this->db = $db ?? Schema::adapter();
@@ -32,7 +35,9 @@ class TaskDependencyRepository
 
     /**
      * @return array<int, array<string, mixed>>
-     */
+      *
+ * @BABOK Related: FR-PM-006-003 — dependency row persistence; no requirement of its own
+ */
     public function findPage(int $page, int $perPage, array $filters = []): array
     {
         $qb = new QueryBuilder();
@@ -50,7 +55,9 @@ class TaskDependencyRepository
 
     /**
      * @return array<int, array<string, mixed>>
-     */
+      *
+ * @BABOK Related: FR-PM-006-003 — the row scan the cycle guard depends on
+ */
     public function findAllFor(string $taskId): array
     {
         $qb = new QueryBuilder();
@@ -92,7 +99,9 @@ class TaskDependencyRepository
      *
      * @param string $projectId
      * @return array<int,array<string,mixed>>
-     */
+      *
+ * @BABOK Related: FR-PM-006-003 — alias of findAllByProject()
+ */
     public function findAllForProject(string $projectId): array
     {
         return $this->findAllByProject($projectId);
@@ -126,7 +135,9 @@ class TaskDependencyRepository
 
     /**
      * @return string
-     */
+      *
+ * @BABOK Related: FR-PM-006-003 — dependency row persistence; no requirement of its own
+ */
     public function nextId(): string
     {
         $sql = "SELECT dependency_id FROM " . Schema::T_TASK_DEPENDENCIES
@@ -141,7 +152,9 @@ class TaskDependencyRepository
 
     /**
      * @return string
-     */
+      *
+ * @BABOK Related: FR-PM-006-003 / UT-PM-006-005-003 — persists an acyclic edge and returns its id
+ */
     public function insert(array $data): string
     {
         $row = [
@@ -159,7 +172,9 @@ class TaskDependencyRepository
 
     /**
      * @return void
-     */
+      *
+ * @BABOK Related: FR-PM-006-003 — removes a single edge
+ */
     public function delete(string $taskId, string $predecessorId): void
     {
         $this->db->executeUpdate(
@@ -171,7 +186,9 @@ class TaskDependencyRepository
 
     /**
      * @return void
-     */
+      *
+ * @BABOK Related: FR-PM-006-003 / UT-PM-006-005-004 — removes every edge of a task
+ */
     public function deleteAllFor(string $taskId): void
     {
         $this->db->executeUpdate(

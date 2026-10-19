@@ -39,6 +39,9 @@ class EventCloseTaskService
     /** @var DbConnectionInterface */
     private $db;
 
+    /**
+     * @BABOK Related: BR-007, FR-PM-007-002, FR-CAL-007-002 — the ksf_event_closed subscriber
+     */
     public function __construct(?DbConnectionInterface $db = null)
     {
         $this->db = $db ?? Schema::adapter();
@@ -50,7 +53,9 @@ class EventCloseTaskService
      * @param object|array $dto EventClosedDto, or its array form
      * @return array{closed: bool, task_id: string|null, recorded_hours: float,
      *               already_closed?: bool, reason?: string}
-     */
+      *
+ * @BABOK Related: BR-007, FR-PM-007-002 — seals the task time window and snapshots the worked hours
+ */
     public function onEventClosed($dto): array
     {
         $payload = $this->normalizeDto($dto);
@@ -86,7 +91,9 @@ class EventCloseTaskService
     /**
      * @param string $taskId
      * @return array<string, mixed>|null
-     */
+      *
+ * @BABOK Related: N/A — row lookup for the subscriber; no requirement of its own
+ */
     private function findTask(string $taskId): ?array
     {
         $sql = "SELECT task_id, project_id FROM " . Schema::T_TASKS
@@ -97,7 +104,9 @@ class EventCloseTaskService
     /**
      * @param string $taskId
      * @return array<string, mixed>|null
-     */
+      *
+ * @BABOK Related: N/A — row lookup for the subscriber; no requirement of its own
+ */
     private function findProgress(string $taskId): ?array
     {
         $sql = "SELECT progress_id, task_id, status FROM " . Schema::T_PROGRESS
@@ -108,7 +117,9 @@ class EventCloseTaskService
     /**
      * @param array<string, mixed> $progress progress row
      * @return bool true when the row already carries the closed marker
-     */
+      *
+ * @BABOK Related: FR-PM-007-002 req 2 — idempotency guard; a repeat broadcast must not re-open the window
+ */
     private function isClosed(array $progress): bool
     {
         $status = isset($progress['status']) ? trim((string) $progress['status']) : '';
@@ -126,7 +137,9 @@ class EventCloseTaskService
      * @param float   $hours  recorded worked window (closed_at - started_at)
      * @param bool    $exists whether a progress row already exists
      * @return void
-     */
+      *
+ * @BABOK Related: FR-PM-007-002 — writes the sealed window into the task progress row
+ */
     private function writeClosedWindow(string $taskId, float $hours, bool $exists): void
     {
         $now = date('Y-m-d H:i:s');
@@ -158,7 +171,9 @@ class EventCloseTaskService
     /**
      * @param array<string, mixed> $payload normalized DTO
      * @return float recorded worked window in hours (closed_at - started_at)
-     */
+      *
+ * @BABOK Related: FR-PM-007-002 — closed_at minus started_at
+ */
     private function eventHours(array $payload): float
     {
         $from = strtotime((string) ($payload['started_at'] ?? ''));
@@ -172,7 +187,9 @@ class EventCloseTaskService
     /**
      * @param object|array $dto
      * @return array<string, mixed>
-     */
+      *
+ * @BABOK Related: N/A — accepts several DTO shapes defensively; no requirement of its own
+ */
     private function normalizeDto($dto): array
     {
         if (is_array($dto)) {
@@ -189,7 +206,9 @@ class EventCloseTaskService
      * @param array<string, mixed> $payload
      * @param string               $key
      * @return mixed
-     */
+      *
+ * @BABOK Related: N/A — array-shape accessor helper; no requirement of its own
+ */
     private function value(array $payload, string $key)
     {
         if (array_key_exists($key, $payload)) {

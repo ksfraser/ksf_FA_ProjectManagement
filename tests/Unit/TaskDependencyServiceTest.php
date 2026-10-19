@@ -134,6 +134,9 @@ PHP);
         // loop, so a SELECT is expected. What must not happen is a write.
         $this->assertSame(
             [],
+            /**
+             * @BABOK Related: FR-PM-006-003 — cycle guard
+             */
             array_values(array_filter((array) $probe['data']['writes'], static function ($sql) {
                 return stripos(ltrim((string) $sql), 'select') !== 0;
             })),
@@ -179,6 +182,9 @@ PHP);
         );
         $this->assertSame(
             [],
+            /**
+             * @BABOK Related: FR-PM-006-003 — cycle guard
+             */
             array_values(array_filter((array) $probe['data']['writes'], static function ($sql) {
                 return stripos(ltrim((string) $sql), 'select') !== 0;
             })),

@@ -20,6 +20,9 @@ class ProjectTypeServiceTest extends TestCase
 {
     private ProjectTypeService $service;
 
+    /**
+     * @BABOK Related: BR-006 — DDL/option caching
+     */
     protected function setUp(): void
     {
         ProjectTypeService::invalidateCache();
@@ -46,6 +49,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->service = new ProjectTypeService();
     }
 
+    /**
+     * @BABOK Related: BR-006 — DDL/option caching
+     */
     protected function tearDown(): void
     {
         ProjectTypeService::invalidateCache();
@@ -55,6 +61,9 @@ class ProjectTypeServiceTest extends TestCase
 
     // ─── Entity Access ──────────────────────────────────────────────
 
+    /**
+     * @BABOK Related: BR-006 — layer 1 entity cache
+     */
     public function testGetEntitiesReturnsActiveOnlyByDefault(): void
     {
         $entities = $this->service->getEntities();
@@ -64,6 +73,9 @@ class ProjectTypeServiceTest extends TestCase
         }
     }
 
+    /**
+     * @BABOK Related: BR-006 — layer 1 entity cache
+     */
     public function testGetEntitiesCachesResult(): void
     {
         $first = $this->service->getEntities();
@@ -73,6 +85,9 @@ class ProjectTypeServiceTest extends TestCase
 
     // ─── Option Cache ───────────────────────────────────────────────
 
+    /**
+     * @BABOK Related: FR-006-002 — option cache key design
+     */
     public function testGetHtmlOptionsReturnsHtmlOptionArray(): void
     {
         $options = $this->service->getHtmlOptions();
@@ -82,6 +97,9 @@ class ProjectTypeServiceTest extends TestCase
         }
     }
 
+    /**
+     * @BABOK Related: FR-006-006 — blank option is mandatory validation
+     */
     public function testGetHtmlOptionsIncludesBlankLabel(): void
     {
         $options = $this->service->getHtmlOptions(true, '-- Select --');
@@ -90,6 +108,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertSame('-- Select --', $options[0]->getLabel());
     }
 
+    /**
+     * @BABOK Related: FR-006-002 — selected id must not enter the cache key
+     */
     public function testGetHtmlOptionsCacheExcludesSelectedId(): void
     {
         $this->service->getHtmlOptions(true, '', '{name}', 0);
@@ -104,6 +125,9 @@ class ProjectTypeServiceTest extends TestCase
         }
     }
 
+    /**
+     * @BABOK Related: FR-006-003 — serialized cache portability (clone on read)
+     */
     public function testGetHtmlOptionsClonesWhenSelected(): void
     {
         $options1 = $this->service->getHtmlOptions(true, '', '{name}', 0);
@@ -118,6 +142,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertSame('1', reset($selected)->getValue());
     }
 
+    /**
+     * @BABOK Related: FR-006-002 — option cache key design
+     */
     public function testGetHtmlOptionsFormatStringCustom(): void
     {
         $options = $this->service->getHtmlOptions(true, '', '{id} - {name}');
@@ -128,6 +155,9 @@ class ProjectTypeServiceTest extends TestCase
 
     // ─── Pre-rendered HTML DDL ──────────────────────────────────────
 
+    /**
+     * @BABOK Related: BR-006 — layer 3 DDL cache
+     */
     public function testGetDdlReturnsStrings(): void
     {
         $rendered = $this->service->getDdl();
@@ -139,6 +169,9 @@ class ProjectTypeServiceTest extends TestCase
         }
     }
 
+    /**
+     * @BABOK Related: FR-006-006 — blank option is mandatory validation
+     */
     public function testGetDdlWithBlankLabel(): void
     {
         $rendered = $this->service->getDdl(true, '-- Choose --');
@@ -147,6 +180,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertStringContainsString('value=""', $rendered[0]);
     }
 
+    /**
+     * @BABOK Related: FR-006-002 — selected id must not enter the cache key
+     */
     public function testGetDdlWithSelectedId(): void
     {
         $rendered = $this->service->getDdl(true, '', '{name}', 1);
@@ -154,6 +190,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertStringNotContainsString('selected', $rendered[1]);
     }
 
+    /**
+     * @BABOK Related: FR-006-002 — option cache key design
+     */
     public function testGetDdlCacheDifferentiatesBySelectedId(): void
     {
         $r1 = $this->service->getDdl(true, '', '{name}', 0);
@@ -167,6 +206,9 @@ class ProjectTypeServiceTest extends TestCase
 
     // ─── Serialized Cache ───────────────────────────────────────────
 
+    /**
+     * @BABOK Related: FR-006-003 — serialized cache portability
+     */
     public function testGetSerializedCacheReturnsString(): void
     {
         $this->service->getHtmlOptions();
@@ -176,6 +218,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertIsArray($unserialized);
     }
 
+    /**
+     * @BABOK Related: FR-006-003 — serialized cache portability
+     */
     public function testRenderFromSerializedCacheReturnsStrings(): void
     {
         $this->service->getHtmlOptions();
@@ -185,6 +230,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertStringContainsString('<option', $rendered[0]);
     }
 
+    /**
+     * @BABOK Related: FR-006-003 — serialized cache portability
+     */
     public function testRenderFromSerializedCacheWithSelectedId(): void
     {
         $this->service->getHtmlOptions();
@@ -194,6 +242,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertStringNotContainsString('selected', $rendered[0]);
     }
 
+    /**
+     * @BABOK Related: FR-006-003 — serialized cache portability
+     */
     public function testRenderFromSerializedCacheInvalidStringReturnsEmpty(): void
     {
         $rendered = $this->service->renderFromSerializedCache('garbage');
@@ -202,6 +253,9 @@ class ProjectTypeServiceTest extends TestCase
 
     // ─── Cache Invalidation ─────────────────────────────────────────
 
+    /**
+     * @BABOK Related: FR-006-004 — cache invalidation
+     */
     public function testInvalidateCacheClearsAllLayers(): void
     {
         $this->service->getEntities();
@@ -210,6 +264,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertNull(ProjectTypeService::getOptionCacheState());
     }
 
+    /**
+     * @BABOK Related: FR-006-004 — a write invalidates every layer
+     */
     public function testCreateInvalidatesCache(): void
     {
         $this->service->getEntities();
@@ -222,6 +279,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertNull(ProjectTypeService::getOptionCacheState());
     }
 
+    /**
+     * @BABOK Related: FR-006-004 — a write invalidates every layer
+     */
     public function testUpdateInvalidatesCache(): void
     {
         $this->service->getEntities();
@@ -230,6 +290,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertNull(ProjectTypeService::getOptionCacheState());
     }
 
+    /**
+     * @BABOK Related: FR-006-004 — a write invalidates every layer
+     */
     public function testDeleteInvalidatesCache(): void
     {
         $this->service->getEntities();
@@ -240,6 +303,9 @@ class ProjectTypeServiceTest extends TestCase
 
     // ─── Hook Response Methods ──────────────────────────────────────
 
+    /**
+     * @BABOK Related: FR-006-005 — hook contract
+     */
     public function testHookGetProjectTypesReturnsArrays(): void
     {
         $data = ['active_only' => true];
@@ -250,6 +316,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertArrayHasKey('name', $result[0]);
     }
 
+    /**
+     * @BABOK Related: FR-006-005 — hook contract
+     */
     public function testHookGetProjectTypeDdlReturnsStrings(): void
     {
         $data = ['active_only' => true, 'blank_label' => '-- Pick --'];
@@ -259,6 +328,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertStringContainsString('-- Pick --', $result[0]);
     }
 
+    /**
+     * @BABOK Related: FR-006-005 — hook contract
+     */
     public function testHookGetProjectTypeDdlWithSelectedId(): void
     {
         $data = ['active_only' => true, 'selected_id' => 2];
@@ -266,6 +338,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertStringContainsString('selected', $result[1]);
     }
 
+    /**
+     * @BABOK Related: FR-006-005 — hook contract
+     */
     public function testHookGetProjectTypeHtmlOptionsReturnsOptionObjects(): void
     {
         $data = ['active_only' => true];
@@ -277,6 +352,9 @@ class ProjectTypeServiceTest extends TestCase
 
     // ─── Blank Option & Mandatory Validation (FR-006-006) ──────────
 
+    /**
+     * @BABOK Related: FR-006-006 — blank option is mandatory validation
+     */
     public function testBlankOptionHasEmptyValue(): void
     {
         $rendered = $this->service->getDdl(true, '-- Select Type --');
@@ -284,6 +362,9 @@ class ProjectTypeServiceTest extends TestCase
         $this->assertStringContainsString('-- Select Type --', $rendered[0]);
     }
 
+    /**
+     * @BABOK Related: FR-006-006 — blank option is mandatory validation
+     */
     public function testBlankOptionNotIncludedWhenNoBlankLabel(): void
     {
         $rendered = $this->service->getDdl(true, '');

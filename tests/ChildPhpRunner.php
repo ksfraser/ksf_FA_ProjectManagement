@@ -29,7 +29,9 @@ final class ChildPhpRunner
      *
      * @param string $body PHP statements (no opening tag).
      * @return array{exit:int,output:string}
-     */
+      *
+ * @BABOK Related: N/A — diagnostic harness; not a requirement
+ */
     public static function run(string $body): array
     {
         $file = sys_get_temp_dir()
@@ -54,7 +56,9 @@ final class ChildPhpRunner
      *
      * @param string $output
      * @return string
-     */
+      *
+ * @BABOK Related: N/A — diagnostic harness; not a requirement
+ */
     public static function diagnostic(string $output): string
     {
         foreach (explode("\n", $output) as $line) {
@@ -77,7 +81,9 @@ final class ChildPhpRunner
      *
      * @param string $body
      * @return array{exit:int,output:string,data:mixed}
-     */
+      *
+ * @BABOK Related: N/A — diagnostic harness; not a requirement
+ */
     public static function runJson(string $body): array
     {
         $marker = '###PMJSON###';

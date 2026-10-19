@@ -24,18 +24,26 @@ use ksfraser\FrontAccounting\ProjectManagement\Entity\ProjectType;
  * @since   1.0.0
  *
  * @UML Note: AGENTS.md §ksf_common_db (DAO porting demonstration module)
- * @BABOK Related: FR-PM-006 (Project Types), BR-006 (DDL caching)
+ * @BABOK Related: BR-006 — project-type reference reads behind the DDL/option cache.
+ *   Replaces the previous `@BABOK FR-PM-006`: bare FR-PM-006 is a logic-repo id,
+ *   defined in no document here (only FR-PM-006-001/002/003 are).
  */
 class ProjectTypeRepository
 {
     /** @var DbConnectionInterface */
     private $db;
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching
+     */
     public function __construct(?DbConnectionInterface $db = null)
     {
         $this->db = $db ?? Schema::adapter();
     }
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching
+     */
     public function findActive(): array
     {
         $qb = new QueryBuilder();
@@ -47,6 +55,9 @@ class ProjectTypeRepository
         return $this->db->fetchAll($qb->toSql(), $qb->getParams());
     }
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching
+     */
     public function findAll(): array
     {
         $qb = new QueryBuilder();
@@ -57,6 +68,9 @@ class ProjectTypeRepository
         return $this->db->fetchAll($qb->toSql(), $qb->getParams());
     }
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching
+     */
     public function findById(int $id): ?ProjectType
     {
         $qb = new QueryBuilder();
@@ -67,6 +81,9 @@ class ProjectTypeRepository
         return $row !== null ? new ProjectType($row) : null;
     }
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching — a write invalidates the cached layer
+     */
     public function save(array $data): int
     {
         $row = [
@@ -79,6 +96,9 @@ class ProjectTypeRepository
         return $this->db->lastInsertId();
     }
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching — a write invalidates the cached layer
+     */
     public function update(int $id, array $data): void
     {
         $def = Schema::projectTypes();
@@ -91,6 +111,9 @@ class ProjectTypeRepository
         $this->db->executeUpdate($def->updateSql($cols), $data);
     }
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching — a write invalidates the cached layer
+     */
     public function delete(int $id): void
     {
         $this->db->executeUpdate(Schema::projectTypes()->deleteSql(), ['id' => $id]);

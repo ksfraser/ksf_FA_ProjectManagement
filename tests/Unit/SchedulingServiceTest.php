@@ -33,7 +33,9 @@ class SchedulingServiceTest extends TestCase
      * @param array<int,array<string,mixed>> $tasks
      * @param array<int,array<string,mixed>> $deps
      * @return array{exit:int,output:string,data:mixed}
-     */
+      *
+ * @BABOK Related: FR-PM-006-002 — scheduler orchestration
+ */
     private function schedule(array $tasks, array $deps): array
     {
         $body = <<<'PHP'
@@ -68,7 +70,9 @@ PHP;
      *
      * @param array<int,array<string,mixed>> $rows
      * @return string
-     */
+      *
+ * @BABOK Related: FR-PM-006-002 — scheduler orchestration
+ */
     private function php(array $rows): string
     {
         return var_export($rows, true);
@@ -80,7 +84,9 @@ PHP;
      *
      * @param array{exit:int,output:string,data:mixed} $probe
      * @return void
-     */
+      *
+ * @BABOK Related: FR-PM-006-002 — scheduler orchestration
+ */
     private function assertLoaded(array $probe): void
     {
         $this->assertSame(
@@ -94,7 +100,9 @@ PHP;
      * @param string $taskId
      * @param int    $hours
      * @return array<string,mixed>
-     */
+      *
+ * @BABOK Related: FR-PM-006-002 — scheduler orchestration
+ */
     private function taskRow(string $taskId, int $hours): array
     {
         return [
@@ -109,7 +117,9 @@ PHP;
      * @param string $taskId
      * @param string $predecessor
      * @return array<string,mixed>
-     */
+      *
+ * @BABOK Related: FR-PM-006-002 — scheduler orchestration
+ */
     private function depRow(string $taskId, string $predecessor): array
     {
         return [
@@ -142,6 +152,9 @@ PHP;
         $this->assertSame(8, $d['tasks']['TSK-0002']['es']);
         $this->assertSame(13, $d['project_duration']);
 
+        /**
+         * @BABOK Related: FR-PM-006-002 — scheduler orchestration
+         */
         $updates = array_values(array_filter($d['sql_log'], static function ($sql) {
             return stripos((string) $sql, 'update ') === 0;
         }));
@@ -221,6 +234,9 @@ PHP;
         $this->assertSame([], $d['hooks_fired'], 'no hook on the ok=false path');
         $this->assertSame(
             [],
+            /**
+             * @BABOK Related: FR-PM-006-002 — scheduler orchestration
+             */
             array_values(array_filter($d['sql_log'], static function ($sql) {
                 return stripos((string) $sql, 'update ') === 0;
             })),

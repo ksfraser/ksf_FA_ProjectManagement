@@ -22,7 +22,8 @@ use ksfraser\FrontAccounting\ProjectManagement\Service\AssignmentService;
  * @since   1.0.0
  *
  * @UML Note: APP_TAB_ARCHITECTURE.md §11 (controller SRP) + composite-pk flattening
- * @BABOK Related: BR-012 (Team), FR-006-007
+ * @BABOK Related: FR-PM-010-001, FR-006-007 — the tab surface and its field metadata.
+ *   Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
  */
 class TeamTabController extends AbstractTabController
 {
@@ -37,7 +38,9 @@ class TeamTabController extends AbstractTabController
      * @param array<string, mixed>                            $options
      *
      * @since 1.0.0
-     */
+      *
+ * @BABOK Related: N/A — no requirement defined in this repo for resource allocation. The requirement set that owns it (FR-PM-003) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
+ */
     public function __construct($context = null, array $options = [])
     {
         parent::__construct($context, $options);
@@ -47,19 +50,25 @@ class TeamTabController extends AbstractTabController
         ];
     }
 
-    /** {@inheritDoc} */
+    /**
+ * @BABOK Related: FR-006-007 — field-metadata structure — the composite-key column the tab surface needs
+ */
     protected function getPkField(): string
     {
         return 'assignment_key';
     }
 
-    /** {@inheritDoc} */
+    /**
+ * @BABOK Related: FR-006-007 — field-metadata structure — field metadata drives the tab surface form
+ */
     protected function getFieldMetadata(): array
     {
         return AssignmentService::getFieldMetadata();
     }
 
-    /** {@inheritDoc} */
+    /**
+ * @BABOK Related: N/A — no requirement defined in this repo for resource allocation. The requirement set that owns it (FR-PM-003) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
+ */
     protected function listRows(int $page, int $perPage): array
     {
         $rows = $this->service->listRowPage($page, $perPage, $this->filters);
@@ -70,37 +79,49 @@ class TeamTabController extends AbstractTabController
         return $rows;
     }
 
-    /** {@inheritDoc} */
+    /**
+ * @BABOK Related: N/A — no requirement defined in this repo for resource allocation. The requirement set that owns it (FR-PM-003) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
+ */
     protected function countRows(): int
     {
         return $this->service->countRows($this->filters);
     }
 
-    /** {@inheritDoc} */
+    /**
+ * @BABOK Related: N/A — no requirement defined in this repo for resource allocation. The requirement set that owns it (FR-PM-003) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
+ */
     protected function findRecord(string $pk): ?array
     {
         return $this->service->getById($pk);
     }
 
-    /** {@inheritDoc} */
+    /**
+ * @BABOK Related: N/A — no requirement defined in this repo for resource allocation. The requirement set that owns it (FR-PM-003) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
+ */
     protected function createRecord(array $data)
     {
         return $this->service->create($data);
     }
 
-    /** {@inheritDoc} */
+    /**
+ * @BABOK Related: N/A — no requirement defined in this repo for resource allocation. The requirement set that owns it (FR-PM-003) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
+ */
     protected function updateRecord(string $pk, array $data): void
     {
         $this->service->update($pk, $data);
     }
 
-    /** {@inheritDoc} */
+    /**
+ * @BABOK Related: N/A — no requirement defined in this repo for resource allocation. The requirement set that owns it (FR-PM-003) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
+ */
     protected function deleteRecord(string $pk): void
     {
         $this->service->delete($pk);
     }
 
-    /** {@inheritDoc} */
+    /**
+ * @BABOK Related: FR-006-007 — field-metadata structure — foreign-key select options for the form
+ */
     protected function fkOptions(): array
     {
         return [
@@ -110,7 +131,9 @@ class TeamTabController extends AbstractTabController
         ];
     }
 
-    /** {@inheritDoc} */
+    /**
+ * @BABOK Related: FR-PM-010-001, BR-PM-010 — the PM app-shell / front-controller tab surface — keeps the selected tab across pager links
+ */
     protected function preserveParams(): array
     {
         return ['view', 'project_id'];

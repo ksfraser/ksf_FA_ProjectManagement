@@ -15,13 +15,18 @@ use PHPUnit\Framework\TestCase;
  * the shared QueryBuilder. These tests pin the emitted SQL so the next pass
  * over it has to be a deliberate one.
  *
- * @BABOK Related: BR-012 (Project Management)
+ * @BABOK Related: N/A — no requirement in this repo for the reference-option
+ *   queries. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs
+ *   document.
  */
 class ReferenceRepositoryTest extends TestCase
 {
     /** @var ReferenceRepository */
     private $repo;
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for the reference-option queries (was BR-012)
+     */
     protected function setUp(): void
     {
         $GLOBALS['__fa_select_queue'] = [];
@@ -34,7 +39,9 @@ class ReferenceRepositoryTest extends TestCase
     /**
      * Customers come from FA's own debtors_master, which the adapter prefixes
      * exactly like a PM table.
-     */
+      *
+ * @BABOK Related: N/A — no requirement defined in this repo for the reference-option queries (was BR-012)
+ */
     public function testCustomerOptionsQuery(): void
     {
         $GLOBALS['__fa_select_result'] = [
@@ -52,7 +59,9 @@ class ReferenceRepositoryTest extends TestCase
 
     /**
      * Users come from FA's own users table.
-     */
+      *
+ * @BABOK Related: N/A — no requirement defined in this repo for the reference-option queries (was BR-012)
+ */
     public function testUserOptionsQuery(): void
     {
         $GLOBALS['__fa_select_result'] = [
@@ -71,7 +80,9 @@ class ReferenceRepositoryTest extends TestCase
     /**
      * Projects come from the PM dictionary table, and completed projects are
      * excluded from task/assignment pickers.
-     */
+      *
+ * @BABOK Related: N/A — no requirement defined in this repo for the reference-option queries (was BR-012)
+ */
     public function testProjectOptionsQuery(): void
     {
         $GLOBALS['__fa_select_result'] = [
@@ -90,7 +101,9 @@ class ReferenceRepositoryTest extends TestCase
     /**
      * Project types are delegated to ProjectTypeRepository rather than
      * re-queried here.
-     */
+      *
+ * @BABOK Related: BR-006 — delegates to the cached project-type layer
+ */
     public function testProjectTypeOptionsDelegatesToProjectTypeRepository(): void
     {
         $GLOBALS['__fa_select_result'] = [
@@ -105,7 +118,9 @@ class ReferenceRepositoryTest extends TestCase
 
     /**
      * Every method is a pure read: nothing here may write.
-     */
+      *
+ * @BABOK Related: N/A — architecture guard: reference queries must stay read-only
+ */
     public function testNoMethodWrites(): void
     {
         $GLOBALS['__fa_select_result'] = [];

@@ -29,7 +29,8 @@ use ksfraser\FrontAccounting\Common\Traits\WorkflowHooksTrait;
  * @package ksf_FA_ProjectManagement
  * @since   1.0.0
  *
- * @BABOK Related: FR-PM-006-003, BR-PM-006, BR-003-002 (task dependencies),
+ * @BABOK Related: FR-PM-006-003, BR-PM-006 (task dependencies). Replaces the
+ *   previous `@BABOK BR-003-002`, which matches no ProjectDcs document.
  *                  BR-003-003 (milestones)
  */
 class TaskDependencyService
@@ -47,6 +48,9 @@ class TaskDependencyService
     /** @var CpmEngine */
     private $engine;
 
+    /**
+     * @BABOK Related: FR-PM-006-003 — dependency writes guarded against cycles
+     */
     public function __construct(
         ?TaskDependencyRepository $deps = null,
         ?TaskRepository $tasks = null,

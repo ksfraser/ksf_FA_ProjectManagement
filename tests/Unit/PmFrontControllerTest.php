@@ -14,6 +14,9 @@ use PHPUnit\Framework\TestCase;
  * A tab controller that records that it ran, so dispatch can be observed
  * without booting FA or touching a database.
  */
+/**
+ * @BABOK Related: N/A — a test double standing in for a contributed tab; not a requirement.
+ */
 class RecordingTabController
 {
     /** @var string|null Key the front controller resolved. */
@@ -22,6 +25,9 @@ class RecordingTabController
     /** @var array $_GET as the controller saw it. */
     public static $get = [];
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function run(): void
     {
         self::$dispatched = 'recording';
@@ -34,8 +40,14 @@ class RecordingTabController
  * view parameter PM publishes, and two tabs — one controller-backed, one with
  * no controller at all.
  */
+/**
+ * @BABOK Related: N/A — a test double standing in for the app shell; not a requirement.
+ */
 class TestPmShell extends AbstractAppShell
 {
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function __construct()
     {
         parent::__construct('pm', 'index.php', 'view', 'dashboard');
@@ -60,13 +72,17 @@ class TestPmShell extends AbstractAppShell
  *   - the front page still calls getSecurityArea() before session.inc and
  *     run() exactly once after it.
  *
- * @BABOK Related: BR-012
+ * @BABOK Related: FR-PM-010-001, BR-PM-010 — the front controller. Replaces the
+ *   previous `@BABOK BR-012`, which matches no ProjectDcs document.
  */
 class PmFrontControllerTest extends TestCase
 {
     /** @var array Areas the fake access checker saw, in order. */
     private $checked = [];
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     protected function setUp(): void
     {
         RecordingTabController::$dispatched = null;
@@ -77,6 +93,9 @@ class PmFrontControllerTest extends TestCase
         $_REQUEST                          = [];
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     protected function tearDown(): void
     {
         $GLOBALS['__fa_hook_handlers'] = [];
@@ -90,7 +109,9 @@ class PmFrontControllerTest extends TestCase
      *
      * @param PmFrontController $controller Controller under test
      * @return string Captured output
-     */
+      *
+ * @BABOK Related: FR-PM-010-001 — the front controller
+ */
     private function runCapturing(PmFrontController $controller): string
     {
         ob_start();
@@ -107,13 +128,18 @@ class PmFrontControllerTest extends TestCase
      * @param AbstractAppShell $shell   Shell under test
      * @param array            $options Overrides for the PM defaults
      * @return PmFrontController
-     */
+      *
+ * @BABOK Related: FR-PM-010-001 — the front controller
+ */
     private function controller(AbstractAppShell $shell, array $options = []): PmFrontController
     {
         return new PmFrontController(
             $shell,
             'SA_ksf_FA_ProjectManagementVIEW',
             '',
+            /**
+             * @BABOK Related: FR-PM-010-001 — the front controller
+             */
             $options + ['security_checker' => function (string $area): void {
                 $this->checked[] = $area;
             }]
@@ -122,7 +148,9 @@ class PmFrontControllerTest extends TestCase
 
     /**
      * @return TestPmShell Shell carrying two controller tabs and one bare tab
-     */
+      *
+ * @BABOK Related: FR-PM-010-001 — the front controller
+ */
     private function shell(): TestPmShell
     {
         $shell = new TestPmShell();
@@ -143,6 +171,9 @@ class PmFrontControllerTest extends TestCase
         return $shell;
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testViewParameterIsTheCanonicalTabSelector(): void
     {
         $_GET = ['view' => 'projects'];
@@ -150,6 +181,9 @@ class PmFrontControllerTest extends TestCase
         $this->assertSame('projects', $this->controller($this->shell())->resolveTabKey());
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testTabParameterIsAcceptedAsAnAlias(): void
     {
         $_GET = ['tab' => 'projects'];
@@ -157,6 +191,9 @@ class PmFrontControllerTest extends TestCase
         $this->assertSame('projects', $this->controller($this->shell())->resolveTabKey());
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testViewWinsOverTheAlias(): void
     {
         $_GET = ['view' => 'projects', 'tab' => 'bare_tab'];
@@ -164,6 +201,9 @@ class PmFrontControllerTest extends TestCase
         $this->assertSame('projects', $this->controller($this->shell())->resolveTabKey());
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testUnrecognisedViewFallsBackToTheDefaultTab(): void
     {
         $_GET = ['view' => 'no_such_tab'];
@@ -171,6 +211,9 @@ class PmFrontControllerTest extends TestCase
         $this->assertSame('dashboard', $this->controller($this->shell())->resolveTabKey());
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testPageIsNeverATabSelector(): void
     {
         $_GET = ['page' => 'projects'];
@@ -182,6 +225,9 @@ class PmFrontControllerTest extends TestCase
         );
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testGetIsNotNormalisedSoPagerLinksKeepTheView(): void
     {
         $_GET = ['view' => 'projects', 'page' => '3'];
@@ -198,6 +244,9 @@ class PmFrontControllerTest extends TestCase
         );
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testPagePositionIsResolvedAndClamped(): void
     {
         $_GET = ['view' => 'projects', 'page' => '3'];
@@ -210,6 +259,9 @@ class PmFrontControllerTest extends TestCase
         $this->assertSame(1, $this->controller($this->shell())->resolvePagePosition());
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testSecurityAreaIsTheResolvedTabsOwnArea(): void
     {
         $_GET = ['view' => 'projects'];
@@ -220,6 +272,9 @@ class PmFrontControllerTest extends TestCase
         );
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testSecurityAreaFallsBackForATabWithoutOne(): void
     {
         $_GET = ['view' => 'bare_tab'];
@@ -231,6 +286,9 @@ class PmFrontControllerTest extends TestCase
         );
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testAnEmptyFallbackAreaIsRejected(): void
     {
         $this->expectException(
@@ -240,6 +298,9 @@ class PmFrontControllerTest extends TestCase
         new PmFrontController($this->shell(), '   ', '');
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testRunDispatchesTheRequestedTabAndChecksItsArea(): void
     {
         $_GET = ['view' => 'projects'];
@@ -250,6 +311,9 @@ class PmFrontControllerTest extends TestCase
         $this->assertSame(['SA_ksf_FA_ProjectManagementVIEW'], $this->checked);
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testRunLeavesGetAloneForTheTabController(): void
     {
         $_GET = ['view' => 'projects', 'page' => '2'];
@@ -259,6 +323,9 @@ class PmFrontControllerTest extends TestCase
         $this->assertSame(['view' => 'projects', 'page' => '2'], RecordingTabController::$get);
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testActionVerbStillRendersTheTabInsteadOfTheUnavailableMessage(): void
     {
         $_GET     = ['view' => 'projects'];
@@ -283,8 +350,14 @@ class PmFrontControllerTest extends TestCase
         );
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testRunBootsTheShellThenChecksAContributedTabAgainstItsOwnArea(): void
     {
+        /**
+         * @BABOK Related: FR-PM-010-001 — the front controller
+         */
         $GLOBALS['__fa_hook_handlers']['pm_register_tabs'] = static function (&$data, $opts = null): void {
             $data['tabs'][] = new TabRegistration(
                 'probe',
@@ -308,8 +381,14 @@ class PmFrontControllerTest extends TestCase
         $this->assertSame('probe', $controller->getResolvedTab());
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testContributedTabIsInvisibleToThePreSessionAreaResolution(): void
     {
+/**
+ * @BABOK Related: FR-PM-010-001 — the front controller
+ */
 $GLOBALS['__fa_hook_handlers']['pm_register_tabs'] = static function (&$data, $opts = null): void {
             $data['tabs'][] = new TabRegistration(
                 'probe',
@@ -327,6 +406,9 @@ $GLOBALS['__fa_hook_handlers']['pm_register_tabs'] = static function (&$data, $o
         );
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testTheRealShellPublishesThePmRegisterHookAndSixCoreTabs(): void
     {
         $shell = new PmAppShell();
@@ -341,6 +423,9 @@ $GLOBALS['__fa_hook_handlers']['pm_register_tabs'] = static function (&$data, $o
         }
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testNoPmTabControllerImplementsRunAction(): void
     {
         $shell = new PmAppShell();
@@ -358,6 +443,9 @@ $GLOBALS['__fa_hook_handlers']['pm_register_tabs'] = static function (&$data, $o
         }
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testDefaultOptionsPinPmsPublishedUrlSurface(): void
     {
         $options = PmFrontController::defaultOptions();
@@ -368,6 +456,9 @@ $GLOBALS['__fa_hook_handlers']['pm_register_tabs'] = static function (&$data, $o
         $this->assertFalse($options['load_ui_includes']);
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testExplicitOptionsOverrideThePmDefaults(): void
     {
         $_GET = ['selector' => 'projects'];
@@ -380,6 +471,9 @@ $GLOBALS['__fa_hook_handlers']['pm_register_tabs'] = static function (&$data, $o
         $this->assertSame('projects', $controller->resolveTabKey());
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testTheFrontPageKeepsTheTwoPhaseFaBootstrap(): void
     {
         $index = file_get_contents(dirname(__DIR__, 2) . '/index.php');
@@ -396,6 +490,9 @@ $GLOBALS['__fa_hook_handlers']['pm_register_tabs'] = static function (&$data, $o
         $this->assertSame(1, substr_count($index, '->run()'), 'run() is called exactly once');
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the front controller
+     */
     public function testRunIsInheritedFromTheBaseAndCannotBeOverridden(): void
     {
         $method = new \ReflectionMethod(PmFrontController::class, 'run');

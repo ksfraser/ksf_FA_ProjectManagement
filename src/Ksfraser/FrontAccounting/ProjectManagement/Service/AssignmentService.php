@@ -22,7 +22,9 @@ use ksfraser\FrontAccounting\ProjectManagement\Repository\ActivityLogRepository;
  * @since   1.0.0
  *
  * @UML Note: AGENTS.md §ksf_common_db (pre/post workflow hooks on the DAO layer)
- * @BABOK Related: BR-012 (Project Management)
+ * @BABOK Related: FR-006-007, N/A — the field metadata it serves, plus: no requirement
+ *   defined in this repo for resource allocation; that set (FR-PM-003) lives in
+ *   ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`.
  */
 class AssignmentService
 {
@@ -37,6 +39,9 @@ class AssignmentService
     /** @var ActivityLogRepository|null */
     private $log;
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for resource allocation. The requirement set that owns it (FR-PM-003) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
+     */
     public function __construct(
         ?AssignmentRepository $repo = null,
         ?ReferenceRepository $ref = null,
@@ -50,16 +55,25 @@ class AssignmentService
 
     // ─── Reference / DDL ────────────────────────────────────────────
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock) — FK select options
+     */
     public function projectOptions(): array
     {
         return $this->ref->projectOptions();
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock) — FK select options
+     */
     public function userOptions(): array
     {
         return $this->ref->userOptions();
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock) — role select options
+     */
     public static function roleOptions(): array
     {
         return [
@@ -78,7 +92,9 @@ class AssignmentService
      *
      * @return array<string, mixed>
      * @since 1.0.0
-     */
+      *
+ * @BABOK Related: FR-006-007 — field-metadata structure — the field metadata the tab surface renders
+ */
     public static function getFieldMetadata(): array
     {
         return [
@@ -126,16 +142,25 @@ class AssignmentService
 
     // ─── Reads ──────────────────────────────────────────────────────
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for resource allocation. The requirement set that owns it (FR-PM-003) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
+     */
     public function listRowPage(int $page, int $perPage, array $filters = []): array
     {
         return $this->repo->findPage($page, $perPage, $filters);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for resource allocation. The requirement set that owns it (FR-PM-003) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
+     */
     public function countRows(array $filters = []): int
     {
         return $this->repo->countAll($filters);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for resource allocation. The requirement set that owns it (FR-PM-003) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
+     */
     public function getById(string $compositeKey): ?array
     {
         list($projectId, $employeeId) = $this->repo->splitKey($compositeKey);
@@ -144,6 +169,9 @@ class AssignmentService
 
     // ─── Writes (workflow hooks + activity log) ─────────────────────
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock) — create, wrapped in the pre/post CRUD workflow hooks
+     */
     public function create(array $data): string
     {
         $payload = ['record_type' => 'assignment', 'data' => $data];
@@ -159,6 +187,9 @@ class AssignmentService
         return $key;
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock) — update, wrapped in the pre/post CRUD workflow hooks
+     */
     public function update(string $compositeKey, array $data): void
     {
         $payload = ['record_type' => 'assignment', 'record_id' => $compositeKey, 'data' => $data];
@@ -171,6 +202,9 @@ class AssignmentService
         $this->log('assignment', $compositeKey, 'updated');
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock) — delete, wrapped in the pre/post CRUD workflow hooks
+     */
     public function delete(string $compositeKey): void
     {
         $payload = ['record_type' => 'assignment', 'record_id' => $compositeKey];
@@ -180,6 +214,9 @@ class AssignmentService
         $this->log('assignment', $compositeKey, 'deleted');
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo for the activity log (see the class docblock) — records the lifecycle action
+     */
     private function log(string $entityType, string $entityId, string $action, string $details = ''): void
     {
         if ($this->log !== null) {

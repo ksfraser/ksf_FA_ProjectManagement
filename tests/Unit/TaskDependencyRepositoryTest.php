@@ -21,6 +21,9 @@ class TaskDependencyRepositoryTest extends TestCase
     /** @var TaskDependencyRepository */
     private $repo;
 
+    /**
+     * @BABOK Related: FR-PM-006-003 — dependency row persistence
+     */
     protected function setUp(): void
     {
         $GLOBALS['__fa_select_queue']  = [];
@@ -35,7 +38,9 @@ class TaskDependencyRepositoryTest extends TestCase
      * @param string $taskId
      * @param string $predecessorId
      * @return array<string,mixed>
-     */
+      *
+ * @BABOK Related: FR-PM-006-003 — dependency row persistence
+ */
     private function row(string $taskId, string $predecessorId): array
     {
         return [
@@ -47,6 +52,9 @@ class TaskDependencyRepositoryTest extends TestCase
         ];
     }
 
+    /**
+     * @BABOK Related: FR-PM-006-003 — the row scan the guard depends on
+     */
     public function testFindAllForFiltersOnTaskId(): void
     {
         $GLOBALS['__fa_select_result'] = [$this->row('TSK-0002', 'TSK-0001')];
@@ -60,6 +68,9 @@ class TaskDependencyRepositoryTest extends TestCase
         $this->assertStringContainsString("task_id = 'TSK-0002'", $sql);
     }
 
+    /**
+     * @BABOK Related: FR-PM-006-003 — dependency row persistence
+     */
     public function testFindAllByProjectJoinsTheTaskDictionary(): void
     {
         $GLOBALS['__fa_select_result'] = [$this->row('TSK-0002', 'TSK-0001')];
@@ -72,6 +83,9 @@ class TaskDependencyRepositoryTest extends TestCase
         $this->assertStringContainsString("project_id = 'PRJ-0001'", $sql);
     }
 
+    /**
+     * @BABOK Related: FR-PM-006-003 — dependency row persistence
+     */
     public function testFindAllForProjectIsAnAliasOfFindAllByProject(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -86,6 +100,9 @@ class TaskDependencyRepositoryTest extends TestCase
         $this->assertSame('TSK-0003', $second[0]['task_id']);
     }
 
+    /**
+     * @BABOK Related: FR-PM-006-003 — dependency row persistence
+     */
     public function testNextIdStartsAtThePaddedSequence(): void
     {
         $GLOBALS['__fa_select_result'] = [];
@@ -93,6 +110,9 @@ class TaskDependencyRepositoryTest extends TestCase
         $this->assertSame('DEP-0001', $this->repo->nextId());
     }
 
+    /**
+     * @BABOK Related: FR-PM-006-003 — dependency row persistence
+     */
     public function testNextIdIncrementsFromTheLastRow(): void
     {
         $GLOBALS['__fa_select_result'] = [['dependency_id' => 'DEP-0007']];
@@ -100,6 +120,9 @@ class TaskDependencyRepositoryTest extends TestCase
         $this->assertSame('DEP-0008', $this->repo->nextId());
     }
 
+    /**
+     * @BABOK Related: FR-PM-006-003 / UT-PM-006-005-003
+     */
     public function testInsertWritesThePrefixedTableAndReturnsTheNewId(): void
     {
         $GLOBALS['__fa_select_queue'] = [[], []];
@@ -119,6 +142,9 @@ class TaskDependencyRepositoryTest extends TestCase
         $this->assertStringContainsString("'TSK-0001'", $sql);
     }
 
+    /**
+     * @BABOK Related: FR-PM-006-003 — dependency row persistence
+     */
     public function testDeleteScopesOnBothIds(): void
     {
         $this->repo->delete('TSK-0002', 'TSK-0001');
@@ -130,6 +156,9 @@ class TaskDependencyRepositoryTest extends TestCase
         $this->assertStringContainsString("predecessor_id = 'TSK-0001'", $sql);
     }
 
+    /**
+     * @BABOK Related: FR-PM-006-003 / UT-PM-006-005-004
+     */
     public function testDeleteAllForScopesOnTheTaskAlone(): void
     {
         $this->repo->deleteAllFor('TSK-0002');

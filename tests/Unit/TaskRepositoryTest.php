@@ -10,13 +10,18 @@ use PHPUnit\Framework\TestCase;
 /**
  * TaskRepository — DAO-ported tests (DbConnectionInterface against the fake DB).
  *
- * @BABOK Related: BR-012 (Tasks)
+ * @BABOK Related: N/A — no requirement in this repo for task CRUD; that set
+ *   (FR-PM-002) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous
+ *   `@BABOK BR-012`, which matches no ProjectDcs document.
  */
 class TaskRepositoryTest extends TestCase
 {
     /** @var TaskRepository */
     private $repo;
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for task CRUD (was BR-012)
+     */
     protected function setUp(): void
     {
         $GLOBALS['__fa_select_queue'] = [];
@@ -26,6 +31,9 @@ class TaskRepositoryTest extends TestCase
         $this->repo = new TaskRepository();
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for task CRUD (was BR-012)
+     */
     public function testFindPageAppliesFilters(): void
     {
         $GLOBALS['__fa_select_result'] = [['task_id' => 'TSK-0001', 'name' => 'Write spec']];
@@ -40,6 +48,9 @@ class TaskRepositoryTest extends TestCase
         $this->assertStringContainsString('status = ', $sql);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for task CRUD (was BR-012)
+     */
     public function testParentOptionsExcludesSelf(): void
     {
         $GLOBALS['__fa_select_result'] = [
@@ -54,6 +65,9 @@ class TaskRepositoryTest extends TestCase
         $this->assertStringContainsString('task_id <> ', (string) $GLOBALS['__fa_last_sql']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for task CRUD (was BR-012)
+     */
     public function testParentOptionsWithoutExclude(): void
     {
         $GLOBALS['__fa_select_result'] = [['task_id' => 'TSK-0001', 'name' => 'Spec']];
@@ -63,6 +77,9 @@ class TaskRepositoryTest extends TestCase
         $this->assertStringNotContainsString('task_id <> ', (string) $GLOBALS['__fa_last_sql']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for task CRUD (was BR-012)
+     */
     public function testNextIdUsesTaskPrefix(): void
     {
         $GLOBALS['__fa_select_result'] = [];
@@ -70,6 +87,9 @@ class TaskRepositoryTest extends TestCase
         $this->assertSame('TSK-0001', $this->repo->nextId());
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for task CRUD (was BR-012)
+     */
     public function testNextIdIncrements(): void
     {
         $GLOBALS['__fa_select_result'] = [['task_id' => 'TSK-0007']];
@@ -77,6 +97,9 @@ class TaskRepositoryTest extends TestCase
         $this->assertSame('TSK-0008', $this->repo->nextId());
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for task CRUD (was BR-012)
+     */
     public function testSaveInsertsPrefixedTable(): void
     {
         $GLOBALS['__fa_select_result'] = [];
@@ -91,6 +114,9 @@ class TaskRepositoryTest extends TestCase
         $this->assertStringContainsString('INTO `0_fa_pm_tasks`', (string) $GLOBALS['__fa_last_sql']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for task CRUD (was BR-012)
+     */
     public function testUpdateScopedByTaskId(): void
     {
         $this->repo->update('TSK-0001', ['status' => 'Completed', 'progress' => 100]);
@@ -100,6 +126,9 @@ class TaskRepositoryTest extends TestCase
         $this->assertStringContainsString('updated_at', $sql);
     }
 
+/**
+ * @BABOK Related: N/A — no requirement defined in this repo for task CRUD (was BR-012)
+ */
 public function testDeleteCascadesProgressFirst(): void
     {
         $GLOBALS['__fa_sql_log'] = [];

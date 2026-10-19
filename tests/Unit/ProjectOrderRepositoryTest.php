@@ -10,13 +10,17 @@ use PHPUnit\Framework\TestCase;
 /**
  * ProjectOrderRepository data access against a GLOBALS-backed fake DB.
  *
- * @BABOK Related: FR-PM-009/010
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage or
+ *   revenue recognition. Replaces the previous `@BABOK FR-PM-009/010`.
  */
 class ProjectOrderRepositoryTest extends TestCase
 {
     /** @var ProjectOrderRepository */
     private $repo;
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     protected function setUp(): void
     {
         $GLOBALS['__fa_select_queue'] = [];
@@ -26,6 +30,9 @@ class ProjectOrderRepositoryTest extends TestCase
         $this->repo = new ProjectOrderRepository();
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testLinkOrderInsertsIntoProjectSalesOrders(): void
     {
         $GLOBALS['__fa_next_id'] = 9;
@@ -43,6 +50,9 @@ class ProjectOrderRepositoryTest extends TestCase
         $this->assertStringContainsString('0_fa_pm_project_sales_orders', (string)$GLOBALS['__fa_last_sql']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testRecordRevenueInsertsIntoProjectRevenue(): void
     {
         $GLOBALS['__fa_next_id'] = 4;
@@ -62,6 +72,9 @@ class ProjectOrderRepositoryTest extends TestCase
         $this->assertStringContainsString('revenue_amount', (string)$GLOBALS['__fa_last_sql']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testFindLinksByOrderFiltersByOrder(): void
     {
         $GLOBALS['__fa_select_result'] = [[
@@ -78,6 +91,9 @@ class ProjectOrderRepositoryTest extends TestCase
         $this->assertStringContainsString('fa_trans_type = 10', (string)$GLOBALS['__fa_last_sql']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testFindLinksByProjectFiltersByProject(): void
     {
         $GLOBALS['__fa_select_result'] = [
@@ -91,6 +107,9 @@ class ProjectOrderRepositoryTest extends TestCase
         $this->assertStringContainsString('project_id', (string)$GLOBALS['__fa_last_sql']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testFindRevenueByProjectReturnsRows(): void
     {
         $GLOBALS['__fa_select_result'] = [[
@@ -107,6 +126,9 @@ class ProjectOrderRepositoryTest extends TestCase
         $this->assertSame(1000.0, $revenue[0]->getRevenueAmount());
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testFindProjectsForCustomerFiltersByCustomer(): void
     {
         $GLOBALS['__fa_select_result'] = [[
@@ -123,6 +145,9 @@ class ProjectOrderRepositoryTest extends TestCase
         $this->assertStringContainsString("status <> 'Cancelled'", (string)$GLOBALS['__fa_last_sql']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testGetRevenueSummaryByProjectReturnsTotals(): void
     {
         $GLOBALS['__fa_select_result'] = [['revenue_total' => '2500.00', 'order_count' => '2']];
@@ -134,6 +159,9 @@ class ProjectOrderRepositoryTest extends TestCase
         $this->assertStringContainsString('SUM(revenue_amount)', (string)$GLOBALS['__fa_last_sql']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testGetRevenueSummaryByProjectReturnsZeroDefaults(): void
     {
         $GLOBALS['__fa_select_result'] = [];

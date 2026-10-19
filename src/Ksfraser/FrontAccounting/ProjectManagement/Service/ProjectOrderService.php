@@ -13,13 +13,18 @@ use ksfraser\FrontAccounting\ProjectManagement\Repository\ProjectOrderRepository
  * (Square, WooCommerce). Orders are linked to the customer's active
  * projects; revenue is recognized at the order total.
  *
- * @BABOK Related: FR-PM-009/010
+ * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or
+ *   revenue recognition. Neither FR-PM-009 nor FR-PM-010 matches a ProjectDcs
+ *   document here.
  * @since 1.0.0
  */
 class ProjectOrderService
 {
     private ProjectOrderRepository $repo;
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+     */
     public function __construct()
     {
         $this->repo = new ProjectOrderRepository();
@@ -33,7 +38,9 @@ class ProjectOrderService
      *
      * @param array $payload order_imported payload
      * @return array Created link ids
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function onOrderImported(array $payload): array
     {
         $customerId = (int)($payload['customer_id'] ?? 0);
@@ -69,7 +76,9 @@ class ProjectOrderService
      * @param string $projectId Project id
      * @param array $payload order_imported payload
      * @return array|null Link id and revenue id, or null when already linked
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function linkOrderToProject(string $projectId, array $payload): ?array
     {
         $orderNo = (int)($payload['fa_order_no'] ?? 0);
@@ -111,7 +120,9 @@ class ProjectOrderService
      *
      * @param int $customerId debtors_master.debtor_no
      * @return array[] Project rows
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function getActiveProjectsForCustomer(int $customerId): array
     {
         return $this->repo->findProjectsForCustomer($customerId);
@@ -122,7 +133,9 @@ class ProjectOrderService
      *
      * @param string $projectId Project id
      * @return array
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function listLinksByProject(string $projectId): array
     {
         return $this->repo->findLinksByProject($projectId);
@@ -133,7 +146,9 @@ class ProjectOrderService
      *
      * @param string $projectId Project id
      * @return array
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function listRevenueByProject(string $projectId): array
     {
         return $this->repo->findRevenueByProject($projectId);
@@ -144,7 +159,9 @@ class ProjectOrderService
      *
      * @param string $projectId Project id
      * @return array Revenue total and order count
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function getRevenueSummary(string $projectId): array
     {
         return $this->repo->getRevenueSummaryByProject($projectId);

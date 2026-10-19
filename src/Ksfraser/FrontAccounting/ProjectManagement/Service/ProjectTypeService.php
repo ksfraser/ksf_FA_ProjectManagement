@@ -16,6 +16,8 @@ use Ksfraser\HTML\Traits\DdlCacheTrait;
  * @see BR-006 (Cross-Module DDL Caching)
  *
  * @since 1.0.0
+  *
+ * @BABOK Related: BR-006 — cross-module DDL caching — the three-layer option/DDL cache and its invalidation hooks
  */
 class ProjectTypeService
 {
@@ -26,6 +28,9 @@ class ProjectTypeService
     /** @var array[]|null Entity cache */
     private static ?array $entityCache = null;
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching
+     */
     public function __construct(?ProjectTypeRepository $repo = null)
     {
         $this->repo = $repo ?? new ProjectTypeRepository();
@@ -33,6 +38,9 @@ class ProjectTypeService
 
     // ─── Entity Access ─────────────────────────────────────────────
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching — layer 1: entity cache, keyed active/all
+     */
     public function getEntities(bool $activeOnly = true): array
     {
         $key = $activeOnly ? 'active' : 'all';
@@ -48,11 +56,17 @@ class ProjectTypeService
         return $entities;
     }
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching
+     */
     public function listAll(): array
     {
         return $this->repo->findAll();
     }
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching
+     */
     public function getById(int $id): ?array
     {
         $entity = $this->repo->findById($id);
@@ -61,6 +75,9 @@ class ProjectTypeService
 
     // ─── DDL (via DdlCacheTrait) ──────────────────────────────────
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching — layer 2: HtmlOption array cache
+     */
     public function getHtmlOptions(
         bool $activeOnly = true,
         string $blankLabel = '',
@@ -69,6 +86,9 @@ class ProjectTypeService
     ): array {
         $dataKey = ($activeOnly ? 'active' : 'all') . '|' . $blankLabel . '|' . $formatString;
 
+        /**
+         * @BABOK Related: BR-006 — cross-module DDL caching — layer 1: entity cache, keyed active/all
+         */
         $options = $this->getOrBuildOptions($dataKey, function () use ($activeOnly, $blankLabel, $formatString) {
             $entities = $this->getEntities($activeOnly);
             $opts = [];
@@ -98,6 +118,9 @@ class ProjectTypeService
         return $options;
     }
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching — layer 3: DDL string cache
+     */
     public function getDdl(
         bool $activeOnly = true,
         string $blankLabel = '',
@@ -106,6 +129,9 @@ class ProjectTypeService
     ): array {
         $htmlKey = ($activeOnly ? 'active' : 'all') . '|' . $blankLabel . '|' . $formatString . '|' . $selectedId;
         $dataKey = ($activeOnly ? 'active' : 'all') . '|' . $blankLabel . '|' . $formatString;
+        /**
+         * @BABOK Related: BR-006 — cross-module DDL caching — layer 2: HtmlOption array cache
+         */
         $this->getOrBuildOptions($dataKey, function () use ($activeOnly, $blankLabel, $formatString) {
             return $this->getHtmlOptions($activeOnly, $blankLabel, $formatString);
         });
@@ -113,6 +139,9 @@ class ProjectTypeService
         return $this->getOrRenderHtml($htmlKey, $options, $selectedId);
     }
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching — renders a select from the cache
+     */
     public function getProjectTypeSelect(
         string $name = 'project_type_id',
         bool $activeOnly = true,
@@ -131,6 +160,9 @@ class ProjectTypeService
 
     // ─── CRUD (invalidates cache) ─────────────────────────────────
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching — a write invalidates every layer
+     */
     public function create(array $data): int
     {
         $id = $this->repo->save($data);
@@ -138,18 +170,27 @@ class ProjectTypeService
         return $id;
     }
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching — a write invalidates every layer
+     */
     public function update(int $id, array $data): void
     {
         $this->repo->update($id, $data);
         self::invalidateAllCaches();
     }
 
+    /**
+     * @BABOK Related: BR-006 — cross-module DDL caching — a write invalidates every layer
+     */
     public function delete(int $id): void
     {
         $this->repo->delete($id);
         self::invalidateAllCaches();
     }
 
+    /**
+     * @BABOK Related: FR-006-004 — cache invalidation
+     */
     public static function invalidateAllCaches(): void
     {
         self::$entityCache = null;
@@ -158,6 +199,9 @@ class ProjectTypeService
 
     // ─── Hook Response Methods ────────────────────────────────────
 
+    /**
+     * @BABOK Related: FR-006-005 — hook contract returning the cached arrays
+     */
     public function hookGetProjectTypes(array &$data, $opts = null): array
     {
         $entities = $this->getEntities($data['active_only'] ?? true);
@@ -168,6 +212,9 @@ class ProjectTypeService
         return $result;
     }
 
+    /**
+     * @BABOK Related: FR-006-005 — hook contract returning the DDL strings
+     */
     public function hookGetProjectTypeDDL(array &$data, $opts = null): array
     {
         return $this->getDdl(
@@ -178,6 +225,9 @@ class ProjectTypeService
         );
     }
 
+    /**
+     * @BABOK Related: FR-006-005 — hook contract returning HtmlOption objects
+     */
     public function hookGetProjectTypeHtmlOptions(array &$data, $opts = null): array
     {
         return $this->getHtmlOptions(

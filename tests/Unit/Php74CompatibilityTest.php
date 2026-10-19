@@ -27,6 +27,9 @@ class Php74CompatibilityTest extends TestCase
 {
     private string $moduleDir;
 
+    /**
+     * @BABOK Related: N/A — architecture guard; enforces a structural rule rather than a behavioural requirement
+     */
     protected function setUp(): void
     {
         $this->moduleDir = dirname(__DIR__, 2);
@@ -41,7 +44,9 @@ class Php74CompatibilityTest extends TestCase
      * Patterns are applied to tokenizer-stripped source (no comments/strings).
      *
      * @return array<string,string>
-     */
+      *
+ * @BABOK Related: N/A — architecture guard; enforces a structural rule rather than a behavioural requirement
+ */
     private function forbiddenConstructs(): array
     {
         return [
@@ -72,7 +77,9 @@ class Php74CompatibilityTest extends TestCase
      * when an object is returned.
      *
      * @return array<string,string>
-     */
+      *
+ * @BABOK Related: N/A — architecture guard; enforces a structural rule rather than a behavioural requirement
+ */
     private function runtimeLandmines(): array
     {
         return [
@@ -88,7 +95,9 @@ class Php74CompatibilityTest extends TestCase
      * `find -name '*.php'` style tooling skips them.
      *
      * @return string[]
-     */
+      *
+ * @BABOK Related: N/A — architecture guard; enforces a structural rule rather than a behavioural requirement
+ */
     private function shippedSources(): array
     {
         $found    = [];
@@ -118,9 +127,14 @@ class Php74CompatibilityTest extends TestCase
      * Source with comments and string literals blanked out, so only real code
      * is matched. Byte offsets are preserved (replaced spans keep their length)
      * so line numbers stay accurate.
-     */
+      *
+ * @BABOK Related: N/A — architecture guard; enforces a structural rule rather than a behavioural requirement
+ */
     private function codeOnly(string $source): string
     {
+        /**
+         * @BABOK Related: N/A — architecture guard; enforces a structural rule rather than a behavioural requirement
+         */
         $blank  = static function (string $text): string {
             return preg_replace('/[^\n]/', ' ', $text);
         };
@@ -141,12 +155,18 @@ class Php74CompatibilityTest extends TestCase
         return $result;
     }
 
+    /**
+     * @BABOK Related: N/A — architecture guard; enforces a structural rule rather than a behavioural requirement
+     */
     public function testModuleShipsSourcesToScan(): void
     {
         // Guards against the scanner silently matching nothing.
         $this->assertGreaterThan(20, count($this->shippedSources()));
     }
 
+    /**
+     * @BABOK Related: N/A — architecture guard; enforces a structural rule rather than a behavioural requirement
+     */
     public function testNoPhp8OnlySyntaxIsShipped(): void
     {
         $violations = [];
@@ -174,6 +194,9 @@ class Php74CompatibilityTest extends TestCase
         );
     }
 
+    /**
+     * @BABOK Related: N/A — architecture guard; enforces a structural rule rather than a behavioural requirement
+     */
     private function relative(string $path): string
     {
         return ltrim(str_replace($this->moduleDir, '', $path), '/');

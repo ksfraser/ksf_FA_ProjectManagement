@@ -11,10 +11,14 @@ use PHPUnit\Framework\TestCase;
 /**
  * Entity hydration, accessors, and serialization.
  *
- * @BABOK Related: FR-PM-009/010
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage or
+ *   revenue recognition. Replaces the previous `@BABOK FR-PM-009/010`.
  */
 class ProjectEntityTest extends TestCase
 {
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testProjectSalesOrderCanBeInstantiated(): void
     {
         $link = new ProjectSalesOrder(['project_id' => 'PRJ-001', 'fa_order_no' => 42]);
@@ -27,6 +31,9 @@ class ProjectEntityTest extends TestCase
         $this->assertSame(0, $link->getId());
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testProjectSalesOrderToArray(): void
     {
         $link = new ProjectSalesOrder([
@@ -44,6 +51,9 @@ class ProjectEntityTest extends TestCase
         $this->assertSame('PAY_1', $array['source_order_id']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testProjectRevenueCanBeInstantiated(): void
     {
         $revenue = new ProjectRevenue([
@@ -60,6 +70,9 @@ class ProjectEntityTest extends TestCase
         $this->assertSame('', $revenue->getOrderDate());
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testProjectRevenueToArray(): void
     {
         $revenue = new ProjectRevenue([

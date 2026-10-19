@@ -24,7 +24,9 @@ use ksfraser\FrontAccounting\ProjectManagement\Repository\ActivityLogRepository;
  * @since   1.0.0
  *
  * @UML Note: AGENTS.md §ksf_common_db (pre/post workflow hooks on the DAO layer)
- * @BABOK Related: BR-012 (Project Management)
+ * @BABOK Related: FR-006-007, N/A — the field metadata it serves, plus: no requirement
+ *   defined in this repo for project CRUD; that set (FR-PM-001) lives in
+ *   ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`.
  */
 class ProjectService
 {
@@ -39,6 +41,9 @@ class ProjectService
     /** @var ActivityLogRepository|null */
     private $log;
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD. The requirement set that owns it (FR-PM-001) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document in either repo.
+     */
     public function __construct(
         ?ProjectRepository $repo = null,
         ?ReferenceRepository $ref = null,
@@ -52,21 +57,33 @@ class ProjectService
 
     // ─── Reference / DDL ────────────────────────────────────────────
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock) — FK select options
+     */
     public function customerOptions(): array
     {
         return $this->ref->customerOptions();
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock) — FK select options
+     */
     public function userOptions(): array
     {
         return $this->ref->userOptions();
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock) — FK select options
+     */
     public function projectTypeOptions(): array
     {
         return $this->ref->projectTypeOptions();
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock) — status lifecycle options
+     */
     public static function statusOptions(): array
     {
         return [
@@ -78,6 +95,9 @@ class ProjectService
         ];
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock) — priority options
+     */
     public static function priorityOptions(): array
     {
         return [
@@ -93,7 +113,9 @@ class ProjectService
      *
      * @return array<string, mixed>
      * @since 1.0.0
-     */
+      *
+ * @BABOK Related: FR-006-007 — field-metadata structure — the field metadata the tab surface renders
+ */
     public static function getFieldMetadata(): array
     {
         return [
@@ -158,16 +180,25 @@ class ProjectService
 
     // ─── Reads ──────────────────────────────────────────────────────
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD. The requirement set that owns it (FR-PM-001) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document in either repo.
+     */
     public function listRowPage(int $page, int $perPage, array $filters = []): array
     {
         return $this->repo->findPage($page, $perPage, $filters);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD. The requirement set that owns it (FR-PM-001) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document in either repo.
+     */
     public function countRows(array $filters = []): int
     {
         return $this->repo->countAll($filters);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD. The requirement set that owns it (FR-PM-001) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document in either repo.
+     */
     public function getById(string $id): ?array
     {
         return $this->repo->findById($id);
@@ -175,6 +206,9 @@ class ProjectService
 
     // ─── Writes (workflow hooks + activity log) ─────────────────────
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock) — create, wrapped in the pre/post CRUD workflow hooks
+     */
     public function create(array $data): string
     {
         $payload = ['record_type' => 'project', 'data' => $data];
@@ -190,6 +224,9 @@ class ProjectService
         return $id;
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock) — update, wrapped in the pre/post CRUD workflow hooks
+     */
     public function update(string $id, array $data): void
     {
         $payload = ['record_type' => 'project', 'record_id' => $id, 'data' => $data];
@@ -202,6 +239,9 @@ class ProjectService
         $this->log('project', $id, 'updated', (string) ($data['name'] ?? $id));
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; project CRUD is specified logic-repo-side as FR-PM-001 (see the class docblock) — delete, wrapped in the pre/post CRUD workflow hooks
+     */
     public function delete(string $id): void
     {
         $payload = ['record_type' => 'project', 'record_id' => $id];
@@ -211,6 +251,9 @@ class ProjectService
         $this->log('project', $id, 'deleted');
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo for the activity log (see the class docblock) — records the lifecycle action
+     */
     private function log(string $entityType, string $entityId, string $action, string $details = ''): void
     {
         if ($this->log !== null) {

@@ -23,7 +23,9 @@ use ksfraser\FrontAccounting\ProjectManagement\Dictionary\Schema;
  * @since   1.0.0
  *
  * @UML Note: AGENTS.md §ksf_common_db (DAO porting demonstration module)
- * @BABOK Related: BR-012 (Project Management)
+ * @BABOK Related: N/A — no requirement defined in this repo for resource allocation;
+ *   that requirement set (FR-PM-003) lives in ksf_ProjectManagement/ProjectDcs.
+ *   Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
  */
 class AssignmentRepository
 {
@@ -33,6 +35,9 @@ class AssignmentRepository
     /** @var DbConnectionInterface */
     private $db;
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock)
+     */
     public function __construct(?DbConnectionInterface $db = null)
     {
         $this->db = $db ?? Schema::adapter();
@@ -42,7 +47,9 @@ class AssignmentRepository
      * Paged rows; each row gains an "assignment_key" column (project~employee).
      *
      * @return array<int, array<string, mixed>>
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock)
+ */
     public function findPage(int $page, int $perPage, array $filters = []): array
     {
         $qb = new QueryBuilder();
@@ -65,7 +72,9 @@ class AssignmentRepository
 
     /**
      * @return int
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock)
+ */
     public function countAll(array $filters = []): int
     {
         $qb = new QueryBuilder();
@@ -76,7 +85,9 @@ class AssignmentRepository
 
     /**
      * @return array<string, mixed>|null
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock)
+ */
     public function find(string $projectId, string $employeeId): ?array
     {
         $qb = new QueryBuilder();
@@ -91,7 +102,9 @@ class AssignmentRepository
      * Insert an assignment. Returns the composite key.
      *
      * @return string
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock)
+ */
     public function save(array $data): string
     {
         $def = Schema::assignments();
@@ -112,7 +125,9 @@ class AssignmentRepository
      *
      * @param string $compositeKey "project_id~employee_id"
      * @return void
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock)
+ */
     public function update(string $compositeKey, array $data): void
     {
         list($projectId, $employeeId) = $this->splitKey($compositeKey);
@@ -135,7 +150,9 @@ class AssignmentRepository
      *
      * @param string $compositeKey
      * @return void
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock)
+ */
     public function delete(string $compositeKey): void
     {
         list($projectId, $employeeId) = $this->splitKey($compositeKey);
@@ -150,12 +167,17 @@ class AssignmentRepository
     /**
      * @param string $compositeKey
      * @return string[] [project_id, employee_id]
-     */
+      *
+ * @BABOK Related: N/A — no requirement defined in this repo for resource allocation. The requirement set that owns it (FR-PM-003) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document. — composite (project, employee) key handling
+ */
     public function splitKey(string $compositeKey): array
     {
         return explode(self::KEY_SEP, $compositeKey, 2);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; resource allocation is specified logic-repo-side as FR-PM-003 (see the class docblock)
+     */
     private function applyFilters(QueryBuilder $qb, array $filters): void
     {
         if (!empty($filters['project_id'])) {

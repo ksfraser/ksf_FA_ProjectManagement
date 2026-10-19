@@ -22,6 +22,9 @@ class EventMembershipResponderTest extends TestCase
     /** @var EventMembershipResponder */
     private $responder;
 
+    /**
+     * @BABOK Related: FR-PM-007-001 — the membership responder
+     */
     protected function setUp(): void
     {
         $GLOBALS['__fa_select_queue'] = [];
@@ -34,7 +37,9 @@ class EventMembershipResponderTest extends TestCase
 
     /**
      * Attendee emails that bridge to an assigned user become MEMBERS.
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — the membership responder
+ */
     public function testProjectAssigneesAreMembers(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -54,7 +59,9 @@ class EventMembershipResponderTest extends TestCase
     /**
      * project_id may come from the task row (task implies project only when
      * the task exists).
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — the membership responder
+ */
     public function testTaskImpliesProjectViaTaskRow(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -74,7 +81,9 @@ class EventMembershipResponderTest extends TestCase
     /**
      * AZZ: neither project_id nor task_id — responder returns nothing and
      * runs no queries.
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — the membership responder
+ */
     public function testNoProjectNoTaskNoOp(): void
     {
         $members = $this->responder->respondMembership([
@@ -88,7 +97,9 @@ class EventMembershipResponderTest extends TestCase
 
     /**
      * AZZ: task_id unknown to the module — nothing classified.
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — the membership responder
+ */
     public function testUnknownTaskNoOp(): void
     {
         $GLOBALS['__fa_select_queue'] = [[]];
@@ -103,7 +114,9 @@ class EventMembershipResponderTest extends TestCase
 
     /**
      * A task row lacking a project does not imply one.
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — the membership responder
+ */
     public function testTaskRowWithoutProjectNoOp(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -120,7 +133,9 @@ class EventMembershipResponderTest extends TestCase
 
     /**
      * A user without a project assignment is not a member.
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — the membership responder
+ */
     public function testUserNotAssignedIsNotMember(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -138,7 +153,9 @@ class EventMembershipResponderTest extends TestCase
 
     /**
      * BON: email unknown to the users table cannot resolve -> not a member.
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — the membership responder
+ */
     public function testEmailNotInUsersIsNotMember(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -157,7 +174,9 @@ class EventMembershipResponderTest extends TestCase
     /**
      * Attendee emails are lower-cased and de-duplicated before classification;
      * the handle match is case-insensitive.
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — the membership responder
+ */
     public function testMembersLowercasedAndDeduped(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -175,7 +194,9 @@ class EventMembershipResponderTest extends TestCase
 
     /**
      * READ-ONLY guarantee: classification never issues writes.
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — the membership responder
+ */
     public function testResponderIsReadOnly(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -196,7 +217,9 @@ class EventMembershipResponderTest extends TestCase
 
     /**
      * Object-form DTO (toArray) is accepted without a Calendar class dependency.
-     */
+      *
+ * @BABOK Related: FR-PM-007-001 — the membership responder
+ */
     public function testObjectDtoIsAccepted(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -206,10 +229,16 @@ class EventMembershipResponderTest extends TestCase
 
         $dto = new class([]) {
             public $payload;
+            /**
+             * @BABOK Related: FR-PM-007-001 — the membership responder
+             */
             public function __construct(array $payload)
             {
                 $this->payload = $payload;
             }
+            /**
+             * @BABOK Related: FR-PM-007-001 — the membership responder
+             */
             public function toArray(): array
             {
                 return $this->payload;

@@ -48,7 +48,8 @@
  * @since   1.1.0
  *
  * @UML Note: APP_TAB_ARCHITECTURE.md §11 (host page = thin router)
- * @BABOK Related: BR-012 (Project Management)
+ * @BABOK Related: FR-PM-010-001 — the FA page entry point for the PM tab surface.
+ *   Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
  */
 
 chdir(__DIR__);

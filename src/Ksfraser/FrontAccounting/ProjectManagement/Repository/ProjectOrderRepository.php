@@ -22,13 +22,19 @@ use ksfraser\FrontAccounting\ProjectManagement\Entity\ProjectRevenue;
  * @since   1.0.0
  *
  * @UML Note: AGENTS.md §ksf_common_db (DAO porting demonstration module)
- * @BABOK Related: FR-PM-009/010
+ * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or
+ *   revenue recognition. Neither FR-PM-009 nor FR-PM-010 matches a ProjectDcs
+ *   document here (the FA-side FR-PM-010 is the app-shell/tab surface, a different
+ *   subject).
  */
 class ProjectOrderRepository
 {
     /** @var DbConnectionInterface */
     private $db;
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+     */
     public function __construct(?DbConnectionInterface $db = null)
     {
         $this->db = $db ?? Schema::adapter();
@@ -39,7 +45,9 @@ class ProjectOrderRepository
      *
      * @param array $data Link fields
      * @return int New link id
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function linkOrder(array $data): int
     {
         $row = [
@@ -59,7 +67,9 @@ class ProjectOrderRepository
      *
      * @param array $data Revenue fields
      * @return int New revenue_id
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function recordRevenue(array $data): int
     {
         $row = [
@@ -83,7 +93,9 @@ class ProjectOrderRepository
      * @param int $orderNo FA order number
      * @param int $transType FA transaction type
      * @return ProjectSalesOrder[]
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function findLinksByOrder(int $orderNo, int $transType = 10): array
     {
         $sql = "SELECT * FROM " . Schema::T_SALES_ORDERS
@@ -100,7 +112,9 @@ class ProjectOrderRepository
      * @param int $orderNo FA order number
      * @param int $transType FA transaction type
      * @return ProjectRevenue[]
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function findRevenueByOrder(int $orderNo, int $transType = 10): array
     {
         $sql = "SELECT * FROM " . Schema::T_REVENUE
@@ -116,7 +130,9 @@ class ProjectOrderRepository
      *
      * @param string $projectId Project id
      * @return ProjectSalesOrder[]
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function findLinksByProject(string $projectId): array
     {
         $sql = "SELECT * FROM " . Schema::T_SALES_ORDERS
@@ -132,7 +148,9 @@ class ProjectOrderRepository
      *
      * @param string $projectId Project id
      * @return ProjectRevenue[]
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function findRevenueByProject(string $projectId): array
     {
         $sql = "SELECT * FROM " . Schema::T_REVENUE
@@ -148,7 +166,9 @@ class ProjectOrderRepository
      *
      * @param int $customerId debtors_master.debtor_no
      * @return array[] Project rows (project_id, name, status)
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function findProjectsForCustomer(int $customerId): array
     {
         $sql = "SELECT project_id, name, status FROM " . Schema::T_PROJECTS
@@ -162,7 +182,9 @@ class ProjectOrderRepository
      *
      * @param string $projectId Project id
      * @return array Total and count (revenue_total, order_count)
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function getRevenueSummaryByProject(string $projectId): array
     {
         $sql = "SELECT COALESCE(SUM(revenue_amount), 0) AS revenue_total,"

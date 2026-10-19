@@ -20,13 +20,19 @@ use ksfraser\FrontAccounting\ProjectManagement\Dictionary\Schema;
  * @since   1.0.0
  *
  * @UML Note: AGENTS.md §ksf_common_db (DAO porting demonstration module)
- * @BABOK Related: BR-012 (Project Management)
+ * @BABOK Related: FR-PM-006-002, N/A — persists the schedule the scheduler computed.
+ *   No requirement is defined in this repo for task CRUD itself; that set
+ *   (FR-PM-002) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous
+ *   `@BABOK BR-012`, which matches no ProjectDcs document.
  */
 class TaskRepository
 {
     /** @var DbConnectionInterface */
     private $db;
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; task management is specified logic-repo-side as FR-PM-002 (see the class docblock)
+     */
     public function __construct(?DbConnectionInterface $db = null)
     {
         $this->db = $db ?? Schema::adapter();
@@ -34,7 +40,9 @@ class TaskRepository
 
     /**
      * @return array<int, array<string, mixed>>
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; task management is specified logic-repo-side as FR-PM-002 (see the class docblock)
+ */
     public function findPage(int $page, int $perPage, array $filters = []): array
     {
         $qb = new QueryBuilder();
@@ -54,7 +62,9 @@ class TaskRepository
 
     /**
      * @return int
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; task management is specified logic-repo-side as FR-PM-002 (see the class docblock)
+ */
     public function countAll(array $filters = []): int
     {
         $qb = new QueryBuilder();
@@ -68,7 +78,9 @@ class TaskRepository
      *
      * @param string $projectId
      * @return array<int,array<string,mixed>>
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; task management is specified logic-repo-side as FR-PM-002 (see the class docblock)
+ */
     public function findAllByProject(string $projectId): array
     {
         $qb = new QueryBuilder();
@@ -89,7 +101,9 @@ class TaskRepository
      * @param string $taskId
      * @param array{es?:?string,ef?:?string,ls?:?string,lf?:?string,slack?:float,is_critical?:int} $sched
      * @return void
-     */
+      *
+ * @BABOK Related: FR-PM-006-002 — persists the computed ES/EF/LS/LF/slack/critical the scheduler produced
+ */
     public function updateSchedule(string $taskId, array $sched): void
     {
         $allow = ['es', 'ef', 'ls', 'lf', 'slack', 'is_critical'];
@@ -107,7 +121,9 @@ class TaskRepository
 
     /**
      * @return array<string, mixed>|null
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; task management is specified logic-repo-side as FR-PM-002 (see the class docblock)
+ */
     public function findById(string $taskId): ?array
     {
         $qb = new QueryBuilder();
@@ -121,7 +137,9 @@ class TaskRepository
      * Parent-task DDL options for a project (excludes the task itself).
      *
      * @return array<string, string>
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; task management is specified logic-repo-side as FR-PM-002 (see the class docblock)
+ */
     public function parentOptions(string $projectId, string $excludeTaskId = ''): array
     {
         $qb = new QueryBuilder();
@@ -144,7 +162,9 @@ class TaskRepository
      * Next sequential task id (TSK-0001, TSK-0002, ...).
      *
      * @return string
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; task management is specified logic-repo-side as FR-PM-002 (see the class docblock)
+ */
     public function nextId(): string
     {
         $sql = "SELECT task_id FROM " . Schema::T_TASKS
@@ -161,7 +181,9 @@ class TaskRepository
      * Insert a task (dictionary-driven INSERT). Returns the new task id.
      *
      * @return string
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; task management is specified logic-repo-side as FR-PM-002 (see the class docblock)
+ */
     public function save(array $data): string
     {
         $def = Schema::tasks();
@@ -191,7 +213,9 @@ class TaskRepository
 
     /**
      * @return void
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; task management is specified logic-repo-side as FR-PM-002 (see the class docblock)
+ */
     public function update(string $taskId, array $data): void
     {
         $def = Schema::tasks();
@@ -215,7 +239,9 @@ class TaskRepository
      * progress holds a direct unique FK).
      *
      * @return void
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; task management is specified logic-repo-side as FR-PM-002 (see the class docblock)
+ */
     public function delete(string $taskId): void
     {
         $this->db->executeUpdate(
@@ -232,12 +258,17 @@ class TaskRepository
     /**
      * @param mixed $value
      * @return mixed
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo; task management is specified logic-repo-side as FR-PM-002 (see the class docblock) — normalises a blank value to NULL
+ */
     private function emptyToNull($value)
     {
         return $value === '' ? null : $value;
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo; task management is specified logic-repo-side as FR-PM-002 (see the class docblock) — list filtering
+     */
     private function applyFilters(QueryBuilder $qb, array $filters): void
     {
         if (!empty($filters['project_id'])) {

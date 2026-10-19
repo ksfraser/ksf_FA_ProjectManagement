@@ -27,13 +27,18 @@ use ksfraser\FrontAccounting\ProjectManagement\Dictionary\Schema;
  * @package ksf_FA_ProjectManagement
  * @since   1.0.0
  *
- * @BABOK Related: BR-012 (Project Management)
+ * @BABOK Related: N/A — no requirement defined in this repo for the reference-option
+ *   queries. Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs
+ *   document.
  */
 class ReferenceRepository
 {
     /** @var DbConnectionInterface */
     private $db;
 
+    /**
+     * @BABOK Related: N/A — reference-option queries for foreign-key selects; the owning requirement lives in the logic repo
+     */
     public function __construct(?DbConnectionInterface $db = null)
     {
         $this->db = $db ?? Schema::adapter();
@@ -43,7 +48,9 @@ class ReferenceRepository
      * Customer DDL options (debtors_master → name).
      *
      * @return array<string, string>
-     */
+      *
+ * @BABOK Related: N/A — reference-option queries for foreign-key selects; the owning requirement lives in the logic repo
+ */
     public function customerOptions(): array
     {
         $qb = new QueryBuilder();
@@ -63,7 +70,9 @@ class ReferenceRepository
      * User DDL options (users → real_name).
      *
      * @return array<string, string>
-     */
+      *
+ * @BABOK Related: N/A — reference-option queries for foreign-key selects; the owning requirement lives in the logic repo
+ */
     public function userOptions(): array
     {
         $qb = new QueryBuilder();
@@ -83,7 +92,9 @@ class ReferenceRepository
      * Project DDL options for task/assignment forms.
      *
      * @return array<string, string>
-     */
+      *
+ * @BABOK Related: N/A — reference-option queries for foreign-key selects; the owning requirement lives in the logic repo
+ */
     public function projectOptions(): array
     {
         $qb = new QueryBuilder();
@@ -104,7 +115,9 @@ class ReferenceRepository
      * Project-type DDL options from the ported ProjectTypeRepository.
      *
      * @return array<string, string>
-     */
+      *
+ * @BABOK Related: N/A — reference-option queries for foreign-key selects; the owning requirement lives in the logic repo
+ */
     public function projectTypeOptions(): array
     {
         $rows = (new ProjectTypeRepository($this->db))->findActive();

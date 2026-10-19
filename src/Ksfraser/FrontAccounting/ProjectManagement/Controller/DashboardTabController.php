@@ -19,13 +19,17 @@ use ksfraser\FrontAccounting\ProjectManagement\Service\ReportService;
  * @since   1.0.0
  *
  * @UML Note: APP_TAB_ARCHITECTURE.md §2 (controller SRP)
- * @BABOK Related: BR-012 (dashboard)
+ * @BABOK Related: FR-PM-010-001 — the dashboard tab surface. Replaces the previous
+ *   `@BABOK BR-012`, which matches no ProjectDcs document.
  */
 class DashboardTabController
 {
     /** @var ReportService */
     private $service;
 
+    /**
+     * @BABOK Related: FR-PM-010-001, BR-PM-010 — the PM app-shell / front-controller tab surface
+     */
     public function __construct(?ReportService $service = null)
     {
         $this->service = $service ?? new ReportService();
@@ -37,7 +41,9 @@ class DashboardTabController
      * @return void
      *
      * @since 1.0.0
-     */
+      *
+ * @BABOK Related: FR-PM-010-001, BR-PM-010 — the PM app-shell / front-controller tab surface
+ */
     public function run(): void
     {
         if (!function_exists('start_table')) {
@@ -90,7 +96,9 @@ class DashboardTabController
      * @return void
      *
      * @since 1.0.0
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for the activity log (see the class docblock) — surfaces the activity-log rows on the dashboard
+ */
     private function renderActivity(int $limit): void
     {
         if (!function_exists('start_table') || !function_exists('table_header')) {

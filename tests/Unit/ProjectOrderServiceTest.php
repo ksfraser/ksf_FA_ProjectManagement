@@ -10,13 +10,17 @@ use PHPUnit\Framework\TestCase;
 /**
  * ProjectOrderService order_imported handling and linking.
  *
- * @BABOK Related: FR-PM-009/010
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage or
+ *   revenue recognition. Replaces the previous `@BABOK FR-PM-009/010`.
  */
 class ProjectOrderServiceTest extends TestCase
 {
     /** @var ProjectOrderService */
     private $service;
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     protected function setUp(): void
     {
         $GLOBALS['__fa_select_queue'] = [];
@@ -26,6 +30,9 @@ class ProjectOrderServiceTest extends TestCase
         $this->service = new ProjectOrderService();
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testOnOrderImportedLinksOrderAndRecordsRevenue(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -50,6 +57,9 @@ class ProjectOrderServiceTest extends TestCase
         $this->assertStringContainsString('0_fa_pm_project_revenue', (string)$GLOBALS['__fa_last_sql']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testOnOrderImportedReturnsEmptyWithoutCustomer(): void
     {
         $links = $this->service->onOrderImported(['fa_order_no' => 42]);
@@ -57,6 +67,9 @@ class ProjectOrderServiceTest extends TestCase
         $this->assertSame([], $links);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testOnOrderImportedReturnsEmptyWithoutProjects(): void
     {
         $GLOBALS['__fa_select_queue'] = [[]];
@@ -71,6 +84,9 @@ class ProjectOrderServiceTest extends TestCase
         $this->assertSame([], $links);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testOnOrderImportedReturnsEmptyWhenAlreadyLinked(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -88,6 +104,9 @@ class ProjectOrderServiceTest extends TestCase
         $this->assertSame([], $links);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testOnOrderImportedLinksToEveryProject(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -109,6 +128,9 @@ class ProjectOrderServiceTest extends TestCase
         $this->assertCount(2, $links);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testLinkOrderToProjectReturnsNullWhenAlreadyLinked(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -124,6 +146,9 @@ class ProjectOrderServiceTest extends TestCase
         $this->assertNull($result);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testLinkOrderToProjectRecordsFullRevenue(): void
     {
         $GLOBALS['__fa_select_queue'] = [[]];
@@ -142,6 +167,9 @@ class ProjectOrderServiceTest extends TestCase
         $this->assertStringContainsString('250.5', (string)$GLOBALS['__fa_last_sql']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testGetActiveProjectsForCustomerDelegates(): void
     {
         $GLOBALS['__fa_select_result'] = [['project_id' => 'PRJ-001', 'name' => 'Website Rebuild', 'status' => 'Active']];
@@ -152,6 +180,9 @@ class ProjectOrderServiceTest extends TestCase
         $this->assertSame('PRJ-001', $projects[0]['project_id']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for sales-order linkage or revenue recognition
+     */
     public function testGetRevenueSummaryDelegates(): void
     {
         $GLOBALS['__fa_select_result'] = [['revenue_total' => '100.00', 'order_count' => '1']];

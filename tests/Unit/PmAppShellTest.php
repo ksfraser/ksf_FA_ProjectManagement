@@ -14,15 +14,23 @@ use PHPUnit\Framework\TestCase;
  * PmAppShell — app-shell SRP: core tab registry, register-with-me hook name,
  * pre-session security resolution and default view fallback.
  *
- * @BABOK Related: BR-012, APP_TAB_ARCHITECTURE.md §6/§7
+ * @BABOK Related: FR-PM-010-001, BR-PM-010 — the app shell and tab registration.
+ *   Replaces the previous `@BABOK BR-012`, which matches no ProjectDcs document.
+ *   Architectural reference retained below: APP_TAB_ARCHITECTURE.md §6/§7.
  */
 class PmAppShellTest extends TestCase
 {
+    /**
+     * @BABOK Related: FR-PM-010-001 — the app shell / tab surface
+     */
     public function testShellIsAnAppShell(): void
     {
         $this->assertInstanceOf(AbstractAppShell::class, new PmAppShell());
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the app shell / tab surface
+     */
     public function testRegisterHookNameDerivesFromAppId(): void
     {
         $shell = new PmAppShell();
@@ -30,6 +38,9 @@ class PmAppShellTest extends TestCase
         $this->assertSame('pm_register_tabs', $shell->getRegisterHook());
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the app shell / tab surface
+     */
     public function testDefaultViewIsDashboard(): void
     {
         $shell = new PmAppShell();
@@ -37,6 +48,9 @@ class PmAppShellTest extends TestCase
         $this->assertSame('dashboard', $shell->getDefaultView());
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the app shell / tab surface
+     */
     public function testCoreTabsAreRegistered(): void
     {
         $shell = new PmAppShell();
@@ -51,6 +65,9 @@ class PmAppShellTest extends TestCase
         );
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the app shell / tab surface
+     */
     public function testCoreTabsAreControllerBacked(): void
     {
         $shell = new PmAppShell();
@@ -59,6 +76,9 @@ class PmAppShellTest extends TestCase
         $this->assertSame(ProjectsTabController::class, $shell->getTab('projects')->getControllerClass());
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the app shell / tab surface
+     */
     public function testGetSecurityResolvesPreSessionArea(): void
     {
         $shell = new PmAppShell();
@@ -68,6 +88,9 @@ class PmAppShellTest extends TestCase
         $this->assertSame('SA_FALLBACK', $shell->getSecurity('bogus', 'SA_FALLBACK'));
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the app shell / tab surface
+     */
     public function testResolveViewFallsBackToDefault(): void
     {
         $shell = new PmAppShell();
@@ -76,6 +99,9 @@ class PmAppShellTest extends TestCase
         $this->assertSame('dashboard', $shell->resolveView('bogus')->getKey());
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the app shell / tab surface
+     */
     public function testTabsAreSortedByPriority(): void
     {
         $shell = new PmAppShell();
@@ -87,6 +113,9 @@ class PmAppShellTest extends TestCase
         }
     }
 
+    /**
+     * @BABOK Related: FR-PM-010-001 — the app shell / tab surface
+     */
     public function testDispatchDashboardDoesNotThrowOutsideFa(): void
     {
         $shell = new PmAppShell();

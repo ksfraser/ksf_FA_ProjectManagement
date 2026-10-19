@@ -14,6 +14,9 @@ require_once __DIR__ . '/bootstrap.php';
 $_SESSION = [];
 
 if (!function_exists('_')) {
+    /**
+     * @BABOK Related: N/A — diagnostic probe; not a requirement
+     */
     function _(string $m)
     {
         return $m;
@@ -23,14 +26,23 @@ if (!function_exists('_')) {
 const PROBE_AREA = 'SA_THIRDPARTY_PROBE_VIEW';
 const FALLBACK_AREA = 'SA_ksf_FA_ProjectManagementVIEW';
 
+/**
+ * @BABOK Related: N/A — a probe stub used by the diagnostic script; not a requirement.
+ */
 class ProbeController
 {
+    /**
+     * @BABOK Related: N/A — diagnostic probe; not a requirement
+     */
     public function run(): void
     {
         echo "TAB-RENDERED\n";
     }
 }
 
+/**
+ * @BABOK Related: N/A — diagnostic probe; not a requirement
+ */
 function hook_invoke_all($method, &$data = null, $opts = null)
 {
     if ($method !== 'pm_register_tabs') {
@@ -72,6 +84,9 @@ $fc2 = new \ksfraser\FrontAccounting\ProjectManagement\App\PmFrontController(
     FALLBACK_AREA,
     $path_to_root,
     [
+        /**
+         * @BABOK Related: N/A — diagnostic probe; not a requirement
+         */
         'security_checker' => static function (string $area) use (&$checked): void {
             $checked[] = $area;
         },

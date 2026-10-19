@@ -12,13 +12,18 @@ use PHPUnit\Framework\TestCase;
  * ProjectRepository — DAO-ported tests (DbConnectionInterface + TableDefinition
  * + QueryBuilder against the GLOBALS-backed fake DB).
  *
- * @BABOK Related: BR-012 (Projects)
+ * @BABOK Related: N/A — no requirement in this repo for project CRUD; that set
+ *   (FR-PM-001) lives in ksf_ProjectManagement/ProjectDcs. Replaces the previous
+ *   `@BABOK BR-012`, which matches no ProjectDcs document.
  */
 class ProjectRepositoryTest extends TestCase
 {
     /** @var ProjectRepository */
     private $repo;
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     protected function setUp(): void
     {
         $GLOBALS['__fa_select_queue'] = [];
@@ -28,6 +33,9 @@ class ProjectRepositoryTest extends TestCase
         $this->repo = new ProjectRepository();
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     public function testFindPagePrefixedAndOrdered(): void
     {
         $GLOBALS['__fa_select_result'] = [[
@@ -47,6 +55,9 @@ class ProjectRepositoryTest extends TestCase
         $this->assertStringContainsString('LIMIT', $sql);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     public function testCountAppliesFilters(): void
     {
         $GLOBALS['__fa_select_result'] = [['COUNT(*)' => '3']];
@@ -57,6 +68,9 @@ class ProjectRepositoryTest extends TestCase
         $this->assertStringContainsString('customer_id = ', (string) $GLOBALS['__fa_last_sql']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     public function testCountReturnsZeroWhenNoRow(): void
     {
         $GLOBALS['__fa_select_result'] = [['COUNT(*)' => '0']];
@@ -64,6 +78,9 @@ class ProjectRepositoryTest extends TestCase
         $this->assertSame(0, $this->repo->countAll());
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     public function testFindById(): void
     {
         $GLOBALS['__fa_select_result'] = [['project_id' => 'PRJ-0001', 'name' => 'Website Rebuild']];
@@ -74,6 +91,9 @@ class ProjectRepositoryTest extends TestCase
         $this->assertStringContainsString('project_id = ', (string) $GLOBALS['__fa_last_sql']);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     public function testFindByIdReturnsNullWhenMissing(): void
     {
         $GLOBALS['__fa_select_result'] = [];
@@ -81,6 +101,9 @@ class ProjectRepositoryTest extends TestCase
         $this->assertNull($this->repo->findById('PRJ-9999'));
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     public function testNextIdStartsAtPaddedSequence(): void
     {
         $GLOBALS['__fa_select_result'] = [];
@@ -88,6 +111,9 @@ class ProjectRepositoryTest extends TestCase
         $this->assertSame('PRJ-0001', $this->repo->nextId());
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     public function testNextIdIncrementsFromLast(): void
     {
         $GLOBALS['__fa_select_result'] = [['project_id' => 'PRJ-0042']];
@@ -95,6 +121,9 @@ class ProjectRepositoryTest extends TestCase
         $this->assertSame('PRJ-0043', $this->repo->nextId());
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     public function testSaveInsertsDictionaryDrivenAndReturnsId(): void
     {
         $GLOBALS['__fa_select_result'] = [];
@@ -111,6 +140,9 @@ class ProjectRepositoryTest extends TestCase
         $this->assertStringContainsString('created_at', $sql);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     public function testSaveNormalizesBlankCustomerTypeToNull(): void
     {
         $GLOBALS['__fa_select_result'] = [];
@@ -127,6 +159,9 @@ class ProjectRepositoryTest extends TestCase
         $this->assertStringContainsString('INTO `0_fa_pm_projects`', $sql);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     public function testUpdateUsesUpdateSqlWithId(): void
     {
         $this->repo->update('PRJ-0001', ['status' => 'Completed', 'budget' => 90000]);
@@ -137,6 +172,9 @@ class ProjectRepositoryTest extends TestCase
         $this->assertStringContainsString('project_id', $sql);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     public function testDeleteUsesDictionaryDeleteSql(): void
     {
         $this->repo->delete('PRJ-0001');
@@ -146,6 +184,9 @@ class ProjectRepositoryTest extends TestCase
         $this->assertStringContainsString('project_id', $sql);
     }
 
+    /**
+     * @BABOK Related: N/A — dictionary DDL generation; no requirement in this repo (was BR-012)
+     */
     public function testCreateSqlsAreGeneratedForAllTables(): void
     {
         $sqls = Schema::createSqls();

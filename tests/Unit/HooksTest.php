@@ -10,13 +10,19 @@ use PHPUnit\Framework\TestCase;
  * Capability contract and order_imported listener on
  * hooks_ksf_FA_ProjectManagement.
  *
- * @BABOK Related: FR-PM-011 - Inter-module capability contract
+ * @BABOK Related: N/A — the inter-module capability contract is not specified in this
+ *   repo. Replaces the previous `@BABOK FR-PM-011`, which matches no ProjectDcs
+ *   document in either repo. The cross-module hooks exercised below ARE specified:
+ *   BR-007 / FR-PM-007-001 / FR-PM-007-002, and are cited on the individual tests.
  */
 class HooksTest extends TestCase
 {
     /** @var \hooks_ksf_FA_ProjectManagement */
     private $hooks;
 
+    /**
+     * @BABOK Related: N/A — hook-surface test; see the class docblock
+     */
     protected function setUp(): void
     {
         require_once dirname(__DIR__, 2) . '/hooks.php';
@@ -28,11 +34,17 @@ class HooksTest extends TestCase
         $GLOBALS['__fa_next_id'] = 1;
     }
 
+    /**
+     * @BABOK Related: N/A — hook-surface test; see the class docblock
+     */
     protected function tearDown(): void
     {
         unset($GLOBALS['__fa_select_queue'], $GLOBALS['__fa_select_result'], $GLOBALS['__fa_last_sql'], $GLOBALS['__fa_sql_log']);
     }
 
+    /**
+     * @BABOK Related: N/A — the capability contract is unspecified in this repo (was FR-PM-011)
+     */
     public function testGetModuleConstants(): void
     {
         $data = [];
@@ -44,6 +56,9 @@ class HooksTest extends TestCase
         $this->assertArrayHasKey('constants', $data);
     }
 
+    /**
+     * @BABOK Related: N/A — the capability contract is unspecified in this repo (was FR-PM-011)
+     */
     public function testGetModuleCapabilities(): void
     {
         $data = [];
@@ -58,6 +73,9 @@ class HooksTest extends TestCase
         $this->assertArrayHasKey('capabilities', $data);
     }
 
+    /**
+     * @BABOK Related: N/A — sales-order linkage has no requirement in this repo (was FR-PM-009)
+     */
     public function testHasCapabilitySalesOrderLink(): void
     {
         $data = [];
@@ -68,6 +86,9 @@ class HooksTest extends TestCase
         $this->assertSame('sales_order_link', $data['capability_checked']);
     }
 
+    /**
+     * @BABOK Related: N/A — revenue recognition has no requirement in this repo (was FR-PM-010)
+     */
     public function testHasCapabilityRevenue(): void
     {
         $data = [];
@@ -76,6 +97,9 @@ class HooksTest extends TestCase
         $this->assertTrue($result);
     }
 
+    /**
+     * @BABOK Related: N/A — the capability contract is unspecified in this repo (was FR-PM-011)
+     */
     public function testHasCapabilityUnknown(): void
     {
         $data = [];
@@ -85,6 +109,9 @@ class HooksTest extends TestCase
         $this->assertFalse($data['has_capability']);
     }
 
+    /**
+     * @BABOK Related: N/A — the capability contract is unspecified in this repo (was FR-PM-011)
+     */
     public function testHasCapabilityNoCapabilityReturnsFalse(): void
     {
         $data = [];
@@ -94,6 +121,9 @@ class HooksTest extends TestCase
         $this->assertArrayHasKey('error', $data);
     }
 
+    /**
+     * @BABOK Related: N/A — the capability contract is unspecified in this repo (was FR-PM-011)
+     */
     public function testRespondToCapabilityRequestCapabilities(): void
     {
         $data = [];
@@ -104,6 +134,9 @@ class HooksTest extends TestCase
         $this->assertSame('ksf_FA_ProjectManagement', $data['module']);
     }
 
+    /**
+     * @BABOK Related: N/A — the capability contract is unspecified in this repo (was FR-PM-011)
+     */
     public function testRespondToCapabilityRequestConstants(): void
     {
         $data = [];
@@ -112,6 +145,9 @@ class HooksTest extends TestCase
         $this->assertArrayHasKey('KSF_PM_MODULE_NAME', $result);
     }
 
+    /**
+     * @BABOK Related: N/A — the capability contract is unspecified in this repo (was FR-PM-011)
+     */
     public function testRespondToCapabilityRequestHasCapability(): void
     {
         $data = [];
@@ -120,6 +156,9 @@ class HooksTest extends TestCase
         $this->assertTrue($result);
     }
 
+    /**
+     * @BABOK Related: N/A — the capability contract is unspecified in this repo (was FR-PM-011)
+     */
     public function testRespondToCapabilityRequestUnknownReturnsNull(): void
     {
         $data = [];
@@ -129,6 +168,9 @@ class HooksTest extends TestCase
         $this->assertArrayHasKey('error', $data);
     }
 
+    /**
+     * @BABOK Related: N/A — sales-order linkage has no requirement in this repo (was FR-PM-009)
+     */
     public function testOrderImportedListenerLinksOrdersToProjects(): void
     {
         $GLOBALS['__fa_select_queue'] = [
@@ -154,6 +196,9 @@ class HooksTest extends TestCase
         $this->assertSame(1, $data['project_links_created']);
     }
 
+    /**
+     * @BABOK Related: N/A — sales-order linkage has no requirement in this repo (was FR-PM-009)
+     */
     public function testOrderImportedListenerWithoutCustomerCreatesNone(): void
     {
         $data = ['fa_order_no' => 42];
@@ -277,6 +322,9 @@ class HooksTest extends TestCase
         }
     }
 
+    /**
+     * @BABOK Related: N/A — hook-surface test; see the class docblock
+     */
     private function seedSelectQueue(array $queue): void
     {
         $GLOBALS['__fa_select_queue'] = $queue;

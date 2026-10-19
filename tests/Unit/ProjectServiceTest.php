@@ -13,13 +13,19 @@ use PHPUnit\Framework\TestCase;
  * SuiteCRM-style pm_project_* lifecycle hooks through hook_invoke_all and
  * record an activity-log row.
  *
- * @BABOK Related: BR-012 (Projects), AGENTS.md §ksf_common_db
+ * @BABOK Related: FR-006-007, N/A — the field-metadata structure it asserts, plus:
+ *   no requirement in this repo for project CRUD; that set (FR-PM-001) lives in
+ *   ksf_ProjectManagement/ProjectDcs. Replaces the previous `@BABOK BR-012`. The
+ *   AGENTS.md §ksf_common_db reference is retained below as an architectural note.
  */
 class ProjectServiceTest extends TestCase
 {
     /** @var ProjectService */
     private $service;
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     protected function setUp(): void
     {
         $GLOBALS['__fa_select_queue'] = [];
@@ -32,6 +38,9 @@ class ProjectServiceTest extends TestCase
         $this->service = new ProjectService();
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+     */
     private function baseProject(): array
     {
         return [
@@ -41,6 +50,9 @@ class ProjectServiceTest extends TestCase
         ];
     }
 
+    /**
+     * @BABOK Related: N/A — CRUD workflow-hook ordering; no requirement in this repo (was BR-012)
+     */
     public function testCreateFiresLifecycleHooksInOrder(): void
     {
         $GLOBALS['__fa_select_result'] = [];
@@ -58,6 +70,9 @@ class ProjectServiceTest extends TestCase
         );
     }
 
+/**
+ * @BABOK Related: N/A — no requirement in this repo for the activity log (was BR-012)
+ */
 public function testCreateRecordsActivityLogRow(): void
     {
         $GLOBALS['__fa_select_result'] = [];
@@ -74,10 +89,16 @@ public function testCreateRecordsActivityLogRow(): void
         $this->assertTrue($found, 'expected an activity-log INSERT');
     }
 
+    /**
+     * @BABOK Related: N/A — CRUD workflow-hook ordering; no requirement in this repo (was BR-012)
+     */
     public function testBeforeSaveHookCanMutateThePayload(): void
     {
         $GLOBALS['__fa_select_result'] = [];
         $GLOBALS['__fa_sql_log'] = [];
+        /**
+         * @BABOK Related: N/A — no requirement defined in this repo for project CRUD (was BR-012)
+         */
         $GLOBALS['__fa_hook_handlers']['pm_project_before_save'] = function (&$data, $opts) {
             $data['data']['status'] = 'Active';
         };
@@ -94,6 +115,9 @@ public function testCreateRecordsActivityLogRow(): void
         $this->assertTrue($found, 'expected a projects INSERT carrying the mutated status');
     }
 
+    /**
+     * @BABOK Related: N/A — CRUD workflow-hook ordering; no requirement in this repo (was BR-012)
+     */
     public function testUpdateFiresEditedHook(): void
     {
         $this->service->update('PRJ-0001', ['status' => 'Completed']);
@@ -104,6 +128,9 @@ public function testCreateRecordsActivityLogRow(): void
         $this->assertContains('pm_project_after_save', $fired);
     }
 
+/**
+ * @BABOK Related: N/A — no requirement in this repo for the activity log (was BR-012)
+ */
 public function testUpdateRecordsActivityLogRow(): void
     {
         $this->service->update('PRJ-0001', ['status' => 'Completed']);
@@ -118,6 +145,9 @@ public function testUpdateRecordsActivityLogRow(): void
         $this->assertTrue($found, 'expected an activity-log INSERT');
     }
 
+    /**
+     * @BABOK Related: N/A — CRUD workflow-hook ordering; no requirement in this repo (was BR-012)
+     */
     public function testDeleteFiresBeforeAfterDelete(): void
     {
         $this->service->delete('PRJ-0001');
@@ -128,6 +158,9 @@ public function testUpdateRecordsActivityLogRow(): void
         $this->assertNotContains('pm_project_edited', $fired);
     }
 
+    /**
+     * @BABOK Related: N/A — no requirement in this repo for project CRUD (was BR-012)
+     */
     public function testStatusAndPriorityOptionsAreStatic(): void
     {
         $statuses = ProjectService::statusOptions();
@@ -137,6 +170,9 @@ public function testUpdateRecordsActivityLogRow(): void
         $this->assertArrayHasKey('Medium', $priorities);
     }
 
+    /**
+     * @BABOK Related: FR-006-007 — field-metadata structure
+     */
     public function testFieldMetadataMatchesProjectsSchema(): void
     {
         $meta = ProjectService::getFieldMetadata();

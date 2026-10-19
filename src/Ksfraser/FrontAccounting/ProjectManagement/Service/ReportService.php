@@ -24,7 +24,8 @@ use ksfraser\FrontAccounting\ProjectManagement\Repository\ProjectOrderRepository
  * @since   1.0.0
  *
  * @UML Note: AGENTS.md §ksf_common_db
- * @BABOK Related: BR-012, FR-PM-009/010 (revenue)
+ * @BABOK Related: N/A — no requirement defined in this repo for the reporting queries.
+ *   Replaces the previous `@BABOK BR-012, FR-PM-009/010`; none resolve here.
  */
 class ReportService
 {
@@ -43,6 +44,9 @@ class ReportService
     /** @var \ksfraser\CommonDb\Contract\DbConnectionInterface */
     private $db;
 
+    /**
+     * @BABOK Related: N/A — no requirement defined in this repo for the reporting/roll-up queries
+     */
     public function __construct(
         ?ProjectRepository $projects = null,
         ?TaskRepository $tasks = null,
@@ -61,7 +65,9 @@ class ReportService
      * Key counts for the dashboard stat cards.
      *
      * @return array<string, int|float>
-     */
+      *
+ * @BABOK Related: N/A — no requirement defined in this repo for the dashboard counters
+ */
     public function dashboardStats(): array
     {
         $overdue = $this->countOverdueTasks();
@@ -82,7 +88,9 @@ class ReportService
      * Overdue tasks (end_date < today, not Completed/Cancelled).
      *
      * @return int
-     */
+      *
+ * @BABOK Related: N/A — no requirement defined in this repo for overdue detection (FR-PM-005 lives in the logic repo)
+ */
     public function countOverdueTasks(): int
     {
         $qb = new QueryBuilder();
@@ -99,7 +107,9 @@ class ReportService
      * Recognized revenue across all projects.
      *
      * @return float
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function revenueTotal(): float
     {
         $qb = new QueryBuilder();
@@ -112,7 +122,9 @@ class ReportService
      * Budget vs recognized revenue per project.
      *
      * @return array<int, array<string, mixed>>
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function budgetVsRevenue(): array
     {
         $qb = new QueryBuilder();
@@ -135,7 +147,9 @@ class ReportService
      * Estimated vs actual hours per project.
      *
      * @return array<int, array<string, mixed>>
-     */
+      *
+ * @BABOK Related: N/A — no requirement defined in this repo for the hours-by-project report
+ */
     public function hoursByProject(): array
     {
         $qb = new QueryBuilder();
@@ -156,7 +170,9 @@ class ReportService
      *
      * @param int $limit
      * @return array<int, array<string, mixed>>
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for the activity log (see the class docblock)
+ */
     public function recentActivity(int $limit = 8): array
     {
         return $this->activity->recent($limit);
@@ -167,7 +183,9 @@ class ReportService
      *
      * @param string $projectId
      * @return array<string, mixed>
-     */
+      *
+ * @BABOK Related: N/A — no requirement in this repo for sales-order linkage / revenue recognition (see the class docblock)
+ */
     public function revenueSummaryByProject(string $projectId): array
     {
         return $this->orders->getRevenueSummaryByProject($projectId);
