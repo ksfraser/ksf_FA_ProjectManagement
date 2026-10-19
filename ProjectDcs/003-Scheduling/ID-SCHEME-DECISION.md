@@ -125,6 +125,10 @@ Groups after renumbering:
 | FR-PM-006-001 | backward pass LF/LS; slack = LS−ES | UT-PM-006-002-001..003 |
 | FR-PM-006-001 | criticality within tolerance | UT-PM-006-002-003..005, UT-PM-006-004-004 |
 | FR-PM-006-001 | cycle → ok=false + cycle path, no throw | UT-PM-006-003-001, UT-PM-006-003-002, UT-PM-006-006-001 |
+| FR-PM-006-001 | negative lag used raw | UT-PM-006-003-003 |
+| FR-PM-006-001 | empty task set → ok=true, duration 0, empty critical | UT-PM-006-003-004 |
+| FR-PM-006-001 | constraint key variants; `type` defaults to `fs` | UT-PM-006-003-005 |
+| FR-PM-006-001 | missing predecessor/successor references skipped, not an error | UT-PM-006-003-006 |
 | FR-PM-006-002 | persists via injected repository, no FA calls | UT-PM-006-004-001 |
 | FR-PM-006-002 | fires `schedule_saved` exactly once | UT-PM-006-004-002 |
 | FR-PM-006-002 | ok=false path returns early, no hook | UT-PM-006-004-003 |
@@ -155,3 +159,22 @@ Groups after renumbering:
    (`CPM-SPEC-REVIEW.md` §0.1 ruling 4), and `FR-PM-006-002`'s 5-parameter
    `schedule()` was rewritten to the shipped `schedule(string $projectId)`
    (ruling 1). Neither is a Blocked row in `RTM-PM-006-cpm.md` any more.
+5. **Done 2026-10-19 — the `003` block's mapping gap closed.** §4 mapped only
+   `UT-PM-006-003-001` and `-003-002` (the cycle pair) to an FR; the four
+   remaining robustness cases `-003-003`…`-003-006` were therefore homeless,
+   and `RTM.md` in the business logic repo — which derives a UT row's
+   Implementing column from this table — reported all four as **Not
+   implemented** even though each has a passing test and shipped behaviour.
+   They now map to **FR-PM-006-001**, not FR-PM-006-003: all four are
+   `CpmEngine::run()` input-tolerance rules (negative lag recorded raw, empty
+   task set, the `id`/`task_id` · `predecessor`/`successor` · `lag`/`lag_days`
+   key variants with `type` defaulting to `fs`, and dangling edge references
+   skipped rather than rejected), and `FR-PM-006-001`'s own §Acceptance
+   already lists them verbatim. FR-PM-006-003 is the write-side guard
+   (`TaskDependencyService::add`) and its cases are `005-*`/`006-003..004`.
+   The ids, the case texts and the tests are unchanged; only the FR home is
+   now recorded.
+6. **Canonical copy.** `ksf_FA_ProjectManagement/ProjectDcs/003-Scheduling/ID-SCHEME-DECISION.md`
+   (this file, FA wrapper repo) is canonical. The copy in `ksf_ProjectManagement`
+   is byte-identical below its "COPY — do not edit here" banner and must be
+   re-synced from here, never edited independently.
