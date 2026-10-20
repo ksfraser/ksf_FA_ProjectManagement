@@ -18,7 +18,7 @@ function get_pm_projects(string $search = '', string $status = '')
     $sql = "SELECT p.*,
             e.first_name as manager_first_name, e.last_name as manager_last_name
             FROM " . TB_PREF . "fa_pm_projects p
-            LEFT JOIN employees e ON p.project_manager = e.employee_id
+            LEFT JOIN " . TB_PREF . "ksf_projectmanagement_employees e ON p.project_manager = e.employee_id
             WHERE 1=1";
 
     $params = [];
@@ -253,7 +253,7 @@ function get_pm_project_team(string $projectId): array
 {
     $sql = "SELECT pa.*, e.employee_id, e.first_name, e.last_name, e.email, e.job_title
             FROM " . TB_PREF . "fa_pm_assignments pa
-            INNER JOIN " . TB_PREF . "employees e ON pa.employee_id = e.employee_id
+            INNER JOIN " . TB_PREF . "ksf_projectmanagement_employees e ON pa.employee_id = e.employee_id
             WHERE pa.project_id = " . db_escape($projectId) . "
             AND (pa.end_date IS NULL OR pa.end_date >= CURDATE())
             ORDER BY e.last_name, e.first_name";

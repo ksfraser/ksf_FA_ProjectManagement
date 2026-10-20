@@ -204,3 +204,32 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_project_revenue` (
     KEY `idx_source` (`source`),
     CONSTRAINT `fk_pm_rev_project` FOREIGN KEY (`project_id`) REFERENCES `0_fa_pm_projects`(`project_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- ---------------------------------------------------------------------------
+-- Module-local employee directory.
+--
+-- WHY THIS TABLE EXISTS (and why it is not FA core):
+--   FA core has no employee entity. In this estate an employee is an FA
+--   person (0_crm_persons) plus a crm_categories row of type 'employee' plus
+--   a satellite employment table - the satellite belongs to ksf_FA_HRM
+--   (0_hrm_contacts_employment). Reaching into another module's table would
+--   make this module depend on that module being activated, which
+--   AGENTS_ARCH.md 12.2 forbids ("a shared seam must never be gated on
+--   another module's activation"). The contact resolver in ksf-fa-common
+--   deliberately does not cover the employee intent either.
+--   So this module keeps its OWN employee directory. `employee_id` is
+--   VARCHAR(100) because 0_fa_pm_assignments.employee_id and
+--   0_fa_pm_projects.project_manager store the handle the Team tab writes.
+--   It is module-local by design.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_employees` (
+    `employee_id` VARCHAR(100) NOT NULL,
+    `first_name` VARCHAR(100) DEFAULT NULL,
+    `last_name` VARCHAR(100) DEFAULT NULL,
+    `email` VARCHAR(120) DEFAULT NULL,
+    `job_title` VARCHAR(150) DEFAULT NULL,
+    `department` VARCHAR(100) DEFAULT NULL,
+    `active` TINYINT(1) DEFAULT 1,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`employee_id`),
+    KEY `idx_department` (`department`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

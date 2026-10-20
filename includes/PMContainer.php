@@ -186,7 +186,7 @@ class FAEmployeeService implements EmployeeServiceInterface
      */
     public function getEmployee(string $employeeId): array
     {
-        $sql = "SELECT * FROM " . TB_PREF . "employee WHERE employee_id = " . db_escape($employeeId);
+        $sql = "SELECT * FROM " . TB_PREF . "ksf_projectmanagement_employees WHERE employee_id = " . db_escape($employeeId);
         $result = db_query($sql);
 
         if ($result === false) {
@@ -207,7 +207,7 @@ class FAEmployeeService implements EmployeeServiceInterface
      */
     public function employeeExists(string $employeeId): bool
     {
-        $sql = "SELECT COUNT(*) as cnt FROM " . TB_PREF . "employee WHERE employee_id = " . db_escape($employeeId);
+        $sql = "SELECT COUNT(*) as cnt FROM " . TB_PREF . "ksf_projectmanagement_employees WHERE employee_id = " . db_escape($employeeId);
         $result = db_query($sql);
         $row = db_fetch_assoc($result);
 
@@ -219,7 +219,7 @@ class FAEmployeeService implements EmployeeServiceInterface
      */
     public function getEmployeesByDepartment(string $department): array
     {
-        $sql = "SELECT * FROM " . TB_PREF . "employee WHERE department = " . db_escape($department);
+        $sql = "SELECT * FROM " . TB_PREF . "ksf_projectmanagement_employees WHERE department = " . db_escape($department);
         $result = db_query($sql);
 
         $employees = [];
