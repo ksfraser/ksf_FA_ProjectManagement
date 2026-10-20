@@ -169,7 +169,7 @@ class FADatabaseAdapter implements DatabaseAdapterInterface
      */
     private function prepareSql(string $sql): string
     {
-        return str_replace('fa_pm_', TB_PREF . 'fa_pm_', $sql);
+        return str_replace('ksf_projectmanagement_', TB_PREF . 'ksf_projectmanagement_', $sql);
     }
 }
 
