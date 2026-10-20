@@ -1,9 +1,28 @@
 -- FA_PM Module SQL Schema
 -- Install: Creates tables for Project Management module
--- Prefix: fa_pm_
+-- Prefix: 0_ksf_projectmanagement_
+--
+-- Legacy table names retired (AGENTS_ARCH.md section 12): `0_` is the COMPANY
+-- prefix, so a table whose second segment is `fa` lands in FrontAccounting
+-- core's own namespace. FA 2.4.3 core uses no 0_fa_* name at all, so every
+-- 0_fa_* table in this estate is ours.
+--
+-- ALTER TABLE ... RENAME TO is the form db_import() accepts; a bare
+-- `RENAME TABLE ... TO ...` is silently discarded by the import parser.
+-- IF EXISTS makes each statement a no-op once the table has been migrated.
+ALTER TABLE IF EXISTS `0_fa_pm_projects` RENAME TO `0_ksf_projectmanagement_projects`;
+ALTER TABLE IF EXISTS `0_fa_pm_tasks` RENAME TO `0_ksf_projectmanagement_tasks`;
+ALTER TABLE IF EXISTS `0_fa_pm_task_dependencies` RENAME TO `0_ksf_projectmanagement_task_dependencies`;
+ALTER TABLE IF EXISTS `0_fa_pm_assignments` RENAME TO `0_ksf_projectmanagement_assignments`;
+ALTER TABLE IF EXISTS `0_fa_pm_project_types` RENAME TO `0_ksf_projectmanagement_project_types`;
+ALTER TABLE IF EXISTS `0_fa_pm_activity_log` RENAME TO `0_ksf_projectmanagement_activity_log`;
+ALTER TABLE IF EXISTS `0_fa_pm_files` RENAME TO `0_ksf_projectmanagement_files`;
+ALTER TABLE IF EXISTS `0_fa_pm_task_progress` RENAME TO `0_ksf_projectmanagement_task_progress`;
+ALTER TABLE IF EXISTS `0_fa_pm_project_sales_orders` RENAME TO `0_ksf_projectmanagement_project_sales_orders`;
+ALTER TABLE IF EXISTS `0_fa_pm_project_revenue` RENAME TO `0_ksf_projectmanagement_project_revenue`;
 
 -- Projects Table
-CREATE TABLE IF NOT EXISTS `0_fa_pm_projects` (
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_projects` (
     `project_id` VARCHAR(20) NOT NULL,
     `name` VARCHAR(100) NOT NULL,
     `description` TEXT,
@@ -27,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_projects` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tasks Table
-CREATE TABLE IF NOT EXISTS `0_fa_pm_tasks` (
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_tasks` (
     `task_id` VARCHAR(20) NOT NULL,
     `project_id` VARCHAR(20) NOT NULL,
     `parent_task_id` VARCHAR(20) DEFAULT '',
@@ -61,11 +80,11 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_tasks` (
     KEY `idx_priority` (`priority`),
     KEY `idx_milestone` (`is_milestone`),
     KEY `idx_critical` (`is_critical`),
-    CONSTRAINT `fk_task_project` FOREIGN KEY (`project_id`) REFERENCES `0_fa_pm_projects` (`project_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_task_project` FOREIGN KEY (`project_id`) REFERENCES `0_ksf_projectmanagement_projects` (`project_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Task Dependencies Table (CPM precedence edges: FS/SS/FF/SF + lag)
-CREATE TABLE IF NOT EXISTS `0_fa_pm_task_dependencies` (
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_task_dependencies` (
     `dependency_id` INT(11) NOT NULL AUTO_INCREMENT,
     `task_id` VARCHAR(20) NOT NULL,
     `predecessor_id` VARCHAR(20) NOT NULL,
@@ -76,12 +95,12 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_task_dependencies` (
     KEY `idx_task` (`task_id`),
     KEY `idx_pred` (`predecessor_id`),
     UNIQUE KEY `idx_unique` (`task_id`, `predecessor_id`),
-    CONSTRAINT `fk_dep_task` FOREIGN KEY (`task_id`) REFERENCES `0_fa_pm_tasks` (`task_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_dep_pred` FOREIGN KEY (`predecessor_id`) REFERENCES `0_fa_pm_tasks` (`task_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_dep_task` FOREIGN KEY (`task_id`) REFERENCES `0_ksf_projectmanagement_tasks` (`task_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_dep_pred` FOREIGN KEY (`predecessor_id`) REFERENCES `0_ksf_projectmanagement_tasks` (`task_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Project Assignments Table
-CREATE TABLE IF NOT EXISTS `0_fa_pm_assignments` (
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_assignments` (
     `project_id` VARCHAR(20) NOT NULL,
     `employee_id` VARCHAR(100) NOT NULL,
     `role` VARCHAR(50) DEFAULT 'Team Member',
@@ -95,7 +114,7 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_assignments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Project Types Table
-CREATE TABLE IF NOT EXISTS `0_fa_pm_project_types` (
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_project_types` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(50) NOT NULL,
     `description` VARCHAR(255) DEFAULT NULL,
@@ -106,7 +125,7 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_project_types` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Activity Log Table
-CREATE TABLE IF NOT EXISTS `0_fa_pm_activity_log` (
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_activity_log` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `activity_type` VARCHAR(30) NOT NULL,
     `entity_type` VARCHAR(30) NOT NULL,
@@ -125,7 +144,7 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_activity_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Initial Project Types
-INSERT INTO `0_fa_pm_project_types` (`name`, `description`, `sort_order`) VALUES
+INSERT INTO `0_ksf_projectmanagement_project_types` (`name`, `description`, `sort_order`) VALUES
 ('Software Development', 'Software development projects', 1),
 ('Infrastructure', 'Infrastructure and DevOps projects', 2),
 ('Consulting', 'Consulting and professional services', 3),
@@ -134,7 +153,7 @@ INSERT INTO `0_fa_pm_project_types` (`name`, `description`, `sort_order`) VALUES
 ('Event', 'Event planning and execution', 6);
 
 -- Files Table
-CREATE TABLE IF NOT EXISTS `0_fa_pm_files` (
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_files` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `entity_type` VARCHAR(30) NOT NULL COMMENT 'project, task, etc',
     `entity_id` VARCHAR(20) NOT NULL,
@@ -155,7 +174,7 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_files` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Task Progress Table (OpenProject-style progress tracking)
-CREATE TABLE IF NOT EXISTS `0_fa_pm_task_progress` (
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_task_progress` (
     `progress_id` INT(11) NOT NULL AUTO_INCREMENT,
     `task_id` VARCHAR(20) NOT NULL,
     `progress_mode` VARCHAR(20) DEFAULT 'work_based' COMMENT 'work_based, status_based',
@@ -167,11 +186,11 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_task_progress` (
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`progress_id`),
     UNIQUE KEY `idx_task` (`task_id`),
-    CONSTRAINT `fk_progress_task` FOREIGN KEY (`task_id`) REFERENCES `0_fa_pm_tasks`(`task_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_progress_task` FOREIGN KEY (`task_id`) REFERENCES `0_ksf_projectmanagement_tasks`(`task_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Project Sales Order Links (imported FA orders linked to projects)
-CREATE TABLE IF NOT EXISTS `0_fa_pm_project_sales_orders` (
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_project_sales_orders` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `project_id` VARCHAR(20) NOT NULL,
     `fa_order_no` INT(11) NOT NULL,
@@ -183,11 +202,11 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_project_sales_orders` (
     UNIQUE KEY `idx_order` (`fa_order_no`, `fa_trans_type`),
     KEY `idx_project` (`project_id`),
     KEY `idx_source` (`source`),
-    CONSTRAINT `fk_pm_so_project` FOREIGN KEY (`project_id`) REFERENCES `0_fa_pm_projects`(`project_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_pm_so_project` FOREIGN KEY (`project_id`) REFERENCES `0_ksf_projectmanagement_projects`(`project_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Project Revenue (recognized revenue from linked FA orders)
-CREATE TABLE IF NOT EXISTS `0_fa_pm_project_revenue` (
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_project_revenue` (
     `revenue_id` INT(11) NOT NULL AUTO_INCREMENT,
     `project_id` VARCHAR(20) NOT NULL,
     `fa_order_no` INT(11) NOT NULL,
@@ -202,7 +221,7 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_project_revenue` (
     UNIQUE KEY `idx_revenue_order` (`fa_order_no`, `fa_trans_type`),
     KEY `idx_project` (`project_id`),
     KEY `idx_source` (`source`),
-    CONSTRAINT `fk_pm_rev_project` FOREIGN KEY (`project_id`) REFERENCES `0_fa_pm_projects`(`project_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_pm_rev_project` FOREIGN KEY (`project_id`) REFERENCES `0_ksf_projectmanagement_projects`(`project_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 -- ---------------------------------------------------------------------------
 -- Module-local employee directory.
@@ -217,8 +236,8 @@ CREATE TABLE IF NOT EXISTS `0_fa_pm_project_revenue` (
 --   another module's activation"). The contact resolver in ksf-fa-common
 --   deliberately does not cover the employee intent either.
 --   So this module keeps its OWN employee directory. `employee_id` is
---   VARCHAR(100) because 0_fa_pm_assignments.employee_id and
---   0_fa_pm_projects.project_manager store the handle the Team tab writes.
+--   VARCHAR(100) because 0_ksf_projectmanagement_assignments.employee_id and
+--   0_ksf_projectmanagement_projects.project_manager store the handle the Team tab writes.
 --   It is module-local by design.
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_employees` (

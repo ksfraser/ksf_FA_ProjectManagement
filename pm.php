@@ -32,10 +32,10 @@ function fa_pm_route($section, $action)
             fa_pm_dashboard($action);
             break;
         case 'projects':
-            fa_pm_projects($action);
+            ksf_fa_pm_projects($action);
             break;
         case 'tasks':
-            fa_pm_tasks($action);
+            ksf_fa_pm_tasks($action);
             break;
         case 'team':
             fa_pm_team($action);
@@ -76,7 +76,7 @@ function fa_pm_dashboard($action)
     page_end();
 }
 
-function fa_pm_projects($action)
+function ksf_fa_pm_projects($action)
 {
     switch ($action) {
         case 'list':
@@ -340,7 +340,7 @@ function fa_pm_delete_project()
     fa_pm_list_projects();
 }
 
-function fa_pm_tasks($action)
+function ksf_fa_pm_tasks($action)
 {
     switch ($action) {
         case 'list':

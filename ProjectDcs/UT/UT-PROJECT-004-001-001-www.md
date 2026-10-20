@@ -14,7 +14,7 @@
   No FA function is executed in-test.
 
 - **UT-PROJECT-004-001-001-002 — facade delete cascade**
-  `delete()` calls store `delete` and removes the `0_fa_pm_files` row. Stub
+  `delete()` calls store `delete` and removes the `0_ksf_projectmanagement_files` row. Stub
   returns `false` → service returns false, activity log shows failed delete.
 
 - **UT-PROJECT-004-001-001-003 — workflow hooks fire on save**

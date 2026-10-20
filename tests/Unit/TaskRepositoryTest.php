@@ -43,7 +43,7 @@ class TaskRepositoryTest extends TestCase
         $this->assertCount(1, $rows);
         $this->assertSame('TSK-0001', $rows[0]['task_id']);
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('FROM 0_fa_pm_tasks', $sql);
+        $this->assertStringContainsString('FROM 0_ksf_projectmanagement_tasks', $sql);
         $this->assertStringContainsString('project_id = ', $sql);
         $this->assertStringContainsString('status = ', $sql);
     }
@@ -111,7 +111,7 @@ class TaskRepositoryTest extends TestCase
         ]);
 
         $this->assertSame('TSK-0001', $id);
-        $this->assertStringContainsString('INTO `0_fa_pm_tasks`', (string) $GLOBALS['__fa_last_sql']);
+        $this->assertStringContainsString('INTO `0_ksf_projectmanagement_tasks`', (string) $GLOBALS['__fa_last_sql']);
     }
 
     /**
@@ -122,7 +122,7 @@ class TaskRepositoryTest extends TestCase
         $this->repo->update('TSK-0001', ['status' => 'Completed', 'progress' => 100]);
 
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('UPDATE `0_fa_pm_tasks`', $sql);
+        $this->assertStringContainsString('UPDATE `0_ksf_projectmanagement_tasks`', $sql);
         $this->assertStringContainsString('updated_at', $sql);
     }
 
@@ -137,7 +137,7 @@ public function testDeleteCascadesProgressFirst(): void
 
         $log = array_map('strval', $GLOBALS['__fa_sql_log']);
         $this->assertCount(2, $log);
-        $this->assertStringContainsString('DELETE FROM 0_fa_pm_task_progress', $log[0]);
-        $this->assertStringContainsString('DELETE FROM `0_fa_pm_tasks`', $log[1]);
+        $this->assertStringContainsString('DELETE FROM 0_ksf_projectmanagement_task_progress', $log[0]);
+        $this->assertStringContainsString('DELETE FROM `0_ksf_projectmanagement_tasks`', $log[1]);
     }
 }

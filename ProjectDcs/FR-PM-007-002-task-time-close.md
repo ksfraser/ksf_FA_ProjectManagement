@@ -4,7 +4,7 @@
           FR-CAL-007-002 (broadcast it consumes).
 @UML : PM/subscriber -> on `ksf_event_closed` with task_id -> close task time window
 Status: Approved — BABOK; implementation parks next stage.
-Module: ksf_FA_ProjectManagement (owner of 0_fa_pm_tasks / 0_fa_pm_task_progress writes).
+Module: ksf_FA_ProjectManagement (owner of 0_ksf_projectmanagement_tasks / 0_ksf_projectmanagement_task_progress writes).
 
 ## Need (BABOK What-not-How)
 When a task-bearing meeting closes, the task's logged-time/actual-hours window
@@ -13,10 +13,10 @@ the task's time portion is CLOSED, regardless of what Timesheets created.
 
 ## Requirement
 1. On `ksf_event_closed` where the DTO's `task_id` matches a row in
-   `0_fa_pm_tasks`:
+   `0_ksf_projectmanagement_tasks`:
    - the task's time window is marked closed (status/flag) and the recorded
      worked window (`started_at`..`closed_at`) is snapshotted to the task's
-     `actual_hours` delta or a `0_fa_pm_task_progress` row, via the module's own
+     `actual_hours` delta or a `0_ksf_projectmanagement_task_progress` row, via the module's own
      TaskService/TaskRepository (FaDbAdapter → native `db_*`).
 2. Idempotent: a repeat broadcast for the same task is a no-op (nothing
    re-written, no window re-open).

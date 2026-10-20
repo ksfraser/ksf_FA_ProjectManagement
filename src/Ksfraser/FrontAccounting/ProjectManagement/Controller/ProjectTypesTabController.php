@@ -59,7 +59,7 @@ class ProjectTypesTabController extends AbstractTabController
     {
         return [
             'entity'      => 'project_type',
-            'table'       => '0_fa_pm_project_types',
+            'table'       => '0_ksf_projectmanagement_project_types',
             'label'       => 'Project Type',
             'labelPlural' => 'Project Types',
             'hookPrefix'  => 'ProjectType',

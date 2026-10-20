@@ -48,7 +48,7 @@ class AssignmentRepositoryTest extends TestCase
 
         $this->assertCount(1, $rows);
         $this->assertSame('PRJ-0001~kevin', $rows[0]['assignment_key']);
-        $this->assertStringContainsString('FROM 0_fa_pm_assignments', (string) $GLOBALS['__fa_last_sql']);
+        $this->assertStringContainsString('FROM 0_ksf_projectmanagement_assignments', (string) $GLOBALS['__fa_last_sql']);
     }
 
     /**
@@ -85,7 +85,7 @@ class AssignmentRepositoryTest extends TestCase
         ]);
 
         $this->assertSame('PRJ-0001~kevin', $key);
-        $this->assertStringContainsString('INTO `0_fa_pm_assignments`', (string) $GLOBALS['__fa_last_sql']);
+        $this->assertStringContainsString('INTO `0_ksf_projectmanagement_assignments`', (string) $GLOBALS['__fa_last_sql']);
     }
 
     /**
@@ -96,7 +96,7 @@ class AssignmentRepositoryTest extends TestCase
         $this->repo->update('PRJ-0001~kevin', ['role' => 'Tech Lead']);
 
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('UPDATE `0_fa_pm_assignments`', $sql);
+        $this->assertStringContainsString('UPDATE `0_ksf_projectmanagement_assignments`', $sql);
         $this->assertStringContainsString('project_id', $sql);
         $this->assertStringContainsString('employee_id', $sql);
     }
@@ -109,7 +109,7 @@ class AssignmentRepositoryTest extends TestCase
         $this->repo->delete('PRJ-0001~kevin');
 
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('DELETE FROM 0_fa_pm_assignments', $sql);
+        $this->assertStringContainsString('DELETE FROM 0_ksf_projectmanagement_assignments', $sql);
         $this->assertStringContainsString('project_id', $sql);
         $this->assertStringContainsString('employee_id', $sql);
     }

@@ -37,12 +37,12 @@ the main output of this document.
 
 | Tab key | Controller | Schema it reads | Inventory row |
 |---|---|---|---|
-| `dashboard` | `DashboardTabController` | `0_fa_pm_projects`, `0_fa_pm_tasks`, `0_fa_pm_project_revenue` | (rollup; library BR: "provide visibility to project status for all stakeholders") |
-| `projects` | `ProjectsTabController` | `0_fa_pm_projects`, `0_fa_pm_project_types`, `0_fa_pm_project_sales_orders`, `0_fa_pm_project_revenue` | Projects CRUD ✅, Customer/debtor integration ✅, Revenue/orders tracking ✅ |
-| `tasks` | `TasksTabController` | `0_fa_pm_tasks`, `0_fa_pm_assignments`, `0_fa_pm_task_progress`, `0_fa_pm_activity_log` | Tasks w/ hierarchy ✅, Assignments + allocation ✅, Time tracking ✅, Progress % + activity log ✅ |
-| `team` | `TeamTabController` | `0_fa_pm_assignments` (+ HRM) | Library BR In Scope 3: Resource Management |
+| `dashboard` | `DashboardTabController` | `0_ksf_projectmanagement_projects`, `0_ksf_projectmanagement_tasks`, `0_ksf_projectmanagement_project_revenue` | (rollup; library BR: "provide visibility to project status for all stakeholders") |
+| `projects` | `ProjectsTabController` | `0_ksf_projectmanagement_projects`, `0_ksf_projectmanagement_project_types`, `0_ksf_projectmanagement_project_sales_orders`, `0_ksf_projectmanagement_project_revenue` | Projects CRUD ✅, Customer/debtor integration ✅, Revenue/orders tracking ✅ |
+| `tasks` | `TasksTabController` | `0_ksf_projectmanagement_tasks`, `0_ksf_projectmanagement_assignments`, `0_ksf_projectmanagement_task_progress`, `0_ksf_projectmanagement_activity_log` | Tasks w/ hierarchy ✅, Assignments + allocation ✅, Time tracking ✅, Progress % + activity log ✅ |
+| `team` | `TeamTabController` | `0_ksf_projectmanagement_assignments` (+ HRM) | Library BR In Scope 3: Resource Management |
 | `reports` | `ReportsTabController` | aggregates across the above | Library BR: stakeholder visibility |
-| `project_types` | `ProjectTypesTabController` | `0_fa_pm_project_types` | Projects CRUD + types ✅ |
+| `project_types` | `ProjectTypesTabController` | `0_ksf_projectmanagement_project_types` | Projects CRUD + types ✅ |
 
 **Conclusion:** every `✅` row in the inventory has a tab. The shipped surface is
 internally consistent.
@@ -51,15 +51,15 @@ internally consistent.
 
 | Inventory row | Schema status | Classification | Rationale |
 |---|---|---|---|
-| **Milestones** (`is_milestone`, target date) | `0_fa_pm_tasks.is_milestone TINYINT(1)` + `idx_milestone` | **Column on `tasks`** | A milestone in this design *is* a task with a flag and a date. There is no milestone entity, and none should be created. |
-| **CPM schedule** (ES/EF/LS/LF/slack/critical) | `0_fa_pm_tasks` carries `es ef ls lf slack is_critical is_constrained constraint_type constraint_date` | **Columns on `tasks`** | Same argument. A separate CPM tab would duplicate the Tasks CRUD and force the user to correlate two screens by hand. |
-| **Scheduling constraints** (SNET/SNLT/Must Start…) | `is_constrained`, `constraint_type`, `constraint_date` on `0_fa_pm_tasks` | **Columns on `tasks`** | Same. |
-| **Task dependencies** (FS/SS/FF/SF + lag) | `0_fa_pm_task_dependencies` **exists** | **Sub-view of `tasks`** — design decision to confirm | It *is* a separate entity with its own rows. But it is only meaningful beside the task list: the editor needs a task selected to add a successor/predecessor. A standalone tab would have to re-implement project context. Recommend sub-view first. |
+| **Milestones** (`is_milestone`, target date) | `0_ksf_projectmanagement_tasks.is_milestone TINYINT(1)` + `idx_milestone` | **Column on `tasks`** | A milestone in this design *is* a task with a flag and a date. There is no milestone entity, and none should be created. |
+| **CPM schedule** (ES/EF/LS/LF/slack/critical) | `0_ksf_projectmanagement_tasks` carries `es ef ls lf slack is_critical is_constrained constraint_type constraint_date` | **Columns on `tasks`** | Same argument. A separate CPM tab would duplicate the Tasks CRUD and force the user to correlate two screens by hand. |
+| **Scheduling constraints** (SNET/SNLT/Must Start…) | `is_constrained`, `constraint_type`, `constraint_date` on `0_ksf_projectmanagement_tasks` | **Columns on `tasks`** | Same. |
+| **Task dependencies** (FS/SS/FF/SF + lag) | `0_ksf_projectmanagement_task_dependencies` **exists** | **Sub-view of `tasks`** — design decision to confirm | It *is* a separate entity with its own rows. But it is only meaningful beside the task list: the editor needs a task selected to add a successor/predecessor. A standalone tab would have to re-implement project context. Recommend sub-view first. |
 | **Cycle guard** (no DAG loops) | n/a — `FR-PROJECT-003-002` | **Not a screen** | A validation on write. The inventory's own finding #4 calls this the differentiating capability, and it is a rule, not a tab. |
-| **Documents / attachments** | `0_fa_pm_files` **exists** | **A new `documents` tab** | Separate entity, separate CRUD, separate lifecycle (upload, diff-save location, retention). This is the one genuine tab addition. |
+| **Documents / attachments** | `0_ksf_projectmanagement_files` **exists** | **A new `documents` tab** | Separate entity, separate CRUD, separate lifecycle (upload, diff-save location, retention). This is the one genuine tab addition. |
 | **Calendar feed → FA Calendar** | n/a — emitter (`FR-PROJECT-005-001`) | **Not a screen** | It emits; FA Calendar renders. Adding a PM calendar tab would duplicate FA Calendar's screen and fork its UI conventions. |
 | **Gantt visualization** | n/a — renderer (`FR-PROJECT-005-002`) | **Not a separate tab** | Render inside `projects` / `tasks` behind a view switch that carries the current filter. A `gantt` tab would arrive with no filter context — exactly the failure the CRM adoption had to work around for pager links. |
-| **Project templates** | `0_fa_pm_project_types` (shared) | **On `project_types`** | Already covered. |
+| **Project templates** | `0_ksf_projectmanagement_project_types` (shared) | **On `project_types`** | Already covered. |
 | **CSV import** | — | **Not yet placed** | The inventory marks it ✅ but there is no import tab. **Unresolved**: is it an action on `projects` or a separate screen? Flagged, not decided. |
 
 ## Finding 3 — the proposed surface
@@ -135,6 +135,6 @@ three lines and it is what makes a contributed PM tab practical.
    tasks and revenue are company-sensitive; HRM made the same choice deliberately
    for `reports`.
 4. **Does `documents` belong to PM at all**, given BR-PROJECT-004 says
-   "FA-native reuse" and a `ksf_Documents` module already exists? `0_fa_pm_files`
+   "FA-native reuse" and a `ksf_Documents` module already exists? `0_ksf_projectmanagement_files`
    exists, so PM owns the row, but ownership of the *screen* is worth confirming
    before a tab is built on it.

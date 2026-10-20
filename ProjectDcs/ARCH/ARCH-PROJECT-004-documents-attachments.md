@@ -9,7 +9,7 @@
 **Reuse FA's native attachment machinery, do not build a parallel stack.**
 PM documents are FA attachments with a different save location under
 `company/<id>/` (user directive, 2026-09). Storage metadata lives in PM's
-`0_fa_pm_files` dictionary so PM services/tests see one vocabulary; the blob
+`0_ksf_projectmanagement_files` dictionary so PM services/tests see one vocabulary; the blob
 bytes and low-level CRUD are FA's.
 
 ## Layering
@@ -17,7 +17,7 @@ bytes and low-level CRUD are FA's.
 ```
 PmFileService            (workflow hooks, activity log, life cycle)
    │
-   ├─ FileRepository     (0_fa_pm_files — dictionary CRUD, DI'd FaDbAdapter)
+   ├─ FileRepository     (0_ksf_projectmanagement_files — dictionary CRUD, DI'd FaDbAdapter)
    │
    └─ FaAttachmentFacade (thin wrapper over admin/db/attachments_db.inc)
          ├─ add_attachment / update_attachment / delete_attachment
@@ -35,7 +35,7 @@ invoked in the test process.
   data area), NOT the default `company/<id>/attachments/`. Rationale:
   keeps PM files out of FA's global attachment namespace while inheriting all
   FA file-serving/security/path conventions.
-- Metadata table `0_fa_pm_files` retains `storage_type` (default `local`),
+- Metadata table `0_ksf_projectmanagement_files` retains `storage_type` (default `local`),
   `storage_path`, `size`, `mime_type`, `unique_name` — mirror of the FA
   `0_attachments` columns for PM-scoped queries/reports.
 

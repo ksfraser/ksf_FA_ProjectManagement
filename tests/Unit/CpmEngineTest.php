@@ -579,7 +579,7 @@ class CpmEngineTest extends TestCase
     }
 
     /**
-     * A calendar-date anchor from a real `fa_pm_tasks.constraint_date` column.
+     * A calendar-date anchor from a real `ksf_projectmanagement_tasks.constraint_date` column.
      *
      * @BABOK Related: UT-PM-006-006-002, FR-PM-006-001
      */

@@ -126,7 +126,7 @@ assign_employee_to_project([
 
 The module expects the following database tables:
 
-### fa_pm_projects
+### ksf_projectmanagement_projects
 | Column | Type | Description |
 |--------|------|-------------|
 | project_id | VARCHAR(20) | Primary key |
@@ -143,7 +143,7 @@ The module expects the following database tables:
 | created_at | TIMESTAMP | Record creation time |
 | updated_at | TIMESTAMP | Last update time |
 
-### fa_pm_tasks
+### ksf_projectmanagement_tasks
 | Column | Type | Description |
 |--------|------|-------------|
 | task_id | VARCHAR(20) | Primary key |
@@ -162,7 +162,7 @@ The module expects the following database tables:
 | created_at | TIMESTAMP | Record creation time |
 | updated_at | TIMESTAMP | Last update time |
 
-### fa_pm_assignments
+### ksf_projectmanagement_assignments
 | Column | Type | Description |
 |--------|------|-------------|
 | project_id | VARCHAR(20) | FK to projects (PK) |
@@ -173,7 +173,7 @@ The module expects the following database tables:
 | allocation_percentage | DECIMAL(5,2) | Work allocation % |
 | created_at | TIMESTAMP | Record creation time |
 
-### fa_pm_project_types
+### ksf_projectmanagement_project_types
 | Column | Type | Description |
 |--------|------|-------------|
 | id | INT(11) | Primary key |
@@ -184,7 +184,7 @@ The module expects the following database tables:
 
 Initial types: Software Development, Infrastructure, Consulting, Research, Marketing, Event
 
-### fa_pm_activity_log
+### ksf_projectmanagement_activity_log
 | Column | Type | Description |
 |--------|------|-------------|
 | id | INT(11) | Primary key |
@@ -199,7 +199,7 @@ Initial types: Software Development, Infrastructure, Consulting, Research, Marke
 | ip_address | VARCHAR(45) | Client IP |
 | created_at | TIMESTAMP | Activity timestamp |
 
-### fa_pm_files
+### ksf_projectmanagement_files
 | Column | Type | Description |
 |--------|------|-------------|
 | id | INT(11) | Primary key |

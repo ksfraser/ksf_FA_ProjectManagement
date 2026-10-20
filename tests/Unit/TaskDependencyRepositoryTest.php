@@ -64,7 +64,7 @@ class TaskDependencyRepositoryTest extends TestCase
         $this->assertCount(1, $rows);
         $this->assertSame('TSK-0001', $rows[0]['predecessor_id']);
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('FROM 0_fa_pm_task_dependencies', $sql);
+        $this->assertStringContainsString('FROM 0_ksf_projectmanagement_task_dependencies', $sql);
         $this->assertStringContainsString("task_id = 'TSK-0002'", $sql);
     }
 
@@ -79,7 +79,7 @@ class TaskDependencyRepositoryTest extends TestCase
 
         $this->assertCount(1, $rows);
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('INNER JOIN 0_fa_pm_tasks', $sql);
+        $this->assertStringContainsString('INNER JOIN 0_ksf_projectmanagement_tasks', $sql);
         $this->assertStringContainsString("project_id = 'PRJ-0001'", $sql);
     }
 
@@ -137,7 +137,7 @@ class TaskDependencyRepositoryTest extends TestCase
         $this->assertSame('DEP-0001', $id);
         $this->assertNotEmpty($GLOBALS['__fa_sql_log']);
         $sql = (string) end($GLOBALS['__fa_sql_log']);
-        $this->assertStringContainsString('INSERT INTO `0_fa_pm_task_dependencies`', $sql);
+        $this->assertStringContainsString('INSERT INTO `0_ksf_projectmanagement_task_dependencies`', $sql);
         $this->assertStringContainsString("'TSK-0002'", $sql);
         $this->assertStringContainsString("'TSK-0001'", $sql);
     }
@@ -151,7 +151,7 @@ class TaskDependencyRepositoryTest extends TestCase
 
         $this->assertCount(1, $GLOBALS['__fa_sql_log']);
         $sql = (string) $GLOBALS['__fa_sql_log'][0];
-        $this->assertStringStartsWith('DELETE FROM 0_fa_pm_task_dependencies', $sql);
+        $this->assertStringStartsWith('DELETE FROM 0_ksf_projectmanagement_task_dependencies', $sql);
         $this->assertStringContainsString("task_id = 'TSK-0002'", $sql);
         $this->assertStringContainsString("predecessor_id = 'TSK-0001'", $sql);
     }

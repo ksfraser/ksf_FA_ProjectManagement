@@ -12,12 +12,12 @@ use ksfraser\FrontAccounting\ProjectManagement\Dictionary\Schema;
  *
  * Answers the `ksf_event_classify_attendees` broadcast for
  * ksf_FA_ProjectManagement: when a closed event's DTO carries a project_id
- * (or a task_id that resolves to a `0_fa_pm_tasks` row), every attendee email
+ * (or a task_id that resolves to a `0_ksf_projectmanagement_tasks` row), every attendee email
  * that bridges through FA's users table to a user assigned on
- * `0_fa_pm_assignments` for that project is a PROJECT TEAM MEMBER.
+ * `0_ksf_projectmanagement_assignments` for that project is a PROJECT TEAM MEMBER.
  *
  * Identity chain (FR-PM-007-001): email → users.email → users.user_id →
- * 0_fa_pm_assignments.employee_id. The Team tab stores FA user_id values in
+ * 0_ksf_projectmanagement_assignments.employee_id. The Team tab stores FA user_id values in
  * employee_id (see TeamTabController → userOptions()), so the user handle is
  * the assignment key this module owns.
  *

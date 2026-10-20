@@ -159,7 +159,7 @@ PHP;
             return stripos((string) $sql, 'update ') === 0;
         }));
         $this->assertCount(2, $updates, 'one UPDATE per task row');
-        $this->assertStringContainsString('0_fa_pm_tasks', $updates[0]);
+        $this->assertStringContainsString('0_ksf_projectmanagement_tasks', $updates[0]);
         $this->assertMatchesRegularExpression('/\bes\b/', $updates[0]);
     }
 

@@ -48,7 +48,7 @@ TaskService ──► TaskDependencyRepository (DAO, FaDbAdapter)
 - One constraint per task (`NULL` = unconstrained "ASAP"). New columns:
   `start_constraint` varchar(24) + `constraint_date` date on tasks;
   `is_milestone` tinyint(1) on tasks (zero-duration).
-- New dictionary table `0_fa_pm_task_dependencies`.
+- New dictionary table `0_ksf_projectmanagement_task_dependencies`.
 
 ## Security
 

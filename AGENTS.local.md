@@ -8,14 +8,14 @@
 ```
 ksf_FA_ProjectManagement/
 ├── sql/
-│   ├── fa_pm_projects.sql          # Projects table
-│   ├── fa_pm_tasks.sql             # Tasks table (with parent-child)
-│   ├── fa_pm_assignments.sql       # Project-team assignments
-│   ├── fa_pm_project_types.sql     # Project type definitions
-│   ├── fa_pm_activity_log.sql      # Activity tracking
-│   ├── fa_pm_files.sql             # File attachments
+│   ├── ksf_projectmanagement_projects.sql          # Projects table
+│   ├── ksf_projectmanagement_tasks.sql             # Tasks table (with parent-child)
+│   ├── ksf_projectmanagement_assignments.sql       # Project-team assignments
+│   ├── ksf_projectmanagement_project_types.sql     # Project type definitions
+│   ├── ksf_projectmanagement_activity_log.sql      # Activity tracking
+│   ├── ksf_projectmanagement_files.sql             # File attachments
 │   ├── fa_pm_versions.sql          # Versions/quarters (Q1-2026)
-│   └── fa_pm_task_progress.sql     # OpenProject-style progress
+│   └── ksf_projectmanagement_task_progress.sql     # OpenProject-style progress
 ├── includes/
 │   ├── pm_db.inc
 │   ├── tasks_db.inc
@@ -57,9 +57,9 @@ function create_project_with_tasks($project_data, $tasks) { ... }
 - `parent_task_id` links to `task_id` (self-referencing)
 ### Observer Pattern
 - Activity logging for all project/task changes
-- `fa_pm_activity_log` tracks all actions
+- `ksf_projectmanagement_activity_log` tracks all actions
 ### Progress Strategy (OpenProject)
-- `fa_pm_task_progress` supports multiple calculation modes
+- `ksf_projectmanagement_task_progress` supports multiple calculation modes
 - Integrates with Performance module for OKR tracking
 ## Composer/Packagist
 ```json
@@ -83,9 +83,9 @@ function create_project_with_tasks($project_data, $tasks) { ... }
 See `ProjectDocs/RTM.md` for full traceability:
 | Req ID | Description | Test Case | Code File | Version |
 |--------|-------------|-----------|----------|---------|
-| REQ-001 | Project Creation | testProjectCreate | sql/fa_pm_projects.sql | v1.0.0 |
-| REQ-002 | Task Hierarchy | testTaskParentChild | sql/fa_pm_tasks.sql | v1.0.0 |
-| REQ-003 | Progress Tracking | testProgressCalc | sql/fa_pm_task_progress.sql | v1.1.0 |
+| REQ-001 | Project Creation | testProjectCreate | sql/ksf_projectmanagement_projects.sql | v1.0.0 |
+| REQ-002 | Task Hierarchy | testTaskParentChild | sql/ksf_projectmanagement_tasks.sql | v1.0.0 |
+| REQ-003 | Progress Tracking | testProgressCalc | sql/ksf_projectmanagement_task_progress.sql | v1.1.0 |
 | REQ-004 | Gantt Chart | testGanttDisplay | pages/gantt.php | v1.2.0 |
 ## BABOK Alignment
 See `ProjectDocs/BABOK.md` for business analysis alignment:

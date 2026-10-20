@@ -239,7 +239,7 @@ PHP);
 
         $this->assertCount(1, $GLOBALS['__fa_sql_log']);
         $sql = (string) $GLOBALS['__fa_sql_log'][0];
-        $this->assertStringStartsWith('DELETE FROM 0_fa_pm_task_dependencies', $sql);
+        $this->assertStringStartsWith('DELETE FROM 0_ksf_projectmanagement_task_dependencies', $sql);
         $this->assertStringContainsString("task_id = 'TSK-0002'", $sql);
     }
 }

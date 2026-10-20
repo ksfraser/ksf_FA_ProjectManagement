@@ -47,7 +47,7 @@ class ProjectOrderRepositoryTest extends TestCase
 
         $this->assertSame(9, $id);
         $this->assertStringContainsString('INSERT INTO', (string)$GLOBALS['__fa_last_sql']);
-        $this->assertStringContainsString('0_fa_pm_project_sales_orders', (string)$GLOBALS['__fa_last_sql']);
+        $this->assertStringContainsString('0_ksf_projectmanagement_project_sales_orders', (string)$GLOBALS['__fa_last_sql']);
     }
 
     /**
@@ -68,7 +68,7 @@ class ProjectOrderRepositoryTest extends TestCase
         ]);
 
         $this->assertSame(4, $id);
-        $this->assertStringContainsString('0_fa_pm_project_revenue', (string)$GLOBALS['__fa_last_sql']);
+        $this->assertStringContainsString('0_ksf_projectmanagement_project_revenue', (string)$GLOBALS['__fa_last_sql']);
         $this->assertStringContainsString('revenue_amount', (string)$GLOBALS['__fa_last_sql']);
     }
 

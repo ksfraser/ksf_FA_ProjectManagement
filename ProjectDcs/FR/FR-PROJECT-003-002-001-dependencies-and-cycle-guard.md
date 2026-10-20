@@ -9,7 +9,7 @@
 
 ### FR-PROJECT-003-002-001-001 — Dependency dictionary
 
-New dictionary table `0_fa_pm_task_dependencies`:
+New dictionary table `0_ksf_projectmanagement_task_dependencies`:
 
 - `dependency_id` PK, `task_id` FK → tasks, `predecessor_task_id` FK → tasks,
   `dependency_type` enum(`fs`,`ss`,`ff`,`sf`), `lag_days` int default 0,

@@ -15,7 +15,7 @@
  * 
  * 3. DATABASE SCHEMA
  *    DO NOT create tables in PHP code.
- *    Use sql/install.sql with @TB_PREF@ placeholders.
+ *    Use sql/install.sql with the literal 0_ prefix.
  *    Call $this->update_databases() in activate_extension().
  * 
  * 4. SECURITY
@@ -90,7 +90,7 @@ class hooks_ksf_FA_ProjectManagement extends hooks {
         $this->ensure_composer_dependencies();
         
         // Apply sql/install.sql using update_databases()
-        // This handles @TB_PREF@ replacement automatically
+        // The literal 0_ prefix is rewritten to TB_PREF by db_import()
         if (file_exists(dirname(__FILE__) . '/sql/install.sql')) {
             $updates = array('install.sql' => array($this->module_name));
             return $this->update_databases($company, $updates, $check_only);

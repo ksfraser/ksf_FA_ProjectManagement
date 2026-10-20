@@ -9,7 +9,7 @@ Module: ksf_FA_ProjectManagement (answers membership for ITS track; read-only).
 ## Need (BABOK What-not-How)
 Only project TEAM MEMBERS may be auto-timed when a task meeting closes.
 ProjectManagement owns the assignment truth
-(`0_fa_pm_assignments` `{project_id, employee_id}`), so it must answer which
+(`0_ksf_projectmanagement_assignments` `{project_id, employee_id}`), so it must answer which
 attendee emails are members — so Timesheets never has to guess or read
 assignment tables itself.
 
@@ -19,9 +19,9 @@ assignment tables itself.
    carries a `task_id` (or `project_id`) this module recognizes, it responds by
    appending to `$opts['classification']['member']` every
    `attendee_emails[]` entry that resolves to a team member:
-   `email → users.email → users.user_id → 0_fa_pm_assignments.employee_id`
+   `email → users.email → users.user_id → 0_ksf_projectmanagement_assignments.employee_id`
    for the event's project (task implied when `task_id` matches a row in
-   `0_fa_pm_tasks`).
+   `0_ksf_projectmanagement_tasks`).
 2. Attendees NOT resolvable to an assignee are NOT listed as member — they
    remain unclassified/external (the caller's aggregation decides).
 3. Service uses the module's OWN DAO layer (Dictionary/Schema +

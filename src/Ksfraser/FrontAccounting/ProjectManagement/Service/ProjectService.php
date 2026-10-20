@@ -120,7 +120,7 @@ class ProjectService
     {
         return [
             'entity'      => 'project',
-            'table'       => '0_fa_pm_projects',
+            'table'       => '0_ksf_projectmanagement_projects',
             'label'       => 'Project',
             'labelPlural' => 'Projects',
             'hookPrefix'  => 'Project',

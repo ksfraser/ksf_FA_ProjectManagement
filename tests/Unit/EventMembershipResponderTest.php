@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
  * EventMembershipResponder — FR-PM-007-001 membership classification.
  *
  * Identity chain: email → users.email → users.user_id →
- * 0_fa_pm_assignments.employee_id (Team tab stores FA user_id in
+ * 0_ksf_projectmanagement_assignments.employee_id (Team tab stores FA user_id in
  * employee_id). Expects SINGLE-ROW results nested in the stub queue
  * (db_fetch_assoc shifts one row off the current result list).
  *

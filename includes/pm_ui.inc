@@ -199,7 +199,7 @@ function sel_customer(string $selected = ''): string
  */
 function sel_project_type(string $selected = ''): string
 {
-    $sql = "SELECT id, name FROM " . TB_PREF . "fa_pm_project_types WHERE inactive = 0 ORDER BY sort_order, name";
+    $sql = "SELECT id, name FROM " . TB_PREF . "ksf_projectmanagement_project_types WHERE inactive = 0 ORDER BY sort_order, name";
     $result = db_query($sql);
 
     $html = '<select name="project_type_id">';

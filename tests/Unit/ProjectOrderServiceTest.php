@@ -54,7 +54,7 @@ class ProjectOrderServiceTest extends TestCase
         $links = $this->service->onOrderImported($payload);
 
         $this->assertSame([['link_id' => 100, 'revenue_id' => 101]], $links);
-        $this->assertStringContainsString('0_fa_pm_project_revenue', (string)$GLOBALS['__fa_last_sql']);
+        $this->assertStringContainsString('0_ksf_projectmanagement_project_revenue', (string)$GLOBALS['__fa_last_sql']);
     }
 
     /**

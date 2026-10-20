@@ -118,7 +118,7 @@ class TaskService
     {
         return [
             'entity'      => 'task',
-            'table'       => '0_fa_pm_tasks',
+            'table'       => '0_ksf_projectmanagement_tasks',
             'label'       => 'Task',
             'labelPlural' => 'Tasks',
             'hookPrefix'  => 'Task',

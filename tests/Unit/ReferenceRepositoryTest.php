@@ -93,7 +93,7 @@ class ReferenceRepositoryTest extends TestCase
 
         $this->assertSame(['PRJ-0001' => 'PRJ-0001 - Website Rebuild'], $options);
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('FROM 0_fa_pm_projects', $sql);
+        $this->assertStringContainsString('FROM 0_ksf_projectmanagement_projects', $sql);
         $this->assertStringContainsString("status <> 'Completed'", $sql);
         $this->assertStringContainsString('ORDER BY start_date DESC', $sql);
     }
@@ -113,7 +113,7 @@ class ReferenceRepositoryTest extends TestCase
         $options = $this->repo->projectTypeOptions();
 
         $this->assertSame(['1' => 'Client'], $options);
-        $this->assertStringContainsString('FROM 0_fa_pm_project_types', (string) $GLOBALS['__fa_last_sql']);
+        $this->assertStringContainsString('FROM 0_ksf_projectmanagement_project_types', (string) $GLOBALS['__fa_last_sql']);
     }
 
     /**

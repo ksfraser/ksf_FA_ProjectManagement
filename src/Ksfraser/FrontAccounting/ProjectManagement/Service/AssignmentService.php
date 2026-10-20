@@ -99,7 +99,7 @@ class AssignmentService
     {
         return [
             'entity'      => 'assignment',
-            'table'       => '0_fa_pm_assignments',
+            'table'       => '0_ksf_projectmanagement_assignments',
             'label'       => 'Team Member',
             'labelPlural' => 'Team',
             'hookPrefix'  => 'Assignment',

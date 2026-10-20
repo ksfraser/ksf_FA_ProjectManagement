@@ -55,7 +55,7 @@ class EventCloseTaskServiceTest extends TestCase
         $this->assertFalse($result['already_closed']);
 
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('INSERT INTO 0_fa_pm_task_progress', $sql);
+        $this->assertStringContainsString('INSERT INTO 0_ksf_projectmanagement_task_progress', $sql);
         $this->assertStringContainsString("VALUES ('TSK-0001', 'work_based', 4, 0, 0, 'Closed'", $sql);
     }
 
@@ -107,7 +107,7 @@ class EventCloseTaskServiceTest extends TestCase
         $this->assertFalse($result['already_closed']);
 
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('UPDATE 0_fa_pm_task_progress', $sql);
+        $this->assertStringContainsString('UPDATE 0_ksf_projectmanagement_task_progress', $sql);
         $this->assertStringContainsString('work_hours = 2.5', $sql);
         $this->assertStringContainsString("status = 'Closed'", $sql);
     }
@@ -192,6 +192,6 @@ class EventCloseTaskServiceTest extends TestCase
 
         $this->assertTrue($result['closed']);
         $this->assertSame(0.5, $result['recorded_hours']);
-        $this->assertStringContainsString('INSERT INTO 0_fa_pm_task_progress', (string) $GLOBALS['__fa_last_sql']);
+        $this->assertStringContainsString('INSERT INTO 0_ksf_projectmanagement_task_progress', (string) $GLOBALS['__fa_last_sql']);
     }
 }

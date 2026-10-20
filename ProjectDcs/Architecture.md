@@ -216,7 +216,7 @@ Provides presentation logic and helpers.
          │ 1:N                     │ 1:N
          ▼                         ▼
 ┌─────────────────────────────────────────────────┐
-│              fa_pm_projects                     │
+│              ksf_projectmanagement_projects                     │
 │ ┌────────────────────────────────────────────┐ │
 │ │ project_id (PK)                            │ │
 │ │ name                                      │ │
@@ -232,7 +232,7 @@ Provides presentation logic and helpers.
                          │ 1:N
                          ▼
 ┌─────────────────────────────────────────────────┐
-│               fa_pm_tasks                      │
+│               ksf_projectmanagement_tasks                      │
 │ ┌────────────────────────────────────────────┐ │
 │ │ task_id (PK)                               │ │
 │ │ project_id (FK) ──────────► projects       │ │
@@ -249,7 +249,7 @@ Provides presentation logic and helpers.
                          │ 1:N
                          ▼
 ┌─────────────────────────────────────────────────┐
-│           fa_pm_assignments                     │
+│           ksf_projectmanagement_assignments                     │
 │ ┌────────────────────────────────────────────┐ │
 │ │ project_id (FK, PK) ─────────► projects     │ │
 │ │ employee_id (FK, PK) ───────► employees   │ │
@@ -262,9 +262,9 @@ Provides presentation logic and helpers.
 
 ### 3.2 Table Details
 
-#### fa_pm_projects
+#### ksf_projectmanagement_projects
 ```sql
-CREATE TABLE `@TB_PREF@fa_pm_projects` (
+CREATE TABLE `@TB_PREF@ksf_projectmanagement_projects` (
     `project_id` VARCHAR(20) NOT NULL,
     `name` VARCHAR(100) NOT NULL,
     `description` TEXT,
@@ -289,9 +289,9 @@ CREATE TABLE `@TB_PREF@fa_pm_projects` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-#### fa_pm_tasks
+#### ksf_projectmanagement_tasks
 ```sql
-CREATE TABLE `@TB_PREF@fa_pm_tasks` (
+CREATE TABLE `@TB_PREF@ksf_projectmanagement_tasks` (
     `task_id` VARCHAR(20) NOT NULL,
     `project_id` VARCHAR(20) NOT NULL,
     `parent_task_id` VARCHAR(20) DEFAULT '',
@@ -314,13 +314,13 @@ CREATE TABLE `@TB_PREF@fa_pm_tasks` (
     KEY `idx_status` (`status`),
     KEY `idx_priority` (`priority`),
     CONSTRAINT `fk_task_project` FOREIGN KEY (`project_id`) 
-        REFERENCES `@TB_PREF@fa_pm_projects` (`project_id`) ON DELETE CASCADE
+        REFERENCES `@TB_PREF@ksf_projectmanagement_projects` (`project_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-#### fa_pm_assignments
+#### ksf_projectmanagement_assignments
 ```sql
-CREATE TABLE `@TB_PREF@fa_pm_assignments` (
+CREATE TABLE `@TB_PREF@ksf_projectmanagement_assignments` (
     `project_id` VARCHAR(20) NOT NULL,
     `employee_id` VARCHAR(100) NOT NULL,
     `role` VARCHAR(50) DEFAULT 'Team Member',
@@ -334,9 +334,9 @@ CREATE TABLE `@TB_PREF@fa_pm_assignments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-#### fa_pm_project_types
+#### ksf_projectmanagement_project_types
 ```sql
-CREATE TABLE `@TB_PREF@fa_pm_project_types` (
+CREATE TABLE `@TB_PREF@ksf_projectmanagement_project_types` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(50) NOT NULL,
     `description` VARCHAR(255) DEFAULT NULL,
@@ -347,9 +347,9 @@ CREATE TABLE `@TB_PREF@fa_pm_project_types` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-#### fa_pm_activity_log
+#### ksf_projectmanagement_activity_log
 ```sql
-CREATE TABLE `@TB_PREF@fa_pm_activity_log` (
+CREATE TABLE `@TB_PREF@ksf_projectmanagement_activity_log` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `activity_type` VARCHAR(30) NOT NULL,
     `entity_type` VARCHAR(30) NOT NULL,
@@ -368,9 +368,9 @@ CREATE TABLE `@TB_PREF@fa_pm_activity_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-#### fa_pm_files
+#### ksf_projectmanagement_files
 ```sql
-CREATE TABLE `@TB_PREF@fa_pm_files` (
+CREATE TABLE `@TB_PREF@ksf_projectmanagement_files` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `entity_type` VARCHAR(30) NOT NULL,
     `entity_id` VARCHAR(20) NOT NULL,

@@ -38,16 +38,16 @@ class Schema
 {
     /** Logical (unprefixed) table names as the adapter auto-prefixes them. */
 
-    const T_PROJECTS    = 'fa_pm_projects';
-    const T_TASKS       = 'fa_pm_tasks';
-    const T_TASK_DEPENDENCIES = 'fa_pm_task_dependencies';
-    const T_ASSIGNMENTS = 'fa_pm_assignments';
-    const T_PROJECT_TYPES = 'fa_pm_project_types';
-    const T_ACTIVITY    = 'fa_pm_activity_log';
-    const T_FILES       = 'fa_pm_files';
-    const T_PROGRESS    = 'fa_pm_task_progress';
-    const T_SALES_ORDERS = 'fa_pm_project_sales_orders';
-    const T_REVENUE     = 'fa_pm_project_revenue';
+    const T_PROJECTS    = 'ksf_projectmanagement_projects';
+    const T_TASKS       = 'ksf_projectmanagement_tasks';
+    const T_TASK_DEPENDENCIES = 'ksf_projectmanagement_task_dependencies';
+    const T_ASSIGNMENTS = 'ksf_projectmanagement_assignments';
+    const T_PROJECT_TYPES = 'ksf_projectmanagement_project_types';
+    const T_ACTIVITY    = 'ksf_projectmanagement_activity_log';
+    const T_FILES       = 'ksf_projectmanagement_files';
+    const T_PROGRESS    = 'ksf_projectmanagement_task_progress';
+    const T_SALES_ORDERS = 'ksf_projectmanagement_project_sales_orders';
+    const T_REVENUE     = 'ksf_projectmanagement_project_revenue';
 
     /**
      * The FA runtime adapter (native db_* only). DI'd into repositories by

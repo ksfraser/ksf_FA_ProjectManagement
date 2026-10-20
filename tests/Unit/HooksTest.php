@@ -300,7 +300,7 @@ class HooksTest extends TestCase
         $this->hooks->ksf_event_closed($dto);
 
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('INSERT INTO 0_fa_pm_task_progress', $sql);
+        $this->assertStringContainsString('INSERT INTO 0_ksf_projectmanagement_task_progress', $sql);
         $this->assertStringContainsString("'Closed'", $sql);
     }
 

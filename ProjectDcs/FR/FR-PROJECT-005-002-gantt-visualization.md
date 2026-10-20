@@ -17,8 +17,8 @@ highlighting.
 
 - `tasks` (id, name, parent_task_id, is_milestone, start/end from CPM
   ES/EF/IS/IF persist, status, progress, constraint cols),
-- `0_fa_pm_task_dependencies` rows,
-- `0_fa_pm_files` counts for any task/project (badge: paperclip + N).
+- `0_ksf_projectmanagement_task_dependencies` rows,
+- `0_ksf_projectmanagement_files` counts for any task/project (badge: paperclip + N).
 
 Pure layout (days→pixels) lives in `Layout/HorizontalTimelineLayout` so the
 geometry is testable without FA and without DOM.

@@ -81,7 +81,7 @@ public function testCreateRecordsActivityLogRow(): void
 
         $found = false;
         foreach ($GLOBALS['__fa_sql_log'] as $sql) {
-            if (strpos((string) $sql, 'INSERT INTO `0_fa_pm_activity_log`') !== false) {
+            if (strpos((string) $sql, 'INSERT INTO `0_ksf_projectmanagement_activity_log`') !== false) {
                 $found = true;
                 $this->assertStringContainsString('created', (string) $sql);
             }
@@ -107,7 +107,7 @@ public function testCreateRecordsActivityLogRow(): void
 
         $found = false;
         foreach ($GLOBALS['__fa_sql_log'] as $sql) {
-            if (strpos((string) $sql, 'INSERT INTO `0_fa_pm_projects`') !== false) {
+            if (strpos((string) $sql, 'INSERT INTO `0_ksf_projectmanagement_projects`') !== false) {
                 $found = true;
                 $this->assertStringContainsString('Active', (string) $sql);
             }
@@ -137,7 +137,7 @@ public function testUpdateRecordsActivityLogRow(): void
 
         $found = false;
         foreach ($GLOBALS['__fa_sql_log'] as $sql) {
-            if (strpos((string) $sql, 'INSERT INTO `0_fa_pm_activity_log`') !== false) {
+            if (strpos((string) $sql, 'INSERT INTO `0_ksf_projectmanagement_activity_log`') !== false) {
                 $found = true;
                 $this->assertStringContainsString('updated', (string) $sql);
             }

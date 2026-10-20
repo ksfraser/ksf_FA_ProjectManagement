@@ -49,7 +49,7 @@ class ProjectRepositoryTest extends TestCase
         $this->assertCount(1, $rows);
         $this->assertSame('PRJ-0001', $rows[0]['project_id']);
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('FROM 0_fa_pm_projects', $sql);
+        $this->assertStringContainsString('FROM 0_ksf_projectmanagement_projects', $sql);
         $this->assertStringContainsString('status = ', $sql);
         $this->assertStringContainsString('ORDER BY start_date DESC', $sql);
         $this->assertStringContainsString('LIMIT', $sql);
@@ -136,7 +136,7 @@ class ProjectRepositoryTest extends TestCase
 
         $this->assertSame('PRJ-0001', $id);
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('INTO `0_fa_pm_projects`', $sql);
+        $this->assertStringContainsString('INTO `0_ksf_projectmanagement_projects`', $sql);
         $this->assertStringContainsString('created_at', $sql);
     }
 
@@ -155,8 +155,8 @@ class ProjectRepositoryTest extends TestCase
         ]);
 
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringNotContainsString("', 0_fa_pm_projects", $sql);
-        $this->assertStringContainsString('INTO `0_fa_pm_projects`', $sql);
+        $this->assertStringNotContainsString("', 0_ksf_projectmanagement_projects", $sql);
+        $this->assertStringContainsString('INTO `0_ksf_projectmanagement_projects`', $sql);
     }
 
     /**
@@ -167,7 +167,7 @@ class ProjectRepositoryTest extends TestCase
         $this->repo->update('PRJ-0001', ['status' => 'Completed', 'budget' => 90000]);
 
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('UPDATE `0_fa_pm_projects`', $sql);
+        $this->assertStringContainsString('UPDATE `0_ksf_projectmanagement_projects`', $sql);
         $this->assertStringContainsString('status', $sql);
         $this->assertStringContainsString('project_id', $sql);
     }
@@ -180,7 +180,7 @@ class ProjectRepositoryTest extends TestCase
         $this->repo->delete('PRJ-0001');
 
         $sql = (string) $GLOBALS['__fa_last_sql'];
-        $this->assertStringContainsString('DELETE FROM `0_fa_pm_projects`', $sql);
+        $this->assertStringContainsString('DELETE FROM `0_ksf_projectmanagement_projects`', $sql);
         $this->assertStringContainsString('project_id', $sql);
     }
 
@@ -197,8 +197,8 @@ class ProjectRepositoryTest extends TestCase
         // from both createSqls() and definitionFor()'s map — see
         // ksf_ProjectManagement ProjectDcs/003-Scheduling/CONSOLIDATION.md.
         $this->assertCount(10, $sqls);
-        $this->assertStringContainsString('fa_pm_projects', $sqls[Schema::T_PROJECTS]);
-        $this->assertStringContainsString('fa_pm_task_dependencies', $sqls[Schema::T_TASK_DEPENDENCIES]);
+        $this->assertStringContainsString('ksf_projectmanagement_projects', $sqls[Schema::T_PROJECTS]);
+        $this->assertStringContainsString('ksf_projectmanagement_task_dependencies', $sqls[Schema::T_TASK_DEPENDENCIES]);
         $this->assertStringContainsString('CREATE TABLE', $sqls[Schema::T_REVENUE]);
     }
 }

@@ -85,7 +85,7 @@ class FA_PM_Module
     {
         $userId = isset($_SESSION['wa_current_user']) ? $_SESSION['wa_current_user']->user : 'system';
 
-        $sql = "INSERT INTO " . TB_PREF . "fa_pm_activity_log
+        $sql = "INSERT INTO " . TB_PREF . "ksf_projectmanagement_activity_log
             (entity_type, entity_id, user_id, action, details, new_values, created_at) VALUES
             (" . db_escape($entityType) . ", " . db_escape($entityId) . ",
              " . db_escape($userId) . ", " . db_escape($action) . ",

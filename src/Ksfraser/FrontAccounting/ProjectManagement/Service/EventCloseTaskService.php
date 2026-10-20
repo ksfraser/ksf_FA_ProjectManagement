@@ -11,10 +11,10 @@ use ksfraser\FrontAccounting\ProjectManagement\Dictionary\Schema;
  * EventCloseTaskService — FR-PM-007-002 task time-window close subscriber.
  *
  * Consumes `ksf_event_closed` for ksf_FA_ProjectManagement: when a closed
- * event's DTO carries a task_id that matches a row in `0_fa_pm_tasks`, the
+ * event's DTO carries a task_id that matches a row in `0_ksf_projectmanagement_tasks`, the
  * task's logged-time window is SEALED and the recorded worked window
  * (`closed_at - started_at`) is snapshotted into the task's
- * `0_fa_pm_task_progress` row (the task uniquely owns one) as `work_hours`
+ * `0_ksf_projectmanagement_task_progress` row (the task uniquely owns one) as `work_hours`
  * with `status = 'Closed'`.
  *
  * The module writes ONLY its own tables — it never creates or touches

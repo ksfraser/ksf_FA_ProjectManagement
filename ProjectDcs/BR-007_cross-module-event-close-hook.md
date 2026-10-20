@@ -48,7 +48,7 @@ Determination is a generic query, not hard-coded:
 
 - **`ksf_event_classify_attendees`** (`hook_invoke_all`, read-only): any
   subscriber needing membership asks it; the authority for each track
-  responds — PM (project task via `users.email → 0_fa_pm_assignments`), HRM
+  responds — PM (project task via `users.email → 0_ksf_projectmanagement_assignments`), HRM
   (employee windows via `0_crm_persons.email → 0_hrm_contacts_employment`),
   CRM (known external contacts), Teams/Warehouse (optional).
 - **Aggregation rule (deterministic):** no responder recognized ANY linkage ->
