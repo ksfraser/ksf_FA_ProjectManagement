@@ -1,0 +1,254 @@
+-- FA_PM Module SQL Schema
+-- Install: Creates tables for Project Management module
+-- Prefix: 0_ksf_projectmanagement_
+--
+-- Legacy table names retired (AGENTS_ARCH.md section 12): `0_` is the COMPANY
+-- prefix, so a table whose second segment is `fa` lands in FrontAccounting
+-- core's own namespace. FA 2.4.3 core uses no 0_fa_* name at all, so every
+-- 0_fa_* table in this estate is ours.
+--
+-- ALTER TABLE ... RENAME TO is the form db_import() accepts; a bare
+-- `RENAME TABLE ... TO ...` is silently discarded by the import parser.
+-- IF EXISTS makes each statement a no-op once the table has been migrated.
+ALTER TABLE IF EXISTS `0_fa_pm_projects` RENAME TO `0_ksf_projectmanagement_projects`;
+ALTER TABLE IF EXISTS `0_fa_pm_tasks` RENAME TO `0_ksf_projectmanagement_tasks`;
+ALTER TABLE IF EXISTS `0_fa_pm_task_dependencies` RENAME TO `0_ksf_projectmanagement_task_dependencies`;
+ALTER TABLE IF EXISTS `0_fa_pm_assignments` RENAME TO `0_ksf_projectmanagement_assignments`;
+ALTER TABLE IF EXISTS `0_fa_pm_project_types` RENAME TO `0_ksf_projectmanagement_project_types`;
+ALTER TABLE IF EXISTS `0_fa_pm_activity_log` RENAME TO `0_ksf_projectmanagement_activity_log`;
+ALTER TABLE IF EXISTS `0_fa_pm_files` RENAME TO `0_ksf_projectmanagement_files`;
+ALTER TABLE IF EXISTS `0_fa_pm_task_progress` RENAME TO `0_ksf_projectmanagement_task_progress`;
+ALTER TABLE IF EXISTS `0_fa_pm_project_sales_orders` RENAME TO `0_ksf_projectmanagement_project_sales_orders`;
+ALTER TABLE IF EXISTS `0_fa_pm_project_revenue` RENAME TO `0_ksf_projectmanagement_project_revenue`;
+
+-- Projects Table
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_projects` (
+    `project_id` VARCHAR(20) NOT NULL,
+    `name` VARCHAR(100) NOT NULL,
+    `description` TEXT,
+    `start_date` DATE NOT NULL,
+    `end_date` DATE DEFAULT NULL,
+    `budget` DECIMAL(15,2) DEFAULT 0.00,
+    `customer_id` INT(11) DEFAULT NULL,
+    `project_manager` VARCHAR(100) NOT NULL,
+    `priority` VARCHAR(20) DEFAULT 'Medium',
+    `status` VARCHAR(30) DEFAULT 'Planning',
+    `project_type_id` INT(11) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`project_id`),
+    KEY `idx_status` (`status`),
+    KEY `idx_manager` (`project_manager`),
+    KEY `idx_customer` (`customer_id`),
+    KEY `idx_priority` (`priority`),
+    KEY `idx_start_date` (`start_date`),
+    CONSTRAINT `fk_pm_customer` FOREIGN KEY (`customer_id`) REFERENCES `0_debtors_master` (`debtor_no`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tasks Table
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_tasks` (
+    `task_id` VARCHAR(20) NOT NULL,
+    `project_id` VARCHAR(20) NOT NULL,
+    `parent_task_id` VARCHAR(20) DEFAULT '',
+    `name` VARCHAR(100) NOT NULL,
+    `description` TEXT,
+    `assigned_to` VARCHAR(100) DEFAULT NULL,
+    `start_date` DATE DEFAULT NULL,
+    `end_date` DATE DEFAULT NULL,
+    `estimated_hours` DECIMAL(10,2) DEFAULT 0.00,
+    `actual_hours` DECIMAL(10,2) DEFAULT 0.00,
+    `progress` DECIMAL(5,2) DEFAULT 0.00,
+    `priority` VARCHAR(20) DEFAULT 'Medium',
+    `status` VARCHAR(30) DEFAULT 'Not Started',
+`is_milestone` TINYINT(1) DEFAULT 0,
+`is_constrained` TINYINT(1) DEFAULT 0,
+`constraint_type` VARCHAR(30) DEFAULT NULL,
+`constraint_date` DATE DEFAULT NULL,
+`es` DATE DEFAULT NULL,
+`ef` DATE DEFAULT NULL,
+`ls` DATE DEFAULT NULL,
+`lf` DATE DEFAULT NULL,
+`slack` DECIMAL(10,2) DEFAULT 0.00,
+`is_critical` TINYINT(1) DEFAULT 0,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`task_id`),
+    KEY `idx_project` (`project_id`),
+    KEY `idx_parent` (`parent_task_id`),
+    KEY `idx_assignee` (`assigned_to`),
+    KEY `idx_status` (`status`),
+    KEY `idx_priority` (`priority`),
+    KEY `idx_milestone` (`is_milestone`),
+    KEY `idx_critical` (`is_critical`),
+    CONSTRAINT `fk_task_project` FOREIGN KEY (`project_id`) REFERENCES `0_ksf_projectmanagement_projects` (`project_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Task Dependencies Table (CPM precedence edges: FS/SS/FF/SF + lag)
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_task_dependencies` (
+    `dependency_id` INT(11) NOT NULL AUTO_INCREMENT,
+    `task_id` VARCHAR(20) NOT NULL,
+    `predecessor_id` VARCHAR(20) NOT NULL,
+    `dependency_type` VARCHAR(10) NOT NULL DEFAULT 'FS',
+    `lag` DECIMAL(10,2) DEFAULT 0.00,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`dependency_id`),
+    KEY `idx_task` (`task_id`),
+    KEY `idx_pred` (`predecessor_id`),
+    UNIQUE KEY `idx_unique` (`task_id`, `predecessor_id`),
+    CONSTRAINT `fk_dep_task` FOREIGN KEY (`task_id`) REFERENCES `0_ksf_projectmanagement_tasks` (`task_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_dep_pred` FOREIGN KEY (`predecessor_id`) REFERENCES `0_ksf_projectmanagement_tasks` (`task_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Project Assignments Table
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_assignments` (
+    `project_id` VARCHAR(20) NOT NULL,
+    `employee_id` VARCHAR(100) NOT NULL,
+    `role` VARCHAR(50) DEFAULT 'Team Member',
+    `start_date` DATE NOT NULL,
+    `end_date` DATE DEFAULT NULL,
+    `allocation_percentage` DECIMAL(5,2) DEFAULT 100.00,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`project_id`, `employee_id`),
+    KEY `idx_employee` (`employee_id`),
+    KEY `idx_end_date` (`end_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Project Types Table
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_project_types` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(50) NOT NULL,
+    `description` VARCHAR(255) DEFAULT NULL,
+    `inactive` TINYINT(1) DEFAULT 0,
+    `sort_order` INT(11) DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `idx_sort` (`sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Activity Log Table
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_activity_log` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `activity_type` VARCHAR(30) NOT NULL,
+    `entity_type` VARCHAR(30) NOT NULL,
+    `entity_id` VARCHAR(20) NOT NULL,
+    `user_id` VARCHAR(100) DEFAULT NULL,
+    `action` VARCHAR(50) NOT NULL,
+    `details` TEXT,
+    `old_values` TEXT,
+    `new_values` TEXT,
+    `ip_address` VARCHAR(45) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_entity` (`entity_type`, `entity_id`),
+    KEY `idx_user` (`user_id`),
+    KEY `idx_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Initial Project Types
+INSERT INTO `0_ksf_projectmanagement_project_types` (`name`, `description`, `sort_order`) VALUES
+('Software Development', 'Software development projects', 1),
+('Infrastructure', 'Infrastructure and DevOps projects', 2),
+('Consulting', 'Consulting and professional services', 3),
+('Research', 'Research and development projects', 4),
+('Marketing', 'Marketing and campaign projects', 5),
+('Event', 'Event planning and execution', 6);
+
+-- Files Table
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_files` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `entity_type` VARCHAR(30) NOT NULL COMMENT 'project, task, etc',
+    `entity_id` VARCHAR(20) NOT NULL,
+    `file_name` VARCHAR(255) NOT NULL,
+    `original_name` VARCHAR(255) NOT NULL,
+    `mime_type` VARCHAR(100) DEFAULT 'application/octet-stream',
+    `size` INT(11) DEFAULT 0,
+    `storage_type` VARCHAR(20) DEFAULT 'local' COMMENT 'local, s3, fa_attachment',
+    `storage_path` VARCHAR(500) DEFAULT '',
+    `uploaded_by` VARCHAR(100) DEFAULT NULL,
+    `uploaded_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `description` TEXT,
+    `inactive` TINYINT(1) DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `idx_entity` (`entity_type`, `entity_id`),
+    KEY `idx_uploaded_by` (`uploaded_by`),
+    KEY `idx_inactive` (`inactive`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Task Progress Table (OpenProject-style progress tracking)
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_task_progress` (
+    `progress_id` INT(11) NOT NULL AUTO_INCREMENT,
+    `task_id` VARCHAR(20) NOT NULL,
+    `progress_mode` VARCHAR(20) DEFAULT 'work_based' COMMENT 'work_based, status_based',
+    `work_hours` DECIMAL(10,2) DEFAULT 0,
+    `remaining_hours` DECIMAL(10,2) DEFAULT 0,
+    `percent_complete` DECIMAL(5,2) DEFAULT 0,
+    `status` VARCHAR(30) DEFAULT NULL COMMENT 'Links to PM task status',
+    `baseline_hours` DECIMAL(10,2) DEFAULT 0,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`progress_id`),
+    UNIQUE KEY `idx_task` (`task_id`),
+    CONSTRAINT `fk_progress_task` FOREIGN KEY (`task_id`) REFERENCES `0_ksf_projectmanagement_tasks`(`task_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Project Sales Order Links (imported FA orders linked to projects)
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_project_sales_orders` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `project_id` VARCHAR(20) NOT NULL,
+    `fa_order_no` INT(11) NOT NULL,
+    `fa_trans_type` INT(11) NOT NULL DEFAULT 10 COMMENT 'ST_SALESINVOICE = 10',
+    `source` VARCHAR(32) DEFAULT 'all' COMMENT 'all | square | woocommerce | ...',
+    `source_order_id` VARCHAR(64) DEFAULT NULL,
+    `linked_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `idx_order` (`fa_order_no`, `fa_trans_type`),
+    KEY `idx_project` (`project_id`),
+    KEY `idx_source` (`source`),
+    CONSTRAINT `fk_pm_so_project` FOREIGN KEY (`project_id`) REFERENCES `0_ksf_projectmanagement_projects`(`project_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Project Revenue (recognized revenue from linked FA orders)
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_project_revenue` (
+    `revenue_id` INT(11) NOT NULL AUTO_INCREMENT,
+    `project_id` VARCHAR(20) NOT NULL,
+    `fa_order_no` INT(11) NOT NULL,
+    `fa_trans_type` INT(11) NOT NULL DEFAULT 10 COMMENT 'ST_SALESINVOICE = 10',
+    `source` VARCHAR(32) DEFAULT 'all' COMMENT 'all | square | woocommerce | ...',
+    `source_order_id` VARCHAR(64) DEFAULT NULL,
+    `order_total` DECIMAL(15,2) DEFAULT 0,
+    `revenue_amount` DECIMAL(15,2) DEFAULT 0,
+    `order_date` DATE DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`revenue_id`),
+    UNIQUE KEY `idx_revenue_order` (`fa_order_no`, `fa_trans_type`),
+    KEY `idx_project` (`project_id`),
+    KEY `idx_source` (`source`),
+    CONSTRAINT `fk_pm_rev_project` FOREIGN KEY (`project_id`) REFERENCES `0_ksf_projectmanagement_projects`(`project_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- ---------------------------------------------------------------------------
+-- Module-local employee directory.
+--
+-- WHY THIS TABLE EXISTS (and why it is not FA core):
+--   FA core has no employee entity. In this estate an employee is an FA
+--   person (0_crm_persons) plus a crm_categories row of type 'employee' plus
+--   a satellite employment table - the satellite belongs to ksf_FA_HRM
+--   (0_hrm_contacts_employment). Reaching into another module's table would
+--   make this module depend on that module being activated, which
+--   AGENTS_ARCH.md 12.2 forbids ("a shared seam must never be gated on
+--   another module's activation"). The contact resolver in ksf-fa-common
+--   deliberately does not cover the employee intent either.
+--   So this module keeps its OWN employee directory. `employee_id` is
+--   VARCHAR(100) because 0_ksf_projectmanagement_assignments.employee_id and
+--   0_ksf_projectmanagement_projects.project_manager store the handle the Team tab writes.
+--   It is module-local by design.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `0_ksf_projectmanagement_employees` (
+    `employee_id` VARCHAR(100) NOT NULL,
+    `first_name` VARCHAR(100) DEFAULT NULL,
+    `last_name` VARCHAR(100) DEFAULT NULL,
+    `email` VARCHAR(120) DEFAULT NULL,
+    `job_title` VARCHAR(150) DEFAULT NULL,
+    `department` VARCHAR(100) DEFAULT NULL,
+    `active` TINYINT(1) DEFAULT 1,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`employee_id`),
+    KEY `idx_department` (`department`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,0 +1,397 @@
+<?php
+/**
+ * KSF FrontAccounting Module Hooks
+ * 
+ * STANDARD PATTERNS:
+ * 
+ * 1. ADDING MODULE TABS
+ *    Define a class extending 'application' in hooks.php.
+ *    Return new instance from install_tabs().
+ *    Include add_extensions() to load other modules' install_options.
+ * 
+ * 2. ADDING MENU ITEMS TO EXISTING APPS
+ *    Use install_options() with switch($app->id).
+ *    Use add_module() + add_lapp_function() for new menu section.
+ * 
+ * 3. DATABASE SCHEMA
+ *    DO NOT create tables in PHP code.
+ *    Use sql/install.sql with the literal 0_ prefix.
+ *    Call $this->update_databases() in activate_extension().
+ * 
+ * 4. SECURITY
+ *    Define SS_<MODULE> constant (section << 8).
+ *    Define SA_<MODULE>VIEW and SA_<MODULE>MANAGE in install_access().
+ * 
+ * @package KsfFA_ksf_FA_ProjectManagement
+ * @version 2.4.3
+ */
+
+define('SS_ksf_FA_ProjectManagement', 134 << 8);
+define('KSF_PM_MODULE_NAME', 'ksf_FA_ProjectManagement');
+define('KSF_PM_CAPABILITIES', 'project_crud,task_crud,team,sales_order_link,revenue');
+
+// Composer autoloader + vendored ksfraser/ksf-fa-common / ksf-common-db
+// prefixes (needed by the app shell + FAModuleMenu integration).
+if (file_exists(__DIR__ . '/bootstrap.php')) {
+    require_once __DIR__ . '/bootstrap.php';
+}
+
+class hooks_ksf_FA_ProjectManagement extends hooks {
+    var $module_name = 'ksf_FA_ProjectManagement';
+    var $version     = '2.4.3-1';
+
+    /**
+     * Install the Project Management application tab in FA sidebar.
+     *
+     * @param application $app FA application instance
+     */
+    function install_tabs($app) {
+        set_ext_domain('modules/ksf_FA_ProjectManagement');
+        $app->add_application(new project_app());
+        set_ext_domain();
+        return null;
+    }
+
+    /**
+     * Add menu items to existing FA applications
+     * 
+     * @param application $app FA application instance
+     */
+    function install_options($app) {
+        // Override in modules that add menu items
+    }
+
+    /**
+     * Define security areas
+     * 
+     * @return array [0] => $security_areas, [1] => $security_sections
+     */
+    function install_access() {
+        $security_sections[SS_ksf_FA_ProjectManagement] = _("Project Management");
+        $security_areas['SA_ksf_FA_ProjectManagementVIEW'] = array(
+            SS_ksf_FA_ProjectManagement | 1, 
+            _("View ")
+        );
+        $security_areas['SA_ksf_FA_ProjectManagementMANAGE'] = array(
+            SS_ksf_FA_ProjectManagement | 2, 
+            _("Manage ")
+        );
+        return array($security_areas, $security_sections);
+    }
+
+    /**
+     * Activate extension
+     * 
+     * @param int $company Company number
+     * @param bool $check_only Only check if activation possible
+     * @return bool Success
+     */
+    function activate_extension($company, $check_only=true) {
+        $this->ensure_composer_dependencies();
+        
+        // Apply sql/install.sql using update_databases()
+        // The literal 0_ prefix is rewritten to TB_PREF by db_import()
+        if (file_exists(dirname(__FILE__) . '/sql/install.sql')) {
+            $updates = array('install.sql' => array($this->module_name));
+            return $this->update_databases($company, $updates, $check_only);
+        }
+        
+        return true;
+    }
+
+    /**
+     * Install composer dependencies if needed
+     */
+    private function ensure_composer_dependencies() {
+        $module_dir = dirname(__FILE__);
+        $autoload_path = $module_dir . '/vendor/autoload.php';
+        
+        if (file_exists($autoload_path)) {
+            return;
+        }
+        
+        $composer_path = $module_dir . '/composer.json';
+        if (!file_exists($composer_path)) {
+            return;
+        }
+        
+        chdir($module_dir);
+        $output = array();
+        $return_code = 0;
+        exec('composer install --no-interaction --prefer-dist 2>&1', $output, $return_code);
+        if ($return_code !== 0) {
+            error_log('KSF Module: composer install failed: ' . implode("\n", $output));
+        }
+    }
+
+    // ─── Project Type Hooks ─────────────────────────────────────────
+
+    function getProjectTypes(&$data, $opts = null)
+    {
+        $autoload = __DIR__ . '/vendor/autoload.php';
+        if (!file_exists($autoload)) { return []; }
+        require_once $autoload;
+        $service = new \ksfraser\FrontAccounting\ProjectManagement\Service\ProjectTypeService();
+        return $service->hookGetProjectTypes($data, $opts);
+    }
+
+    function getProjectTypeDDL(&$data, $opts = null)
+    {
+        $autoload = __DIR__ . '/vendor/autoload.php';
+        if (!file_exists($autoload)) { return []; }
+        require_once $autoload;
+        $service = new \ksfraser\FrontAccounting\ProjectManagement\Service\ProjectTypeService();
+        return $service->hookGetProjectTypeDDL($data, $opts);
+    }
+
+    function getProjectTypeHtmlOptions(&$data, $opts = null)
+    {
+        $autoload = __DIR__ . '/vendor/autoload.php';
+        if (!file_exists($autoload)) { return []; }
+        require_once $autoload;
+        $service = new \ksfraser\FrontAccounting\ProjectManagement\Service\ProjectTypeService();
+        return $service->hookGetProjectTypeHtmlOptions($data, $opts);
+    }
+
+    // ─── Inter-Module Capabilities ─────────────────────────────────
+
+    /**
+     * Return module constants for inter-module capability discovery.
+     * 
+     * @param array $data Result bucket (by reference)
+     * @param array|null $opts Options
+     * @return array Module constants
+     */
+    function getModuleConstants(&$data, $opts = null) {
+        $constants = array(
+            'KSF_PM_MODULE_NAME' => KSF_PM_MODULE_NAME,
+            'KSF_PM_CAPABILITIES' => KSF_PM_CAPABILITIES,
+        );
+        $data['constants'] = $constants;
+        return $constants;
+    }
+
+    /**
+     * Return module capabilities with descriptions.
+     * 
+     * @param array $data Result bucket (by reference)
+     * @param array|null $opts Options
+     * @return array Capabilities keyed by capability name
+     */
+    function getModuleCapabilities(&$data, $opts = null) {
+        $capabilities = array(
+            'project_crud' => array(
+                'description' => 'Create and manage projects',
+                'methods' => array(),
+                'events' => array(),
+            ),
+            'task_crud' => array(
+                'description' => 'Create and manage tasks with hierarchies',
+                'methods' => array(),
+                'events' => array(),
+            ),
+            'team' => array(
+                'description' => 'Assign employees to project teams',
+                'methods' => array(),
+                'events' => array(),
+            ),
+            'sales_order_link' => array(
+                'description' => 'Link imported FA orders to projects',
+                'methods' => array('linkOrderToProject', 'onOrderImported'),
+                'events' => array('ORDER_IMPORTED'),
+            ),
+            'revenue' => array(
+                'description' => 'Project revenue recognition from linked orders',
+                'methods' => array('listRevenueByProject', 'getRevenueSummary'),
+                'events' => array('ORDER_IMPORTED'),
+            ),
+        );
+        $data['capabilities'] = $capabilities;
+        return $capabilities;
+    }
+
+    /**
+     * Check whether the module provides a capability.
+     * 
+     * @param array $data Result bucket (by reference)
+     * @param array|null $opts Options (capability)
+     * @return bool Capability availability
+     */
+    function hasCapability(&$data, $opts = null) {
+        $capability = isset($opts['capability']) ? $opts['capability'] : (isset($data['capability']) ? $data['capability'] : null);
+        if ($capability === null) {
+            $data['has_capability'] = false;
+            $data['error'] = 'No capability specified';
+            return false;
+        }
+        $capabilities = explode(',', KSF_PM_CAPABILITIES);
+        $hasCapability = in_array($capability, $capabilities);
+        $data['has_capability'] = $hasCapability;
+        $data['capability_checked'] = $capability;
+        return $hasCapability;
+    }
+
+    /**
+     * Respond to a capability request.
+     * 
+     * Supports 'capabilities', 'constants', and 'has:<capability>'.
+     * 
+     * @param array $data Result bucket (by reference)
+     * @param array|null $opts Options (request)
+     * @return mixed Result of the requested operation or null
+     */
+    function respondToCapabilityRequest(&$data, $opts = null) {
+        $request = isset($opts['request']) ? $opts['request'] : (isset($data['request']) ? $data['request'] : 'capabilities');
+        $data['request'] = $request;
+        $data['module'] = $this->module_name;
+
+        if (strpos($request, 'has:') === 0) {
+            $capability = substr($request, 4);
+            return $this->hasCapability($data, array('capability' => $capability));
+        }
+
+        switch ($request) {
+            case 'capabilities':
+                return $this->getModuleCapabilities($data, $opts);
+            case 'constants':
+                return $this->getModuleConstants($data, $opts);
+            default:
+                $data['error'] = 'Unknown request type: ' . $request;
+                return null;
+        }
+    }
+
+    /**
+     * order_imported listener: link orders to projects and record revenue.
+     * 
+     * Invoked by FA's hook_invoke_all('order_imported', $data) with the
+     * payload broadcast by source modules (Square, WooCommerce). The
+     * listener is a no-op when the PM source tree is unavailable.
+     * 
+     * @param array $data Event payload (by reference)
+     * @param array|null $opts Options
+     * @return void
+     */
+    function order_imported(&$data, $opts = null) {
+        if (!class_exists('ksfraser\FrontAccounting\ProjectManagement\Service\ProjectOrderService')) {
+            return;
+        }
+        $service = new \ksfraser\FrontAccounting\ProjectManagement\Service\ProjectOrderService();
+        $links = $service->onOrderImported($data);
+        $data['project_links_created'] = count($links);
+    }
+
+    // ─── BR-007 Event-close subscribers (FR-PM-007-001 / FR-PM-007-002) ──
+
+    /**
+     * ksf_event_classify_attendees responder: tag PROJECT TEAM MEMBER emails.
+     *
+     * Appends to $data['classification']['member'] (by reference) every
+     * attendee email the module resolves to a team member for the event's
+     * project/task (FR-PM-007-001). READ-ONLY; appends only, never re-tags
+     * another responder's contribution. A DB failure is contained so this
+     * responder never aborts the caller's classification.
+     *
+     * @param array      $data Broadcast payload with 'dto' + 'classification'
+     * @param array|null $opts Hook options ('event_id')
+     * @return void
+     */
+    function ksf_event_classify_attendees(&$data, $opts = null) {
+        if (!is_array($data)
+            || !isset($data['dto'])
+            || !isset($data['classification'])
+            || !is_array($data['classification'])) {
+            return;
+        }
+        $autoload = __DIR__ . '/vendor/autoload.php';
+        if (file_exists($autoload)) {
+            require_once $autoload;
+        }
+        if (!function_exists('db_query') || !defined('TB_PREF')) {
+            return; // no FA runtime — nothing to classify
+        }
+
+        try {
+            $responder = new \ksfraser\FrontAccounting\ProjectManagement\Service\EventMembershipResponder();
+            $members = $responder->respondMembership($data['dto']);
+        } catch (\Throwable $e) {
+            error_log('[ksf_FA_ProjectManagement] ksf_event_classify_attendees responder failed: ' . $e->getMessage());
+            return;
+        }
+
+        $list = isset($data['classification']['member']) && is_array($data['classification']['member'])
+            ? $data['classification']['member'] : array();
+        foreach ($members as $email) {
+            $list[] = $email;
+        }
+
+        // Case-insensitive de-dupe that preserves other responders' entries.
+        $seen = array();
+        foreach ($list as $email) {
+            if (!is_scalar($email)) {
+                continue;
+            }
+            $email = strtolower(trim((string) $email));
+            if ($email !== '') {
+                $seen[$email] = true;
+            }
+        }
+        $data['classification']['member'] = array_keys($seen);
+    }
+
+    /**
+     * ksf_event_closed subscriber: close the linked task's time window.
+     *
+     * Seals the task's logged-time window and snapshots the recorded worked
+     * window into the task's progress row (FR-PM-007-002). Idempotent and
+     * fault-tolerant; never touches other modules' tables.
+     *
+     * @param object|array $data Closed-event DTO
+     * @param array|null   $opts Hook options ('acting_user_id')
+     * @return void
+     */
+    function ksf_event_closed(&$data, $opts = null) {
+        if (!is_object($data) && !is_array($data)) {
+            return;
+        }
+        $autoload = __DIR__ . '/vendor/autoload.php';
+        if (file_exists($autoload)) {
+            require_once $autoload;
+        }
+        if (!function_exists('db_query') || !defined('TB_PREF')) {
+            return; // no FA runtime — nothing to write
+        }
+
+        try {
+            $service = new \ksfraser\FrontAccounting\ProjectManagement\Service\EventCloseTaskService();
+            $service->onEventClosed($data);
+        } catch (\Throwable $e) {
+            error_log('[ksf_FA_ProjectManagement] ksf_event_closed subscriber failed: ' . $e->getMessage());
+        }
+    }
+}
+
+class project_app extends application {
+    function __construct() {
+        parent::__construct("Project Management", _($this->help_context = _("&Project Management")));
+
+        $this->add_module(_("Project Management"));
+
+        $menu = new \ksfraser\FrontAccounting\Common\Menu\FAModuleMenu(
+            'modules/ksf_FA_ProjectManagement/index.php',
+            'view',
+            ''
+        );
+
+        $menu->addItem('dashboard',      _("&Dashboard"),       MENU_MAIN)
+             ->addItem('projects',       _("Projects"),         MENU_ENTRY)
+             ->addItem('tasks',          _("Tasks"),            MENU_ENTRY)
+             ->addItem('team',           _("Team"),             MENU_ENTRY)
+             ->addItem('reports',        _("Reports"),          MENU_REPORT)
+             ->addItem('project_types',  _("Project Types"),    MENU_SETTINGS);
+
+        $menu->registerWithApp($this, 'SA_ksf_FA_ProjectManagementVIEW');
+
+        $this->add_extensions();
+    }
+}

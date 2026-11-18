@@ -1,0 +1,239 @@
+<?php
+
+/**
+ * Shared test stubs for ksf_FA_ProjectManagement.
+ *
+ * Provides FA globals (TB_PREF, ST_SALESINVOICE), a GLOBALS-backed fake
+ * database (db_query/db_fetch_assoc/db_num_rows/db_insert_id/db_escape),
+ * and a base hooks class for loading hooks.php in tests.
+ *
+ * @package ksf_FA_ProjectManagement
+ */
+
+namespace {
+    if (!defined('TB_PREF')) {
+        define('TB_PREF', '0_');
+    }
+
+    if (!defined('ST_SALESINVOICE')) {
+        define('ST_SALESINVOICE', 10);
+    }
+
+    if (!function_exists('db_query')) {
+        /**
+         * Records the last SQL; SELECT pops the next seeded result set,
+         * INSERT/WRITE succeed.
+         *
+         * @param string $sql SQL statement
+         * @param string $msg Optional error message
+         * @return mixed Seeded result array or true
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
+        function db_query($sql, $msg = '')
+        {
+            $GLOBALS['__fa_last_sql'] = $sql;
+            $GLOBALS['__fa_sql_log'][] = $sql;
+            $prefix = strtolower(substr(ltrim((string)$sql), 0, 6));
+            if ($prefix === 'select') {
+                if (isset($GLOBALS['__fa_select_queue']) && count($GLOBALS['__fa_select_queue']) > 0) {
+                    $GLOBALS['__fa_current_result'] = array_shift($GLOBALS['__fa_select_queue']);
+                } else {
+                    $GLOBALS['__fa_current_result'] = $GLOBALS['__fa_select_result'] ?? [];
+                }
+                return $GLOBALS['__fa_current_result'];
+            }
+            if ($prefix === 'insert') {
+                $GLOBALS['__fa_last_insert_id'] = $GLOBALS['__fa_next_id'] ?? 1;
+                $GLOBALS['__fa_next_id'] = $GLOBALS['__fa_last_insert_id'] + 1;
+            }
+            return true;
+        }
+    }
+
+    if (!function_exists('db_fetch_assoc')) {
+        /**
+         * Shifts the next row off the current seeded result set.
+         *
+         * @param mixed $result Seeded result
+         * @return array|false Next row or false when exhausted
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
+        function db_fetch_assoc($result)
+        {
+            if (isset($GLOBALS['__fa_current_result']) && count($GLOBALS['__fa_current_result']) > 0) {
+                return array_shift($GLOBALS['__fa_current_result']);
+            }
+            return false;
+        }
+    }
+
+    if (!function_exists('db_num_rows')) {
+        /**
+         * Returns the number of rows in a seeded result.
+         *
+         * @param mixed $result Seeded result
+         * @return int Row count
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
+        function db_num_rows($result)
+        {
+            if (is_array($result)) {
+                return count($result);
+            }
+            return (int)$result ? 1 : 0;
+        }
+    }
+
+    if (!function_exists('db_insert_id')) {
+        /**
+         * Returns the last inserted id assigned by the fake DB.
+         *
+         * @return int Last insert id
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
+        function db_insert_id()
+        {
+            return $GLOBALS['__fa_last_insert_id'] ?? 1;
+        }
+    }
+
+    if (!function_exists('db_escape')) {
+        /**
+         * Escapes a value for SQL in the fake DB.
+         *
+         * @param mixed $value Value to escape
+         * @return string Escaped value
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
+        function db_escape($value)
+        {
+            return addslashes((string)$value);
+        }
+    }
+
+    if (!function_exists('db_num_affected_rows')) {
+        /**
+         * Affected-row count for the last fake write.
+         *
+         * @return int
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
+        function db_num_affected_rows()
+        {
+            return $GLOBALS['__fa_affected_rows'] ?? 1;
+        }
+    }
+
+    if (!function_exists('db_begin_transaction')) {
+        /**
+         * @BABOK Related: N/A — test stub; not a requirement
+         */
+        function db_begin_transaction()
+        {
+            $GLOBALS['__fa_in_transaction'] = true;
+        }
+    }
+
+    if (!function_exists('db_commit_transaction')) {
+        /**
+         * @BABOK Related: N/A — test stub; not a requirement
+         */
+        function db_commit_transaction()
+        {
+            $GLOBALS['__fa_in_transaction'] = false;
+        }
+    }
+
+    if (!function_exists('db_rollback_transaction')) {
+        /**
+         * @BABOK Related: N/A — test stub; not a requirement
+         */
+        function db_rollback_transaction()
+        {
+            $GLOBALS['__fa_in_transaction'] = false;
+        }
+    }
+
+    if (!class_exists('hooks', false)) {
+        /**
+         * Minimal FrontAccounting base hooks class for tests.
+         */
+        /**
+         * @BABOK Related: N/A — FA hooks stub so unit tests can run without a FA bootstrap; not a requirement.
+         */
+        class hooks
+        {
+            public $module_name = '';
+            public $version = '';
+        }
+    }
+
+    if (!class_exists('application', false)) {
+        /**
+         * Minimal FrontAccounting base application class for tests.
+         */
+        /**
+         * @BABOK Related: N/A — FA application stub for the same reason; not a requirement.
+         */
+        class application
+        {
+        }
+    }
+
+    if (!function_exists('set_ext_domain')) {
+        /**
+         * No-op extension domain setter for tests.
+         *
+         * @param string|null $domain Extension domain
+         * @return void
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
+        function set_ext_domain($domain = null)
+        {
+        }
+    }
+
+    if (!function_exists('hook_invoke_all')) {
+        /**
+         * Records the last hook invocation so tests can assert lifecycle
+         * hooks fired; handlers registered via $GLOBALS['__fa_hook_handlers']
+         * are invoked.
+         *
+         * @param string $method Hook name
+         * @param mixed  $data   Hook payload (by reference in FA)
+         * @param array  $opts   Hook options
+         * @return void
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
+        function hook_invoke_all($method, &$data = null, $opts = array())
+        {
+            $GLOBALS['__fa_hooks_fired'][] = $method;
+            if (isset($GLOBALS['__fa_hook_handlers'][$method])) {
+                call_user_func_array($GLOBALS['__fa_hook_handlers'][$method], array(&$data, $opts));
+            }
+        }
+    }
+
+    if (!function_exists('_')) {
+        /**
+         * Translation stub.
+         *
+         * @param string $text Text to translate
+         * @return string Untranslated text
+          *
+ * @BABOK Related: N/A — test stub; not a requirement
+ */
+        function _($text)
+        {
+            return $text;
+        }
+    }
+}
