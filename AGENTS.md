@@ -359,6 +359,7 @@ holds brand-new content. Symptom set on 8090: registry stale (15 host entries
 vs the container's live 16, missing `ksf_Calendar`), `default.css` stale, and
 `config_db.php` stale — all three with `podman inspect` naming the correct
 source path, so the bind *looks* correct. Diagnosis is `stat -c%i` on both
+<<<<<<< HEAD
 sides, never `inspect`.
 
 Per `ansible/roles/ksf.frontaccounting/tasks/container-run.yml`, the canonical
@@ -378,6 +379,9 @@ Only the three single-file binds (`config_db.php`, `installed_extensions.php`,
 `default.css`) are vulnerable to the dead-inode failure. All directory mounts
 are unaffected by inode replacement because the directory inode stays the same.
 Rules:
+=======
+sides, never `inspect`. Rules:
+>>>>>>> origin/main
 - Never edit a single-file bind target with `sed -i`. Use `cat src > dst` /
   `tee` (truncate-in-place, keeps the inode) or `rsync --inplace`.
 - After ANY container create **or** after editing `config_db.php`,

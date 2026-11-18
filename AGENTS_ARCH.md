@@ -1379,6 +1379,7 @@ contact registry is FA core's, so it keeps FA core's names — `0_crm_persons`,
 counterpart for it. Our naming rule applies to tables we own, not to tables
 FA owns.
 
+<<<<<<< HEAD
 ### 12.3 Entity Type Registry — RELATED_ENTITY_TYPES hook
 
 **The entity registry** (`ksfraser\FrontAccounting\Common\Repository\EntityRegistry`)
@@ -1473,6 +1474,8 @@ owns no record type and contributes no fields; each owning module answers with
 its own. Consumers may override labels before calling `render()`/`toHtml()`.
 Implemented in `ksf_FA_RelatedTo/hooks.php`.
 
+=======
+>>>>>>> origin/main
 ## 13. RBAC Architecture (ksf_FA_RBAC)
 
 ### Design Document
