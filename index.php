@@ -67,7 +67,7 @@ $path_to_root = "../..";
 // normalisation, ui.inc already loaded below).
 $frontController = new \ksfraser\FrontAccounting\ProjectManagement\App\PmFrontController(
     new \ksfraser\FrontAccounting\ProjectManagement\App\PmAppShell(),
-    'SA_ksf_FA_ProjectManagementVIEW',
+    'SA_PROJECTMANAGEMENT_VIEW',
     $path_to_root
 );
 

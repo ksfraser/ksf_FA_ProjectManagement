@@ -24,7 +24,7 @@ if (!function_exists('_')) {
 }
 
 const PROBE_AREA = 'SA_THIRDPARTY_PROBE_VIEW';
-const FALLBACK_AREA = 'SA_ksf_FA_ProjectManagementVIEW';
+const FALLBACK_AREA = 'SA_PROJECTMANAGEMENT_VIEW';
 
 /**
  * @BABOK Related: N/A — a probe stub used by the diagnostic script; not a requirement.

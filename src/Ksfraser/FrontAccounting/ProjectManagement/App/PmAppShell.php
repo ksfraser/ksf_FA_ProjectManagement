@@ -62,12 +62,12 @@ class PmAppShell extends AbstractAppShell
     protected function registerCoreTabs(): void
     {
         $tabs = [
-            ['key' => 'dashboard',      'label' => '&Dashboard',       'controller' => DashboardTabController::class,      'security' => 'SA_ksf_FA_ProjectManagementVIEW'],
-            ['key' => 'projects',       'label' => 'Projects',         'controller' => ProjectsTabController::class,       'security' => 'SA_ksf_FA_ProjectManagementVIEW'],
-            ['key' => 'tasks',          'label' => 'Tasks',            'controller' => TasksTabController::class,          'security' => 'SA_ksf_FA_ProjectManagementVIEW'],
-            ['key' => 'team',           'label' => 'Team',             'controller' => TeamTabController::class,           'security' => 'SA_ksf_FA_ProjectManagementVIEW'],
-            ['key' => 'reports',        'label' => 'Reports',          'controller' => ReportsTabController::class,        'security' => 'SA_ksf_FA_ProjectManagementVIEW'],
-            ['key' => 'project_types',  'label' => 'Project Types',    'controller' => ProjectTypesTabController::class,   'security' => 'SA_ksf_FA_ProjectManagementVIEW'],
+            ['key' => 'dashboard',      'label' => '&Dashboard',       'controller' => DashboardTabController::class,      'security' => 'SA_PROJECTMANAGEMENT_VIEW'],
+            ['key' => 'projects',       'label' => 'Projects',         'controller' => ProjectsTabController::class,       'security' => 'SA_PROJECTMANAGEMENT_VIEW'],
+            ['key' => 'tasks',          'label' => 'Tasks',            'controller' => TasksTabController::class,          'security' => 'SA_PROJECTMANAGEMENT_VIEW'],
+            ['key' => 'team',           'label' => 'Team',             'controller' => TeamTabController::class,           'security' => 'SA_PROJECTMANAGEMENT_VIEW'],
+            ['key' => 'reports',        'label' => 'Reports',          'controller' => ReportsTabController::class,        'security' => 'SA_PROJECTMANAGEMENT_VIEW'],
+            ['key' => 'project_types',  'label' => 'Project Types',    'controller' => ProjectTypesTabController::class,   'security' => 'SA_PROJECTMANAGEMENT_VIEW'],
         ];
 
         $priority = 0;

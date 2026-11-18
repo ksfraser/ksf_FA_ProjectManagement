@@ -83,7 +83,7 @@ class PmAppShellTest extends TestCase
     {
         $shell = new PmAppShell();
 
-        $this->assertSame('SA_ksf_FA_ProjectManagementVIEW', $shell->getSecurity('projects'));
+        $this->assertSame('SA_PROJECTMANAGEMENT_VIEW', $shell->getSecurity('projects'));
         $this->assertSame('', $shell->getSecurity('bogus'));
         $this->assertSame('SA_FALLBACK', $shell->getSecurity('bogus', 'SA_FALLBACK'));
     }

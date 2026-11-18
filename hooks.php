@@ -68,13 +68,17 @@ class hooks_ksf_FA_ProjectManagement extends hooks {
      */
     function install_access() {
         $security_sections[SS_ksf_FA_ProjectManagement] = _("Project Management");
-        $security_areas['SA_ksf_FA_ProjectManagementVIEW'] = array(
+$security_areas['SA_PROJECTMANAGEMENT_VIEW'] = array(
             SS_ksf_FA_ProjectManagement | 1, 
-            _("View ")
+            _("Project Management")
         );
-        $security_areas['SA_ksf_FA_ProjectManagementMANAGE'] = array(
+        $security_areas['SA_PROJECTMANAGEMENT_MANAGE'] = array(
             SS_ksf_FA_ProjectManagement | 2, 
             _("Manage ")
+        );
+        $security_areas['SA_PROJECTMANAGEMENT_ADMIN'] = array(
+            SS_ksf_FA_ProjectManagement | 3, 
+            _("Administer ")
         );
         return array($security_areas, $security_sections);
     }
@@ -390,7 +394,7 @@ class project_app extends application {
              ->addItem('reports',        _("Reports"),          MENU_REPORT)
              ->addItem('project_types',  _("Project Types"),    MENU_SETTINGS);
 
-        $menu->registerWithApp($this, 'SA_ksf_FA_ProjectManagementVIEW');
+        $menu->registerWithApp($this, 'SA_PROJECTMANAGEMENT_VIEW');
 
         $this->add_extensions();
     }

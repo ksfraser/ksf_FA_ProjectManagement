@@ -135,7 +135,7 @@ class PmFrontControllerTest extends TestCase
     {
         return new PmFrontController(
             $shell,
-            'SA_ksf_FA_ProjectManagementVIEW',
+            'SA_PROJECTMANAGEMENT_VIEW',
             '',
             /**
              * @BABOK Related: FR-PM-010-001 — the front controller
@@ -157,13 +157,13 @@ class PmFrontControllerTest extends TestCase
         $shell->registerTab(new TabRegistration(
             'dashboard',
             '&Dashboard',
-            'SA_ksf_FA_ProjectManagementVIEW',
+            'SA_PROJECTMANAGEMENT_VIEW',
             RecordingTabController::class
         ));
         $shell->registerTab(new TabRegistration(
             'projects',
             'Projects',
-            'SA_ksf_FA_ProjectManagementVIEW',
+            'SA_PROJECTMANAGEMENT_VIEW',
             RecordingTabController::class
         ));
         $shell->registerTab(new TabRegistration('bare_tab', 'Bare', '', null));
@@ -267,7 +267,7 @@ class PmFrontControllerTest extends TestCase
         $_GET = ['view' => 'projects'];
 
         $this->assertSame(
-            'SA_ksf_FA_ProjectManagementVIEW',
+            'SA_PROJECTMANAGEMENT_VIEW',
             $this->controller($this->shell())->getSecurityArea()
         );
     }
@@ -280,7 +280,7 @@ class PmFrontControllerTest extends TestCase
         $_GET = ['view' => 'bare_tab'];
 
         $this->assertSame(
-            'SA_ksf_FA_ProjectManagementVIEW',
+            'SA_PROJECTMANAGEMENT_VIEW',
             $this->controller($this->shell())->getSecurityArea(),
             'a tab that declares no area must still be checked against the fallback'
         );
@@ -308,7 +308,7 @@ class PmFrontControllerTest extends TestCase
         $this->runCapturing($this->controller($this->shell()));
 
         $this->assertSame('recording', RecordingTabController::$dispatched);
-        $this->assertSame(['SA_ksf_FA_ProjectManagementVIEW'], $this->checked);
+        $this->assertSame(['SA_PROJECTMANAGEMENT_VIEW'], $this->checked);
     }
 
     /**
@@ -344,7 +344,7 @@ class PmFrontControllerTest extends TestCase
             'the base class default (renderUnavailable) must never fire for PM'
         );
         $this->assertSame(
-            ['SA_ksf_FA_ProjectManagementVIEW'],
+            ['SA_PROJECTMANAGEMENT_VIEW'],
             $this->checked,
             'access is enforced before the action path is chosen'
         );
@@ -401,7 +401,7 @@ $GLOBALS['__fa_hook_handlers']['pm_register_tabs'] = static function (&$data, $o
 
         // getSecurityArea() runs BEFORE session.inc, so the hook cannot have fired.
         $this->assertSame(
-            'SA_ksf_FA_ProjectManagementVIEW',
+            'SA_PROJECTMANAGEMENT_VIEW',
             $this->controller($this->shell())->getSecurityArea()
         );
     }
